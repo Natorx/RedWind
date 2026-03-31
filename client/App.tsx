@@ -2,7 +2,7 @@ import { JSX } from 'react';
 import './styles/main.css';
 import { useActiveItem } from './context/activeItemContext'; // 新增导入
 import Sidebar from './layout/sidebar/sidebar';
-import Terminal from './components/terminal';
+import Terminal from './components/Terminal';
 import AIChat from './components/AIchat';
 import RequestTool from './components/RequestTool';
 import Dashboard from './components/Dashboard';
@@ -51,12 +51,6 @@ function App() {
       <div className="content-card">
         <h2>层级结构文档</h2>
         <p>查看项目文档结构...</p>
-      </div>
-    ),
-    editor: (
-      <div className="content-card">
-        <h2>Mini代码编辑器</h2>
-        <p>轻量级代码编辑...</p>
       </div>
     ),
     hardware: (

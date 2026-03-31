@@ -2,6 +2,7 @@
 use std::process::Command;
 use encoding_rs::GBK;
 
+// 跨平台执行shell命令
 #[tauri::command]
 async fn execute_shell(cmd: String) -> Result<String, String> {
     #[cfg(target_os = "windows")]
@@ -42,6 +43,7 @@ async fn execute_shell(cmd: String) -> Result<String, String> {
     }
 }
 
+// Windows命令
 #[tauri::command]
 async fn execute_windows_command(cmd: String) -> Result<String, String> {
     let output = Command::new("cmd")
@@ -67,11 +69,9 @@ async fn execute_windows_command(cmd: String) -> Result<String, String> {
     }
 }
 
-// 获取当前目录
+// 获取当前工作目录
 #[tauri::command]
 async fn get_current_dir() -> Result<String, String> {
-    #[cfg(target_os = "windows")]
-    let cmd = "cd";
     #[cfg(not(target_os = "windows"))]
     let cmd = "pwd";
     

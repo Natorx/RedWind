@@ -8,10 +8,10 @@ interface SidebarItem {
 export const sidebarItems: SidebarItem[] = [
   { id: 'chatbox', label: 'Chatbox Mini', icon: '💬', order: 1 },
   { id: 'cli', label: '命令行调用', icon: '⌨️', order: 2 },
+  { id: 'api-debug', label: 'API接口调试', icon: '🔍', order: 3 },
   { id: 'editor', label: 'Mini代码编辑器', icon: '📝', order: 9 },
   { id: 'dashboard', label: '仪表盘', icon: '📊', order: 4 },
-  { id: 'api-debug', label: 'API接口调试', icon: '🔍', order: 12 },
-  { id: 'analytics', label: '分析', icon: '📈', order: 3 },
+  { id: 'analytics', label: '分析', icon: '📈', order: 12 },
   { id: 'conversion', label: '文件格式转换', icon: '🔄', order: 8 },
   { id: 'web-scraper', label: '网页解构', icon: '🕸️', order: 10 },
   { id: 'encryption', label: '加密算法', icon: '🔐', order: 11 },

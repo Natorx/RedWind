@@ -1,28 +1,18 @@
-import { JSX, useState } from 'react';
+import { JSX } from 'react';
 import './styles/main.css';
-import { sidebarItems } from './layout/sidebar/fc_sidebar';
 import { useActiveItem } from './context/activeItemContext'; // 新增导入
 import Sidebar from './layout/sidebar/sidebar';
 import Terminal from './components/terminal';
 import AIChat from './components/AIchat';
 import RequestTool from './components/RequestTool';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const { activeItem } = useActiveItem();
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-
-  const toggleHeader = () => {
-    setIsHeaderVisible(!isHeaderVisible);
-  };
 
   // 右侧内容映射
   const contentMap: Record<string, JSX.Element> = {
-    dashboard: (
-      <div className="content-card">
-        <h2>仪表盘</h2>
-        <p>这里是您的数据概览...</p>
-      </div>
-    ),
+    dashboard: <Dashboard/>,
     analytics: (
       <div className="content-card">
         <h2>数据分析</h2>
@@ -156,63 +146,8 @@ function App() {
 
       {/* 右侧主内容区 */}
       <main className="main-content">
-        <header
-          className={`main-header flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 transition-all duration-300 ease-in-out ${isHeaderVisible ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0 overflow-hidden py-0'}`}
-        >
-          <h1 className="text-xl font-semibold text-gray-800 truncate">
-            {sidebarItems.find((item) => item.id === activeItem)?.label}
-          </h1>
-
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={toggleHeader}
-              className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-              title={isHeaderVisible ? '隐藏标题栏' : '显示标题栏'}
-            >
-              <svg
-                className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${isHeaderVisible ? '' : 'rotate-180'}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 15l7-7 7 7"
-                />
-              </svg>
-            </button>
-
-            <button className="p-2 rounded-md hover:bg-gray-100 transition-colors">
-              🔔
-            </button>
-            <button className="p-2 rounded-md hover:bg-gray-100 transition-colors">
-              🔍
-            </button>
-          </div>
-        </header>
-
         <div className="content-wrapper">
           {contentMap[activeItem] || <div>内容未找到</div>}
-
-          {/* 仪表盘专用统计卡片 */}
-          {activeItem === 'dashboard' && (
-            <div className="card-grid">
-              <div className="stat-card">
-                <h3>今日访问</h3>
-                <p className="stat-number">1,248</p>
-              </div>
-              <div className="stat-card">
-                <h3>进行中项目</h3>
-                <p className="stat-number">7</p>
-              </div>
-              <div className="stat-card">
-                <h3>完成率</h3>
-                <p className="stat-number">85%</p>
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>

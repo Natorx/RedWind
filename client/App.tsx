@@ -4,6 +4,7 @@ import { sidebarItems } from './layout/sidebar/fc_sidebar';
 import { useActiveItem } from './context/activeItemContext'; // 新增导入
 import Sidebar from './layout/sidebar/sidebar';
 import Terminal from './components/terminal';
+import AIChat from './components/AIchat';
 
 function App() {
   const { activeItem } = useActiveItem();
@@ -46,12 +47,7 @@ function App() {
         <p>转换各种文件格式...</p>
       </div>
     ),
-    chatbox: (
-      <div className="content-card">
-        <h2>Chatbox Mini</h2>
-        <p>小型聊天机器人界面...</p>
-      </div>
-    ),
+    chatbox:<AIChat/>,
     'web-scraper': (
       <div className="content-card">
         <h2>网页解构</h2>

@@ -6,17 +6,17 @@ interface SidebarItem {
 }
 
 export const sidebarItems: SidebarItem[] = [
+  { id: 'chatbox', label: 'Chatbox Mini', icon: '💬', order: 1 },
   { id: 'cli', label: '命令行调用', icon: '⌨️', order: 2 },
+  { id: 'editor', label: 'Mini代码编辑器', icon: '📝', order: 9 },
   { id: 'dashboard', label: '仪表盘', icon: '📊', order: 4 },
   { id: 'api-debug', label: 'API接口调试', icon: '🔍', order: 12 },
   { id: 'analytics', label: '分析', icon: '📈', order: 3 },
   { id: 'conversion', label: '文件格式转换', icon: '🔄', order: 8 },
-  { id: 'chatbox', label: 'Chatbox Mini', icon: '💬', order: 9 },
   { id: 'web-scraper', label: '网页解构', icon: '🕸️', order: 10 },
   { id: 'encryption', label: '加密算法', icon: '🔐', order: 11 },
   { id: 'debug', label: '调试环境配置', icon: '🐛', order: 13 },
   { id: 'docs', label: '层级结构文档', icon: '📄', order: 14 },
-  { id: 'editor', label: 'Mini代码编辑器', icon: '📝', order: 15 },
   { id: 'hardware', label: '硬件配置读取', icon: '💻', order: 16 },
   { id: 'file-explorer', label: '路径镜像', icon: '📂', order: 17 },
   { id: 'network-devices', label: '网络设备调用', icon: '🌐', order: 18 },

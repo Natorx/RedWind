@@ -31,3 +31,9 @@
 `pnpm i prisma pg @prisma/client @prisma/adapter-better-sqlite3 @prisma/adapter-pg`
 `npx prisma generate`：根据prisma.schema生成TS类型和PrismaClient代码
 `npx prisma db push`：把文件给到数据库
+
+### Rust调用
+晚点我要看看AI生成的代码是怎么写的了
+
+### AI调用
+key:sk-2aa3f369ece6486ea717c176d291806f

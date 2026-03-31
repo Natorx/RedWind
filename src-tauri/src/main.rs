@@ -1,41 +1,141 @@
-use tauri::Manager;
+// src-tauri/src/main.rs
+use std::process::Command;
+use encoding_rs::GBK;
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! Welcome to Tauri.", name)
-}
-
-#[tauri::command]
-fn read_file(path: String) -> Result<String, String> {
-    std::fs::read_to_string(&path)
-        .map_err(|e| format!("读取文件失败: {}", e))
-}
-
-#[tauri::command]
-fn write_file(path: String, contents: String) -> Result<(), String> {
-    std::fs::write(&path, contents)
-        .map_err(|e| format!("写入文件失败: {}", e))
-}
-
-#[tauri::command]
-fn get_system_info() -> Result<String, String> {
+async fn execute_shell(cmd: String) -> Result<String, String> {
     #[cfg(target_os = "windows")]
-    let os_name = "Windows";
+    let (shell, arg) = ("cmd", "/C");
     #[cfg(target_os = "macos")]
-    let os_name = "macOS";
+    let (shell, arg) = ("bash", "-c");
     #[cfg(target_os = "linux")]
-    let os_name = "Linux";
+    let (shell, arg) = ("bash", "-c");
     
-    Ok(format!("操作系统: {}", os_name))
+    let output = Command::new(shell)
+        .args([arg, &cmd])
+        .output()
+        .map_err(|e| format!("命令执行失败: {}", e))?;
+    
+    // Windows 特殊处理
+    #[cfg(target_os = "windows")]
+    let decode_output = |bytes: &[u8]| {
+        let (cow, _, had_errors) = GBK.decode(bytes);
+        if had_errors {
+            String::from_utf8_lossy(bytes).to_string()
+        } else {
+            cow.to_string()
+        }
+    };
+    
+    // 其他系统使用 UTF-8
+    #[cfg(not(target_os = "windows"))]
+    let decode_output = |bytes: &[u8]| {
+        String::from_utf8_lossy(bytes).to_string()
+    };
+    
+    if output.status.success() {
+        let stdout = decode_output(&output.stdout);
+        Ok(stdout.trim().to_string())
+    } else {
+        let stderr = decode_output(&output.stderr);
+        Err(format!("命令执行错误: {}", stderr.trim()))
+    }
+}
+
+#[tauri::command]
+async fn execute_windows_command(cmd: String) -> Result<String, String> {
+    let output = Command::new("cmd")
+        .args(["/C", &cmd])
+        .output()
+        .map_err(|e| format!("命令执行失败: {}", e))?;
+    
+    let decode_output = |bytes: &[u8]| {
+        let (cow, _, had_errors) = GBK.decode(bytes);
+        if had_errors {
+            String::from_utf8_lossy(bytes).to_string()
+        } else {
+            cow.to_string()
+        }
+    };
+    
+    if output.status.success() {
+        let stdout = decode_output(&output.stdout);
+        Ok(stdout.trim().to_string())
+    } else {
+        let stderr = decode_output(&output.stderr);
+        Err(format!("命令执行错误: {}", stderr.trim()))
+    }
+}
+
+// 获取当前目录
+#[tauri::command]
+async fn get_current_dir() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    let cmd = "cd";
+    #[cfg(not(target_os = "windows"))]
+    let cmd = "pwd";
+    
+    let output = Command::new("cmd")
+        .args(["/C", "cd"])
+        .output()
+        .map_err(|e| format!("获取目录失败: {}", e))?;
+    
+    let decode_output = |bytes: &[u8]| {
+        let (cow, _, had_errors) = GBK.decode(bytes);
+        if had_errors {
+            String::from_utf8_lossy(bytes).to_string()
+        } else {
+            cow.to_string()
+        }
+    };
+    
+    if output.status.success() {
+        let stdout = decode_output(&output.stdout);
+        Ok(stdout.trim().to_string())
+    } else {
+        Err("无法获取当前目录".to_string())
+    }
+}
+
+// 切换目录
+#[tauri::command]
+async fn change_dir(path: String) -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    let cmd = format!("cd /d \"{}\" && cd", path);
+    #[cfg(not(target_os = "windows"))]
+    let cmd = format!("cd \"{}\" && pwd", path);
+    
+    let output = Command::new("cmd")
+        .args(["/C", &cmd])
+        .output()
+        .map_err(|e| format!("切换目录失败: {}", e))?;
+    
+    let decode_output = |bytes: &[u8]| {
+        let (cow, _, had_errors) = GBK.decode(bytes);
+        if had_errors {
+            String::from_utf8_lossy(bytes).to_string()
+        } else {
+            cow.to_string()
+        }
+    };
+    
+    if output.status.success() {
+        let stdout = decode_output(&output.stdout);
+        Ok(stdout.trim().to_string())
+    } else {
+        let stderr = decode_output(&output.stderr);
+        Err(format!("切换目录错误: {}", stderr.trim()))
+    }
 }
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            greet,
-            read_file,
-            write_file,
-            get_system_info
+            execute_shell,
+            execute_windows_command,
+            get_current_dir,
+            change_dir
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

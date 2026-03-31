@@ -31,5 +31,19 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "dialog": {
+      "allow": true
+    },
+    "fs": {
+      "allow": true
+    },
+    "os": {
+      "allow": true
+    },
+    "shell": {
+      "open": true
+    }
   }
 }

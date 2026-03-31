@@ -5,6 +5,7 @@ import { useActiveItem } from './context/activeItemContext'; // 新增导入
 import Sidebar from './layout/sidebar/sidebar';
 import Terminal from './components/terminal';
 import AIChat from './components/AIchat';
+import RequestTool from './components/RequestTool';
 
 function App() {
   const { activeItem } = useActiveItem();
@@ -22,24 +23,13 @@ function App() {
         <p>这里是您的数据概览...</p>
       </div>
     ),
-    projects: (
-      <div className="content-card">
-        <h2>项目管理</h2>
-        <p>查看和管理您的项目...</p>
-      </div>
-    ),
     analytics: (
       <div className="content-card">
         <h2>数据分析</h2>
         <p>查看详细的分析报告...</p>
       </div>
     ),
-    'api-debug': (
-      <div className="content-card">
-        <h2>系统设置</h2>
-        <p>调整应用设置...</p>
-      </div>
-    ),
+    'api-debug': <RequestTool/>,
 
     conversion: (
       <div className="content-card">

@@ -6,12 +6,12 @@ import { Prisma } from 'generated/prisma/client';
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
-  @Post()
+  @Post('/add')
   create(@Body() createAccountDto: Prisma.AccountCreateInput) {
     return this.accountsService.create(createAccountDto);
   }
 
-  @Get()
+  @Get('/list')
   findAll() {
     return this.accountsService.findAll();
   }

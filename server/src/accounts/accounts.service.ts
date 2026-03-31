@@ -14,7 +14,7 @@ export class AccountsService {
   }
 
   findAll() {
-    return `This action returns all accounts`;
+    return this.prisma.account.findMany();
   }
 
   findOne(id: number) {

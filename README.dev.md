@@ -26,6 +26,7 @@
 2. 依赖注入问题
 3. 数据库驱动问题
 4. 版本匹配问题
+5. env环境配置问题
 #### 成功方案
 1. Nestjs-Prisma官方文档
 `pnpm i prisma pg @prisma/client @prisma/adapter-better-sqlite3 @prisma/adapter-pg`

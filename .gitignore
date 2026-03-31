@@ -1,0 +1,11 @@
+# general
+.vscode
+dist
+node_modules
+
+# server
+/server/.env
+
+# tauri
+/src-tauri/target/
+/src-tauri/gen/schemas

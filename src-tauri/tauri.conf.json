@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "rangle-project",
+  "productName": "wind-project",
   "version": "0.1.0",
   "identifier": "com.administrator.tauri-app",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "rangle-project",
+        "title": "wind-project",
         "width": 800,
         "height": 600
       }

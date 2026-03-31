@@ -7,12 +7,9 @@ interface SidebarItem {
 
 export const sidebarItems: SidebarItem[] = [
   { id: 'dashboard', label: '仪表盘', icon: '📊', order: 1 },
-  { id: 'api-debug', label: '接口调试', icon: '🔍', order: 2 },
+  { id: 'api-debug', label: 'API接口调试', icon: '🔍', order: 2 },
   { id: 'analytics', label: '分析', icon: '📈', order: 3 },
-  { id: 'api-test', label: 'API 测试', icon: '🔧', order: 4 },
-  { id: 'projects', label: '项目', icon: '📁', order: 5 },
-  { id: 'settings', label: '设置', icon: '⚙️', order: 6 },
-  { id: 'help', label: '帮助', icon: '❓', order: 7 },
+  { id: 'api-test', label: 'Rust测试', icon: '🔧', order: 4 },
   { id: 'conversion', label: '文件格式转换', icon: '🔄', order: 8 },
   { id: 'chatbox', label: 'Chatbox Mini', icon: '💬', order: 9 },
   { id: 'web-scraper', label: '网页解构', icon: '🕸️', order: 10 },

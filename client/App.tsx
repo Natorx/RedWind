@@ -35,18 +35,7 @@ function App() {
         <p>调整应用设置...</p>
       </div>
     ),
-    settings: (
-      <div className="content-card">
-        <h2>系统设置</h2>
-        <p>调整应用设置...</p>
-      </div>
-    ),
-    help: (
-      <div className="content-card">
-        <h2>帮助中心</h2>
-        <p>获取使用帮助...</p>
-      </div>
-    ),
+
     conversion: (
       <div className="content-card">
         <h2>文件格式转换</h2>

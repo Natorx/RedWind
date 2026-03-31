@@ -1,12 +1,11 @@
 {
-  "name": "wind-project",
+  "name": "red-wind-project",
   "private": true,
   "version": "0.1.0",
   "author": "Fofow",
   "workspaces": [
     "client",
-    "server",
-    "src-tauri"
+    "server"
   ],
   "scripts": {
     "dev": "vite",

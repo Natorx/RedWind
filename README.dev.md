@@ -16,6 +16,8 @@
 
 ### UnoCSS的配置
 `pnpm i unocss`，接着在Vite还有main中导入一下就好了
+#### 意外
+我之前使用的preseUno居然被弃用了
 
 ### Prisma的配置
 #### 试错

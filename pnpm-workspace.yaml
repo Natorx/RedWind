@@ -1,0 +1,10 @@
+# pnpm-workspace.yaml
+
+# 定义当前仓库中所有作为独立包的子目录
+packages:
+  # 指定 client 目录为一个工作区包
+  - 'client'
+  # 指定 server 目录为一个工作区包
+  - 'server'
+  # 注意: src-tauri 是 Tauri 的后端（通常是 Rust），它不由 pnpm 管理，
+  # 因此不需要也不应该包含在 pnpm 工作区中。

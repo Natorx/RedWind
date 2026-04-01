@@ -117,9 +117,9 @@ const SysInfo: React.FC = () => {
                 {info.cpu_usage.toFixed(1)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-3">
               <div 
-                className="bg-blue-600 rounded-full h-2 transition-all duration-300"
+                className="bg-blue-600 rounded-full h-3 transition-all duration-300"
                 style={{ width: `${info.cpu_usage}%` }}
               />
             </div>
@@ -152,9 +152,9 @@ const SysInfo: React.FC = () => {
                 {memoryPercent.toFixed(1)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-3">
               <div 
-                className="bg-green-600 rounded-full h-2 transition-all duration-300"
+                className="bg-green-600 rounded-full h-3 transition-all duration-300"
                 style={{ width: `${memoryPercent}%` }}
               />
             </div>

@@ -10,32 +10,32 @@ type SidebarItem = {
 // 2. 在 sidebarItems 数组中为每个项目添加 source 字段，使用类型断言或明确指定类型
 export const sidebarItems: SidebarItem[] = [
   {
+    id: 'dashboard',
+    label: '仪表盘',
+    icon: '📊',
+    order: 1,
+    source: 'server' as const,
+  },
+  {
     id: 'chatbox',
     label: 'Chatbox Mini',
     icon: '💬',
-    order: 1,
+    order: 2,
     source: 'others' as const,
   },
   {
     id: 'cli',
     label: '命令行调用',
     icon: '⌨️',
-    order: 2,
+    order: 3,
     source: 'local' as const,
   },
   {
     id: 'api-debug',
     label: 'API接口调试',
     icon: '🔍',
-    order: 3,
-    source: 'local' as const,
-  },
-  {
-    id: 'dashboard',
-    label: '仪表盘',
-    icon: '📊',
     order: 4,
-    source: 'server' as const,
+    source: 'local' as const,
   },
   {
     id: 'printer',

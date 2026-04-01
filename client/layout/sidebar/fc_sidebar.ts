@@ -29,4 +29,5 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'file-sharing', label: '文件共享', icon: '📤', order: 26 },
   { id: 'multi-device-login', label: '多设备登录', icon: '🔑', order: 27 },
   { id: 'plugins', label: '插件扩展', icon: '🧩', order: 28 },
+  { id: 'printer', label: '本地打印', icon: '📁', order: 5 },
 ].sort((a, b) => a.order - b.order);

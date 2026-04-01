@@ -1,24 +1,36 @@
 import React, { useState } from 'react';
 import request from '../utils/requests';
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-
 interface ParamItem {
   key: string;
   value: string;
   enabled: boolean;
 }
+type HttpMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'PATCH'
+  | 'HEAD'
+  | 'OPTIONS';
 
 const RequestTool: React.FC = () => {
   const [method, setMethod] = useState<HttpMethod>('GET');
   const [url, setUrl] = useState('');
-  const [params, setParams] = useState<ParamItem[]>([{ key: '', value: '', enabled: true }]);
-  const [headers, setHeaders] = useState<ParamItem[]>([{ key: 'Content-Type', value: 'application/json', enabled: true }]);
+  const [params, setParams] = useState<ParamItem[]>([
+    { key: '', value: '', enabled: true },
+  ]);
+  const [headers, setHeaders] = useState<ParamItem[]>([
+    { key: 'Content-Type', value: 'application/json', enabled: true },
+  ]);
   const [body, setBody] = useState('');
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'params' | 'headers' | 'body'>('params');
+  const [activeTab, setActiveTab] = useState<'params' | 'headers' | 'body'>(
+    'params',
+  );
 
   // 添加参数行
   const addParam = (type: 'params' | 'headers') => {
@@ -35,16 +47,20 @@ const RequestTool: React.FC = () => {
     type: 'params' | 'headers',
     index: number,
     field: 'key' | 'value' | 'enabled',
-    value: any
+    value: any,
   ) => {
     if (type === 'params') {
-      const newParams = [...params];
-      newParams[index][field] = value;
-      setParams(newParams);
+      setParams((prevParams) =>
+        prevParams.map((item, i) =>
+          i === index ? { ...item, [field]: value } : item,
+        ),
+      );
     } else {
-      const newHeaders = [...headers];
-      newHeaders[index][field] = value;
-      setHeaders(newHeaders);
+      setHeaders((prevHeaders) =>
+        prevHeaders.map((item, i) =>
+          i === index ? { ...item, [field]: value } : item,
+        ),
+      );
     }
   };
 
@@ -70,17 +86,20 @@ const RequestTool: React.FC = () => {
     try {
       // 构建 query 参数
       const queryParams = params
-        .filter(p => p.key.trim() && p.enabled)
+        .filter((p) => p.key.trim() && p.enabled)
         .reduce((acc, p) => ({ ...acc, [p.key]: p.value }), {});
 
       // 构建请求头
       const requestHeaders = headers
-        .filter(h => h.key.trim() && h.enabled)
+        .filter((h) => h.key.trim() && h.enabled)
         .reduce((acc, h) => ({ ...acc, [h.key]: h.value }), {});
 
       // 解析 body
       let requestBody = undefined;
-      if (body.trim() && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+      if (
+        body.trim() &&
+        (method === 'POST' || method === 'PUT' || method === 'PATCH')
+      ) {
         try {
           requestBody = JSON.parse(body);
         } catch {
@@ -208,20 +227,31 @@ const RequestTool: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={param.enabled}
-                      onChange={(e) => updateParam('params', index, 'enabled', e.target.checked)}
+                      onChange={(e) =>
+                        updateParam(
+                          'params',
+                          index,
+                          'enabled',
+                          e.target.checked,
+                        )
+                      }
                       className="w-4 h-4"
                     />
                     <input
                       type="text"
                       value={param.key}
-                      onChange={(e) => updateParam('params', index, 'key', e.target.value)}
+                      onChange={(e) =>
+                        updateParam('params', index, 'key', e.target.value)
+                      }
                       placeholder="参数名"
                       className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
                     />
                     <input
                       type="text"
                       value={param.value}
-                      onChange={(e) => updateParam('params', index, 'value', e.target.value)}
+                      onChange={(e) =>
+                        updateParam('params', index, 'value', e.target.value)
+                      }
                       placeholder="参数值"
                       className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
                     />
@@ -254,20 +284,31 @@ const RequestTool: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={header.enabled}
-                      onChange={(e) => updateParam('headers', index, 'enabled', e.target.checked)}
+                      onChange={(e) =>
+                        updateParam(
+                          'headers',
+                          index,
+                          'enabled',
+                          e.target.checked,
+                        )
+                      }
                       className="w-4 h-4"
                     />
                     <input
                       type="text"
                       value={header.key}
-                      onChange={(e) => updateParam('headers', index, 'key', e.target.value)}
+                      onChange={(e) =>
+                        updateParam('headers', index, 'key', e.target.value)
+                      }
                       placeholder="Header 名称"
                       className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
                     />
                     <input
                       type="text"
                       value={header.value}
-                      onChange={(e) => updateParam('headers', index, 'value', e.target.value)}
+                      onChange={(e) =>
+                        updateParam('headers', index, 'value', e.target.value)
+                      }
                       placeholder="Header 值"
                       className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
                     />
@@ -285,7 +326,9 @@ const RequestTool: React.FC = () => {
 
           {activeTab === 'body' && (
             <div>
-              <span className="text-sm text-gray-600 mb-2 block">请求体 (JSON 格式)</span>
+              <span className="text-sm text-gray-600 mb-2 block">
+                请求体 (JSON 格式)
+              </span>
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
@@ -322,10 +365,16 @@ const RequestTool: React.FC = () => {
 
         {error && !loading && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="text-red-600 text-sm font-medium mb-1">请求失败</div>
-            <pre className="text-red-600 text-sm whitespace-pre-wrap">{error}</pre>
+            <div className="text-red-600 text-sm font-medium mb-1">
+              请求失败
+            </div>
+            <pre className="text-red-600 text-sm whitespace-pre-wrap">
+              {error}
+            </pre>
             {response && (
-              <pre className="text-red-600 text-sm whitespace-pre-wrap mt-2">{formatResponse()}</pre>
+              <pre className="text-red-600 text-sm whitespace-pre-wrap mt-2">
+                {formatResponse()}
+              </pre>
             )}
           </div>
         )}

@@ -6,6 +6,7 @@ import Terminal from './components/Terminal';
 import AIChat from './components/AIchat';
 import RequestTool from './components/RequestTool';
 import Dashboard from './components/Dashboard';
+import Printer from './components/Printer';
 
 function App() {
   const { activeItem } = useActiveItem();
@@ -131,6 +132,7 @@ function App() {
         <p>管理和扩展插件...</p>
       </div>
     ),
+    'printer': <Printer/>
   };
 
   return (

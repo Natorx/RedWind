@@ -69,13 +69,28 @@ async fn change_dir(path: String) -> Result<String, String> {
     execute_shell(cmd).await
 }
 
+// DrillGround
+#[tauri::command]
+async fn get_poem() -> Result<String, String> {
+    // 模拟异步操作，比如从文件或网络获取
+    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    
+    let poem = r#"
+    春江潮水连海平，海上明月共潮生。
+    滟滟随波千万里，何处春江无月明！
+    "#.trim().to_string();
+    
+    Ok(poem)
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             execute_shell,
             get_current_dir,
-            change_dir
+            change_dir,
+            get_poem
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

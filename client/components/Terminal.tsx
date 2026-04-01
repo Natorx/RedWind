@@ -1,4 +1,9 @@
-// src/components/Terminal.tsx
+/**src/components/Terminal.tsx
+ * @Author: Fofow
+ * @Date: 2026/4/1
+ * @Description: 
+ * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 // import { listen } from '@tauri-apps/api/event';

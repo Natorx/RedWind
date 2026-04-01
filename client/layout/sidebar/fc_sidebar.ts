@@ -10,6 +10,8 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'cli', label: '命令行调用', icon: '⌨️', order: 2 },
   { id: 'api-debug', label: 'API接口调试', icon: '🔍', order: 3 },
   { id: 'dashboard', label: '仪表盘', icon: '📊', order: 4 },
+  { id: 'printer', label: '本地打印', icon: '📁', order: 5 },
+  { id:'drill-ground',label:'演练场',icon:'🧪',order:6},
   { id: 'analytics', label: '分析', icon: '📈', order: 12 },
   { id: 'conversion', label: '文件格式转换', icon: '🔄', order: 8 },
   { id: 'web-scraper', label: '网页解构', icon: '🕸️', order: 10 },
@@ -29,5 +31,5 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'file-sharing', label: '文件共享', icon: '📤', order: 26 },
   { id: 'multi-device-login', label: '多设备登录', icon: '🔑', order: 27 },
   { id: 'plugins', label: '插件扩展', icon: '🧩', order: 28 },
-  { id: 'printer', label: '本地打印', icon: '📁', order: 5 },
+
 ].sort((a, b) => a.order - b.order);

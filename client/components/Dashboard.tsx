@@ -1,3 +1,9 @@
+/**src/components/Dashboard.tsx
+ * @Author: Fofow
+ * @Date: 2026/4/1
+ * @Description: 
+ * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
+ */
 import { 
   Users, 
   ShoppingCart, 

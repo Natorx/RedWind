@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useActiveItem } from '../../context/activeItemContext'; // 新增
 import { sidebarItems } from './fc_sidebar';
 import Drawer from '../../common/Drawer';
+
 const Sidebar: React.FC = () => {
   const { activeItem, setActiveItem } = useActiveItem();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

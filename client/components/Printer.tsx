@@ -1,3 +1,9 @@
+/**src/components/Printer.tsx
+ * @Author: Fofow
+ * @Date: 2026/4/2
+ * @Description: 
+ * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
+ */
 import React, { useState } from 'react';
 
 interface PrintResult {

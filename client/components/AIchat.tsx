@@ -1,4 +1,9 @@
-// src/components/AIChat.tsx
+/**src/components/AIChat.tsx
+ * @Author: Fofow
+ * @Date: 2026/4/1
+ * @Description: 
+ * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
+ */
 import React, { useState, useRef, useEffect } from 'react';
 
 interface Message {

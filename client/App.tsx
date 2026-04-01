@@ -7,20 +7,21 @@ import AIChat from './components/AIchat';
 import RequestTool from './components/RequestTool';
 import Dashboard from './components/Dashboard';
 import Printer from './components/Printer';
+import DrillGround from './components/DrillGround';
 
 function App() {
   const { activeItem } = useActiveItem();
 
   // 右侧内容映射
   const contentMap: Record<string, JSX.Element> = {
-    dashboard: <Dashboard/>,
+    dashboard: <Dashboard />,
     analytics: (
       <div className="content-card">
         <h2>数据分析</h2>
         <p>查看详细的分析报告...</p>
       </div>
     ),
-    'api-debug': <RequestTool/>,
+    'api-debug': <RequestTool />,
 
     conversion: (
       <div className="content-card">
@@ -28,7 +29,7 @@ function App() {
         <p>转换各种文件格式...</p>
       </div>
     ),
-    chatbox:<AIChat/>,
+    chatbox: <AIChat />,
     'web-scraper': (
       <div className="content-card">
         <h2>网页解构</h2>
@@ -132,7 +133,8 @@ function App() {
         <p>管理和扩展插件...</p>
       </div>
     ),
-    'printer': <Printer/>
+    printer: <Printer />,
+    'drill-ground': <DrillGround />,
   };
 
   return (

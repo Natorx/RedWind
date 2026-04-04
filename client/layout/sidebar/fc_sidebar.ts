@@ -46,7 +46,7 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     id: 'drill-ground',
-    label: '演练场',
+    label: '客户端数据库调试',
     icon: '🧪',
     order: 6,
     source: 'local' as const,

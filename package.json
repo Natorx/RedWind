@@ -11,10 +11,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "dev:client": "tauri dev",
-    "dev:server": "cd server && nest start --watch",
-    "start:server": "cd server && nest start",
-    "build:server": "cd server && nest build"
+    "dev_client": "tauri dev",
+    "dev_server": "cd server && nest start --watch",
+    "start_server": "cd server && nest start",
+    "build_server": "cd server && nest build"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

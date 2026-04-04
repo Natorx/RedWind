@@ -1,29 +1,31 @@
 import { useState } from 'react';
 import { useActiveItem } from '../../context/activeItemContext'; // 新增
-import { sidebarItems } from './fc_sidebar';
+import { sidebarItems } from './sidebar_config';
 import Drawer from '../../common/Drawer';
 
 const Sidebar: React.FC = () => {
   const { activeItem, setActiveItem } = useActiveItem();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <h2 className="logo text-cyan">Wind Project</h2>
-        <p className="logo-subtitle">个人PC助手</p>
+    <aside className="sidebar w-240px bg-#ffffff border-r-1px border-r-solid border-r-#e2e8f0 flex flex-col shadow-sm">
+      <div className="sidebar-header py-24px px-20px border-b-1px border-b-solid border-b-#f1f5f9">
+        <h2 className="logo text-cyan font-700 font-size-20px mb-1">
+          Wind Project
+        </h2>
+        <p className="logo-subtitle font-size-12px c-#64748b">个人PC助手</p>
       </div>
 
-      <nav className="sidebar-nav overflow-y-scroll">
+      <nav className="sidebar-nav overflow-y-scroll flex-1 py-4 px-3">
         <ul>
           {sidebarItems.map((item) => (
-            <li key={item.id}>
+            <li className="mb-2" key={item.id}>
               <button
-                className={`nav-btn ${activeItem === item.id ? 'active' : ''}`}
+                className={`nav-btn w-full px-4 py-3 border-none bg-transparent rounded-lg flex items-center cursor-pointer text-sm text-slate-500 transition-all duration-200 ease-in-out hover:bg-slate-100 hover:text-slate-700 ${activeItem === item.id ? 'active' : ''}`}
                 onClick={() => setActiveItem(item.id)}
               >
-                {item.icon && <span className="nav-icon">{item.icon}</span>}
+                {item.icon && <span className="nav-icon mr-3 font-size-18px">{item.icon}</span>}
                 <div className="flex flex-col items-start">
-                  <span className="nav-label">{item.label}</span>
+                  <span className="nav-label font-500">{item.label}</span>
                   <span
                     className={`text-xs mt-0.5 px-1.5 py-0.5 rounded ${
                       item.source === 'server'

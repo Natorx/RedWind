@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useActiveItem } from '../../context/activeItemContext'; // 新增
 import { sidebarItems } from './sidebar_config';
-import Drawer from '../../common/Drawer';
+import Drawer from '../../components/Drawer';
 
 const Sidebar: React.FC = () => {
   const { activeItem, setActiveItem } = useActiveItem();

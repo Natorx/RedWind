@@ -58,6 +58,13 @@ export const sidebarItems: SidebarItem[] = [
     order: 7,
     source: 'local' as const,
   },
+    {
+    id: 'typing-practice',
+    label: '英语打字练习',
+    icon: '⌨️',
+    order: 8,
+    source: 'local' as const,
+  },
   {
     id: 'analytics',
     label: '分析',
@@ -147,13 +154,6 @@ export const sidebarItems: SidebarItem[] = [
     label: '二维码生成调用',
     icon: '📱',
     order: 24,
-    source: 'local' as const,
-  },
-  {
-    id: 'typing-practice',
-    label: '英语打字练习',
-    icon: '⌨️',
-    order: 25,
     source: 'local' as const,
   },
   {

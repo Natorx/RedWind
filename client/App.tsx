@@ -2,13 +2,14 @@ import { JSX } from 'react';
 import './styles/main.css';
 import { useActiveItem } from './context/activeItemContext'; // 新增导入
 import Sidebar from './layout/sidebar/sidebar';
-import Terminal from './components/Terminal';
-import AIChat from './components/AIchat';
-import RequestTool from './components/RequestTool';
-import Dashboard from './components/Dashboard';
-import Printer from './components/Printer';
-import DrillGround from './components/DrillGround';
-import SysInfo from './components/SysInfo';
+import Terminal from './pages/Terminal';
+import AIChat from './pages/AIchat';
+import RequestTool from './pages/RequestTool';
+import Dashboard from './pages/Dashboard';
+import Printer from './pages/Printer';
+import DrillGround from './pages/DrillGround';
+import SysInfo from './pages/SysInfo';
+import TypingPractice from './pages/English';
 
 function App() {
   const { activeItem } = useActiveItem();
@@ -102,12 +103,7 @@ function App() {
         <p className='c-#64748b lh-3'>生成和扫描二维码...</p>
       </div>
     ),
-    'typing-practice': (
-      <div className="content-card bg-white rounded-md p-24px shadow-sm mb-24px border-1px border-solid border-#f1f5f9">
-        <h2 className='font-20px mb-12px c-#0f172a'>英语打字练习</h2>
-        <p className='c-#64748b lh-3'>练习英语打字...</p>
-      </div>
-    ),
+    'typing-practice': <TypingPractice/>,
     'file-sharing': (
       <div className="content-card bg-white rounded-md p-24px shadow-sm mb-24px border-1px border-solid border-#f1f5f9">
         <h2 className='font-20px mb-12px c-#0f172a'>文件共享</h2>

@@ -11,6 +11,7 @@ import DrillGround from './pages/DrillGround';
 import SysInfo from './pages/SysInfo';
 import TypingPractice from './pages/English';
 import Test from './pages/Test';
+import Recorder from './pages/Recorder';
 
 function App() {
   const { activeItem } = useActiveItem();
@@ -125,7 +126,8 @@ function App() {
     ),
     printer: <Printer />,
     'drill-ground': <DrillGround />,
-    'test':<Test/>
+    'test':<Test/>,
+    'recorder':<Recorder/>
   };
 
   return (

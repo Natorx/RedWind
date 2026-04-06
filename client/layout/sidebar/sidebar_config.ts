@@ -178,6 +178,13 @@ export const sidebarItems: SidebarItem[] = [
     source: 'server' as const,
   },
   {
+    id: 'recorder',
+    label: '录音机',
+    icon: '',
+    order: 29,
+    source: 'local' as const,
+  },
+  {
     id: 'test',
     label: '测试场',
     icon: '11',

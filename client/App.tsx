@@ -15,6 +15,7 @@ import Heatmap from './pages/Heatmap';
 import { mockData_heatMap } from './mock/heatmap.mock';
 import QRCodeGenerator from './pages/QRCodeGenerator';
 import Charts from './pages/Charts';
+import FileFormatConverter from './pages/Conversion';
 
 function App() {
   const { activeItem } = useActiveItem();
@@ -30,12 +31,7 @@ function App() {
     ),
     'api-debug': <RequestTool />,
 
-    'conversion': (
-      <div className="content-card bg-white rounded-md p-24px shadow-sm mb-24px border-1px border-solid border-#f1f5f9">
-        <h2>文件格式转换</h2>
-        <p className="c-#64748b lh-3">转换各种文件格式...</p>
-      </div>
-    ),
+    'conversion': <FileFormatConverter/>,
     'chatbox': <AIChat />,
     'web-scraper': (
       <div className="content-card bg-white rounded-md p-24px shadow-sm mb-24px border-1px border-solid border-#f1f5f9">

@@ -18,10 +18,15 @@ use sysinfo::System;
 mod hardinfo;
 use hardinfo::{AppState, get_hardware_info};
 
+#[path = "mods/conversion.rs"]
+mod conversion;
+use conversion::{convert_file};
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(AppState {
             sys: Mutex::new(System::new_all()),
         })
@@ -32,7 +37,8 @@ fn main() {
             add_user,
             get_users,
             delete_user,
-            get_hardware_info
+            get_hardware_info,
+            convert_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

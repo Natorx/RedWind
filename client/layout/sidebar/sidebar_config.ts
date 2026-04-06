@@ -185,8 +185,15 @@ export const sidebarItems: SidebarItem[] = [
     source: 'local' as const,
   },
   {
-    id: 'test',
-    label: '测试场',
+    id: 'qrcode',
+    label: '二维码生成',
+    icon: '',
+    order: 30,
+    source: 'local' as const,
+  },
+  {
+    id: 'heatmap',
+    label: '热力图',
     icon: '11',
     order: 99,
     source: 'local' as const,

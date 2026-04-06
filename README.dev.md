@@ -1,3 +1,10 @@
+## 开发文档
+### 项目提交规范
+feat: 事迹
+doc: 文档
+paln: 项目规划
+UI: UI优化
+: 未分类
 ### shell
 `git commit -m "msg"` 中的 -m 指的是message，也就是添加提交信息
 `nest generate resource users`
@@ -62,3 +69,5 @@ main.rs中主函数中的tauri::Builder就是应用的配置和启动入口
 
 ### SQLite
 使用Rust调用，为了防止数据监测导致的重启，所以数据暂时放到了别的地方。
+## 待办计划
+- [ ] 优化sidebar的配置名

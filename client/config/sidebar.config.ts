@@ -8,13 +8,6 @@ type SidebarItem = {
 
 export const sidebarItems: SidebarItem[] = [
   {
-    id: 'func-store',
-    label: '功能配置',
-    icon: '',
-    order: 0,
-    source: 'local' as const,
-  },
-  {
     id: 'dashboard',
     label: '仪表盘',
     icon: '📊',

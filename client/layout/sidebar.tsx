@@ -1,11 +1,35 @@
 import { useActiveItem } from '../context/activeItemContext.tsx';
-import { sidebarItems } from '../config/sidebar.config.ts';
 import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
+import { invoke } from '@tauri-apps/api/core';
+import { useEffect, useState } from 'react';
+interface SidebarItem {
+  id: string;
+  label: string;
+  icon: string;
+  order: number;
+  source: 'local' | 'server' | 'others';
+}
 
 const Sidebar: React.FC = () => {
   const { activeItem, setActiveItem } = useActiveItem();
+  const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const { setIsSettingsOpen } = useSettingDrawer();
+    // 加载本地配置
+    const loadLocalItems = async () => {
+      try {
+        const sidebarItems = await invoke<SidebarItem[]>('get_sidebar_items');
+        setSidebarItems(sidebarItems);
+      } catch (error) {
+        console.error('加载本地配置失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    useEffect(() => {
+      loadLocalItems();
+    }, []);
   return (
     <aside className="sidebar w-240px bg-#ffffff border-r-1px border-r-solid border-r-#e2e8f0 flex flex-col shadow-sm">
       <div className="sidebar-header py-24px px-20px border-b-1px border-b-solid border-b-#f1f5f9">
@@ -18,6 +42,21 @@ const Sidebar: React.FC = () => {
       {/* 列表 */}
       <nav className="sidebar-nav overflow-y-scroll flex-1 py-4 px-3 scroll-none">
         <ul>
+          <li className="mb-2">
+            <button
+              className={`nav-btn w-full px-4 py-3 border-none bg-transparent rounded-lg flex items-center cursor-pointer text-sm text-slate-500 transition-all duration-200 ease-in-out hover:bg-slate-100 hover:text-slate-700 ${activeItem === 'func-store' ? 'active' : ''}`}
+              onClick={() => setActiveItem('func-store')}
+            >
+              <span className="nav-icon mr-3 font-size-18px">🖥️</span>
+
+              <div className="flex flex-col items-start">
+                <span className="nav-label font-500">模块配置</span>
+                <span className="text-xs mt-0.5 px-1.5 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  本地提供
+                </span>
+              </div>
+            </button>
+          </li>
           {sidebarItems.map((item) => (
             <li className="mb-2" key={item.id}>
               <button

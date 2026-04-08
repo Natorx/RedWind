@@ -10,6 +10,21 @@
 - 应用：Rust语言入门
 - 数据库：PGSQL，SQLite，Redis
 - 项目：Git版本控制+monorepo架构
+
+### 功能
+![alt text](doc/ai.png)
+![alt text](doc/charts.png)
+![alt text](doc/command.png)
+![alt text](doc/conversion.png)
+![alt text](doc/dashboard.png)
+![alt text](doc/drawer.png)
+![alt text](doc/modules.png)
+![alt text](doc/priter.png)
+![alt text](doc/progress.png)
+![alt text](doc/qrcode.png)
+![alt text](doc/recorder.png)
+![alt text](doc/typing.png)
+
 ### 技术方案选择
 #### 应用表现层
 - 框架：我有Vue的使用经验，这次我选择使用React，尝试不同的技术。另外听说它更灵活，生态更丰富，也相对更难。
@@ -33,8 +48,9 @@
 - [✅] 二维码生成和调用
 - [✅] api调试器
 - [✅] 打印机调用
-- [ ] 文件格式转换
+- [✅] 文件格式转换
 - [✅] chatbox mini
+- [] 模块配置
 - [ ] 设置功能（本地服务器/云端服务器等配置）
 #### 进阶级
 - [ ] 网页解构：获取网页中特定元素，也就是爬虫+控制爬虫的UI

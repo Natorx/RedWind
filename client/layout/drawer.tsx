@@ -54,6 +54,16 @@ export const DrawerPage: React.FC = () => {
             >
               <span className="text-gray-700">扩展设置</span>
             </div>
+
+            {/* 刷新应用 */}
+            <div
+              className="setting-item p-3 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+              onClick={() => {
+                window.location.reload();
+              }}
+            >
+              <span className="text-gray-700">刷新应用</span>
+            </div>
           </div>
 
           {/* 操作按钮 */}
@@ -130,9 +140,7 @@ export const DrawerPage: React.FC = () => {
         title="扩展管理"
       >
         <div className="space-y-4">
-          <div>
-            1
-          </div>
+          <div>1</div>
           <div className="flex justify-end space-x-3 pt-4">
             <button
               onClick={() => setPluginModalOpen(false)}

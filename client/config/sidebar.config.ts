@@ -1,13 +1,11 @@
-// 1. 首先，更新 SidebarItem 类型定义，增加 source 字段
 type SidebarItem = {
   id: string;
   label: string;
   icon: string;
   order: number;
-  source: 'server' | 'local' | 'others'; // 新增字段
+  source: 'server' | 'local' | 'others';
 };
 
-// 2. 在 sidebarItems 数组中为每个项目添加 source 字段，使用类型断言或明确指定类型
 export const sidebarItems: SidebarItem[] = [
   {
     id: 'dashboard',
@@ -199,3 +197,4 @@ export const sidebarItems: SidebarItem[] = [
     source: 'local' as const,
   },
 ].sort((a, b) => a.order - b.order);
+export default sidebarItems;

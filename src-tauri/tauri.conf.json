@@ -24,7 +24,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["icons/windRed-icon.png", "icons/icon.ico"]
+    "icon": ["icons/redWind-icon.png", "icons/redWind-icon.ico"]
   },
   "plugins": {
     "shell": {

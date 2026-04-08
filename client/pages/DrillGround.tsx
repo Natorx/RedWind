@@ -149,8 +149,7 @@ const DrillGround: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         {/* 标题 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">练习场</h1>
-          <p className="text-gray-600">集成SQLite数据库操作与功能演示</p>
+          <h3 className="text-gray-600">集成SQLite数据库操作与功能演示</h3>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

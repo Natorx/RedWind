@@ -1,18 +1,16 @@
 // layout/drawer/DrawerPage.tsx
 import React, { useState } from 'react';
 import Drawer from '../components/Drawer';
-import Modal from '../components/Modal'; // 导入 Modal 组件
+import Modal from '../components/Modal';
 import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext';
 
 export const DrawerPage: React.FC = () => {
   const { isSettingsOpen, setIsSettingsOpen } = useSettingDrawer();
-  
+
   // 为每个设置项添加独立的 Modal 状态
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
-  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
-  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [isPluginModalOpen, setPluginModalOpen] = useState(false);
 
   return (
     <>
@@ -42,35 +40,19 @@ export const DrawerPage: React.FC = () => {
           {/* 设置选项 */}
           <div className="space-y-2">
             {/* 个人资料 */}
-            <div 
+            <div
               className="setting-item p-3 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
               onClick={() => setIsProfileModalOpen(true)}
             >
               <span className="text-gray-700">个人资料</span>
             </div>
-            
-            {/* 通知设置 */}
-            <div 
+
+            {/* 扩展配置 */}
+            <div
               className="setting-item p-3 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-              onClick={() => setIsNotificationModalOpen(true)}
+              onClick={() => setPluginModalOpen(true)}
             >
-              <span className="text-gray-700">通知设置</span>
-            </div>
-            
-            {/* 隐私设置 */}
-            <div 
-              className="setting-item p-3 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-              onClick={() => setIsPrivacyModalOpen(true)}
-            >
-              <span className="text-gray-700">隐私设置</span>
-            </div>
-            
-            {/* 账户安全 */}
-            <div 
-              className="setting-item p-3 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-              onClick={() => setIsSecurityModalOpen(true)}
-            >
-              <span className="text-gray-700">账户安全</span>
+              <span className="text-gray-700">扩展设置</span>
             </div>
           </div>
 
@@ -141,107 +123,19 @@ export const DrawerPage: React.FC = () => {
         </div>
       </Modal>
 
-      {/* 通知设置 Modal */}
+      {/* 扩展设置 Modal */}
       <Modal
-        isOpen={isNotificationModalOpen}
-        onClose={() => setIsNotificationModalOpen(false)}
-        title="通知设置"
-      >
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span>启用通知</span>
-            <input type="checkbox" className="toggle" defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <span>声音提醒</span>
-            <input type="checkbox" className="toggle" defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <span>桌面通知</span>
-            <input type="checkbox" className="toggle" />
-          </div>
-          <div className="flex items-center justify-between">
-            <span>邮件通知</span>
-            <input type="checkbox" className="toggle" />
-          </div>
-          <div className="flex justify-end pt-4">
-            <button
-              onClick={() => setIsNotificationModalOpen(false)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              确定
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* 隐私设置 Modal */}
-      <Modal
-        isOpen={isPrivacyModalOpen}
-        onClose={() => setIsPrivacyModalOpen(false)}
-        title="隐私设置"
-      >
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span>公开个人资料</span>
-            <input type="checkbox" className="toggle" />
-          </div>
-          <div className="flex items-center justify-between">
-            <span>显示在线状态</span>
-            <input type="checkbox" className="toggle" defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <span>允许搜索</span>
-            <input type="checkbox" className="toggle" defaultChecked />
-          </div>
-          <div className="flex justify-end pt-4">
-            <button
-              onClick={() => setIsPrivacyModalOpen(false)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              保存设置
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* 账户安全 Modal */}
-      <Modal
-        isOpen={isSecurityModalOpen}
-        onClose={() => setIsSecurityModalOpen(false)}
-        title="账户安全"
+        isOpen={isPluginModalOpen}
+        onClose={() => setPluginModalOpen(false)}
+        title="扩展管理"
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              当前密码
-            </label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              新密码
-            </label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              确认新密码
-            </label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            1
           </div>
           <div className="flex justify-end space-x-3 pt-4">
             <button
-              onClick={() => setIsSecurityModalOpen(false)}
+              onClick={() => setPluginModalOpen(false)}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
             >
               取消
@@ -249,7 +143,7 @@ export const DrawerPage: React.FC = () => {
             <button
               onClick={() => {
                 alert('密码已更新');
-                setIsSecurityModalOpen(false);
+                setPluginModalOpen(false);
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >

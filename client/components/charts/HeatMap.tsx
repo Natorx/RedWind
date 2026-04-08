@@ -8,7 +8,7 @@ interface HeatmapData {
 interface HeatmapProps {
   data: HeatmapData[];
   startDate?: string; // YYYY-MM-DD格式
-  endDate?: string;   // YYYY-MM-DD格式
+  endDate?: string; // YYYY-MM-DD格式
   showLabels?: boolean;
   showTooltip?: boolean;
 }
@@ -38,45 +38,50 @@ const Heatmap: React.FC<HeatmapProps> = ({
   // 处理数据：生成日期范围和dataMap
   const { dateRange, dataMap, maxValue } = useMemo(() => {
     const end = endDate ? new Date(endDate) : new Date();
-    const start = startDate 
-      ? new Date(startDate) 
+    const start = startDate
+      ? new Date(startDate)
       : new Date(end.getFullYear() - 1, end.getMonth(), end.getDate() + 1);
-    
+
     const dates: string[] = [];
     const current = new Date(start);
-    
+
     while (current <= end) {
       dates.push(current.toISOString().split('T')[0]);
       current.setDate(current.getDate() + 1);
     }
-    
+
     // 创建dataMap
     const map = new Map<string, number>();
-    data.forEach(item => {
+    data.forEach((item) => {
       map.set(item.date, item.value);
     });
-    
-    const max = Math.max(...data.map(item => item.value), 1);
-    
-    return { 
-      dateRange: dates, 
-      dataMap: map, 
-      maxValue: max 
+
+    const max = Math.max(...data.map((item) => item.value), 1);
+
+    return {
+      dateRange: dates,
+      dataMap: map,
+      maxValue: max,
     };
   }, [data, startDate, endDate]);
 
   // 获取颜色等级（类似GitHub的4级颜色）
   const getColorLevel = (value: number): string => {
     if (value === 0) return 'bg-gray-100 dark:bg-gray-800';
-    
+
     const level = Math.ceil((value / maxValue) * 4);
-    
+
     switch (level) {
-      case 1: return 'bg-green-200 dark:bg-green-900';
-      case 2: return 'bg-green-300 dark:bg-green-700';
-      case 3: return 'bg-green-400 dark:bg-green-600';
-      case 4: return 'bg-green-500 dark:bg-green-500';
-      default: return 'bg-green-600 dark:bg-green-400';
+      case 1:
+        return 'bg-green-200 dark:bg-green-900';
+      case 2:
+        return 'bg-green-300 dark:bg-green-700';
+      case 3:
+        return 'bg-green-400 dark:bg-green-600';
+      case 4:
+        return 'bg-green-500 dark:bg-green-500';
+      default:
+        return 'bg-green-600 dark:bg-green-400';
     }
   };
 
@@ -91,16 +96,18 @@ const Heatmap: React.FC<HeatmapProps> = ({
       5: [], // 周五
       6: [], // 周六
     };
-    
-    dateRange.forEach(date => {
+
+    dateRange.forEach((date) => {
       const day = new Date(date).getDay();
       const value = dataMap.get(date) || 0;
       weeks[day].push({ date, value });
     });
-    
+
     // 计算最大列数
-    const weekCount = Math.max(...Object.values(weeks).map(arr => arr.length));
-    
+    const weekCount = Math.max(
+      ...Object.values(weeks).map((arr) => arr.length),
+    );
+
     return { weeks, weekCount };
   }, [dateRange, dataMap]);
 
@@ -111,25 +118,29 @@ const Heatmap: React.FC<HeatmapProps> = ({
   const monthLabels = useMemo(() => {
     const months: { month: number; week: number }[] = [];
     let currentMonth = -1;
-    
+
     // 找到每个月第一天的位置
     dateRange.forEach((date, index) => {
       const month = new Date(date).getMonth();
       const weekIndex = Math.floor(index / 7);
-      
+
       if (month !== currentMonth) {
         months.push({ month, week: weekIndex });
         currentMonth = month;
       }
     });
-    
+
     return months;
   }, [dateRange]);
 
   // 处理鼠标事件
-  const handleMouseEnter = (e: React.MouseEvent, date: string, value: number) => {
+  const handleMouseEnter = (
+    e: React.MouseEvent,
+    date: string,
+    value: number,
+  ) => {
     if (!showTooltip) return;
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltip({
       visible: true,
@@ -141,17 +152,17 @@ const Heatmap: React.FC<HeatmapProps> = ({
   };
 
   const handleMouseLeave = () => {
-    setTooltip(prev => ({ ...prev, visible: false }));
+    setTooltip((prev) => ({ ...prev, visible: false }));
   };
 
   // 格式化日期显示
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
-    const options: Intl.DateTimeFormatOptions = { 
-      year: 'numeric', 
-      month: 'long', 
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
-      weekday: 'long'
+      weekday: 'long',
     };
     return date.toLocaleDateString('zh-CN', options);
   };
@@ -164,7 +175,7 @@ const Heatmap: React.FC<HeatmapProps> = ({
         {showLabels && (
           <div className="flex flex-col mr-2 pt-6">
             {dayLabels.map((label, index) => (
-              <div 
+              <div
                 key={index}
                 className="text-xs text-gray-500 dark:text-gray-400 h-4 mb-1 text-right"
                 style={{ height: '16px', lineHeight: '16px' }}
@@ -174,7 +185,7 @@ const Heatmap: React.FC<HeatmapProps> = ({
             ))}
           </div>
         )}
-        
+
         {/* 热力格子 */}
         <div className="flex flex-col">
           {/* 月份标签 */}
@@ -184,9 +195,9 @@ const Heatmap: React.FC<HeatmapProps> = ({
                 <div
                   key={index}
                   className="text-xs text-gray-500 dark:text-gray-400"
-                  style={{ 
+                  style={{
                     marginLeft: week === 0 ? '0' : `40px`,
-                    width: '44px'
+                    width: '44px',
                   }}
                 >
                   {month + 1}月
@@ -194,7 +205,7 @@ const Heatmap: React.FC<HeatmapProps> = ({
               ))}
             </div>
           )}
-          
+
           {/* 热力格子网格 */}
           <div className="flex">
             {Array.from({ length: weekCount }).map((_, weekIndex) => (
@@ -203,22 +214,24 @@ const Heatmap: React.FC<HeatmapProps> = ({
                   const cellData = weeks[dayIndex][weekIndex];
                   if (!cellData) {
                     return (
-                      <div 
+                      <div
                         key={`${weekIndex}-${dayIndex}`}
                         className="w-4 h-4 rounded-sm mb-1 opacity-0"
                       />
                     );
                   }
-                  
+
                   const { date, value } = cellData;
-                  
+
                   return (
                     <div
                       key={date}
                       className={`w-4 h-4 rounded-sm mb-1 cursor-pointer transition-colors duration-200 ${getColorLevel(value)}`}
                       onMouseEnter={(e) => handleMouseEnter(e, date, value)}
                       onMouseLeave={handleMouseLeave}
-                      title={showTooltip ? undefined : `${date}: ${value}次提交`}
+                      title={
+                        showTooltip ? undefined : `${date}: ${value}次提交`
+                      }
                     />
                   );
                 })}
@@ -226,7 +239,7 @@ const Heatmap: React.FC<HeatmapProps> = ({
             ))}
           </div>
         </div>
-        
+
         {/* 图例 */}
         <div className="ml-6 flex flex-col justify-center">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -245,7 +258,7 @@ const Heatmap: React.FC<HeatmapProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* 工具提示 */}
       {showTooltip && tooltip.visible && (
         <div

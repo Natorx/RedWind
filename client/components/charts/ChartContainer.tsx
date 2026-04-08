@@ -12,7 +12,7 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
   title,
   description,
   children,
-  className = ''
+  className = '',
 }) => {
   return (
     <div className={`bg-white rounded-xl shadow-lg p-6 ${className}`}>
@@ -22,9 +22,7 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
           <p className="text-sm text-gray-500 mt-1">{description}</p>
         )}
       </div>
-      <div className="relative">
-        {children}
-      </div>
+      <div className="relative">{children}</div>
     </div>
   );
 };

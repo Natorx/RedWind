@@ -1,7 +1,7 @@
-import { useActiveItem } from '../../context/activeItemContext';
-import { sidebarItems } from '../../config/sidebar.config.ts';
+import { useActiveItem } from '../context/activeItemContext.tsx';
+import { sidebarItems } from '../config/sidebar.config.ts';
 import avatar from '../../mock/pics/avatar.jpg';
-import { useSettingDrawer } from '../../context/drawerSettingContext';
+import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
 
 const Sidebar: React.FC = () => {
   const { activeItem, setActiveItem } = useActiveItem();

@@ -1,6 +1,6 @@
 import './styles/main.css';
 import { useActiveItem } from './context/activeItemContext'; // 新增导入
-import Sidebar from './layout/sidebar/sidebar';
+import Sidebar from './layout/sidebar';
 import contentMap from './config/contentMap.config';
 import { DrawerPage } from './layout/drawer';
 

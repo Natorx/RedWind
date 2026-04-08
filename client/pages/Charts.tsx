@@ -1,6 +1,6 @@
-import RadarChart from '../components/RadarChart';
-import ScatterChart from '../components/ScatterChart';
-import DualAxisLineChart from '../components/LineChart';
+import RadarChart from '../components/charts/RadarChart';
+import ScatterChart from '../components/charts/ScatterChart';
+import DualAxisLineChart from '../components/charts/LineChart';
 
 import { dualAxisData } from '../mock/dualAxis.mock';
 import { dimensions, radarData } from '../mock/radar.mock';
@@ -8,9 +8,9 @@ import { scatterData } from '../mock/scatter.mock';
 import { pieData } from '../mock/pie.mock';
 import { barData } from '../mock/bar.mock';
 import { areaData } from '../mock/area.mock';
-import PieChart from '../components/PieChart';
-import BarChart from '../components/BarChart';
-import AreaChart from '../components/AreaChart';
+import PieChart from '../components/charts/PieChart';
+import BarChart from '../components/charts/BarChart';
+import AreaChart from '../components/charts/AreaChart';
 
 const Charts: React.FC = () => {
   return (

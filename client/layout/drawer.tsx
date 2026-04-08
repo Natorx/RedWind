@@ -5,13 +5,11 @@ import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext';
 
 export const DrawerPage: React.FC = () => {
-  // 使用全局状态，而不是本地状态
   const { isSettingsOpen, setIsSettingsOpen } = useSettingDrawer();
-  
   return (
     <Drawer
-      isOpen={isSettingsOpen} // 使用全局状态
-      onClose={() => setIsSettingsOpen(false)} // 使用全局状态更新函数
+      isOpen={isSettingsOpen}
+      onClose={() => setIsSettingsOpen(false)}
       title="用户设置"
       position="right"
       width="w-80"

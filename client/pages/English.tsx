@@ -10,7 +10,6 @@ import {
 import {
   OFFICIAL_WORD_SET_1,
   OFFICIAL_WORD_SET_2,
-  getWordMeaning,
 } from '../config/typig.config';
 
 const TypingPractice: React.FC = () => {
@@ -26,6 +25,7 @@ const TypingPractice: React.FC = () => {
   const [completedWords, setCompletedWords] = useState<string[]>([]);
   const [remainingWords, setRemainingWords] = useState<string[]>([]);
   const [isActive, setIsActive] = useState<boolean>(false);
+  const [meaningsMap, setMeaningsMap] = useState<Record<string, string>>({});
   const [stats, setStats] = useState<TypingStats>({
     wpm: 0,
     accuracy: 100,
@@ -39,6 +39,9 @@ const TypingPractice: React.FC = () => {
   const [showCustomModal, setShowCustomModal] = useState<boolean>(false);
   const [newSetName, setNewSetName] = useState<string>('');
   const [newSetWords, setNewSetWords] = useState<string>('');
+  const [wordMeaningPairs, setWordMeaningPairs] = useState<Array<{word: string, meaning: string}>>([
+    { word: '', meaning: '' }
+  ]);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -55,6 +58,37 @@ const TypingPractice: React.FC = () => {
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 3000);
+  };
+
+  // 加载所有释义
+  const loadAllMeanings = async () => {
+    try {
+      console.log('Loading meanings from database...');
+      const meaningsJson = await invoke<string>('get_all_meanings');
+      console.log('Raw JSON from backend:', meaningsJson);
+      
+      const meanings = JSON.parse(meaningsJson);
+      console.log('Parsed meanings:', meanings);
+      console.log('Number of meanings:', Object.keys(meanings).length);
+      
+      setMeaningsMap(meanings);
+      
+      // 测试获取某个单词的释义
+      if (meanings['apple']) {
+        console.log('Test apple meaning:', meanings['apple']);
+      }
+    } catch (error) {
+      console.error('加载释义失败:', error);
+      showMessage('error', '加载释义失败: ' + error);
+    }
+  };
+
+  // 获取单词释义（从数据库加载）
+  const getWordMeaningFromDb = (word: string): string => {
+    const lowerWord = word.toLowerCase();
+    const meaning = meaningsMap[lowerWord];
+    console.log(`Getting meaning for "${word}":`, meaning);
+    return meaning || '暂无释义';
   };
 
   // 加载自定义词汇集（从数据库）
@@ -175,10 +209,12 @@ const TypingPractice: React.FC = () => {
         // 设置第一个单词和中文释义
         const firstWord = shuffledWords[0];
         setCurrentWord(firstWord);
-        setCurrentMeaning(getWordMeaning(firstWord));
+        const meaning = getWordMeaningFromDb(firstWord);
+        console.log(`Initializing with word: ${firstWord}, meaning: ${meaning}`);
+        setCurrentMeaning(meaning);
       }
     },
-    [wordSets],
+    [wordSets, meaningsMap],
   );
 
   // 获取下一个单词
@@ -271,7 +307,9 @@ const TypingPractice: React.FC = () => {
 
       if (nextWord) {
         setCurrentWord(nextWord);
-        setCurrentMeaning(getWordMeaning(nextWord));
+        const meaning = getWordMeaningFromDb(nextWord);
+        console.log(`Next word: ${nextWord}, meaning: ${meaning}`);
+        setCurrentMeaning(meaning);
         setUserInput('');
       } else {
         // 所有单词完成，清空输入
@@ -280,30 +318,72 @@ const TypingPractice: React.FC = () => {
     }
   };
 
-  // 添加自定义词汇集
+  // 添加单词-释义对
+  const addWordMeaningPair = () => {
+    setWordMeaningPairs([...wordMeaningPairs, { word: '', meaning: '' }]);
+  };
+
+  // 删除单词-释义对
+  const removeWordMeaningPair = (index: number) => {
+    const newPairs = wordMeaningPairs.filter((_, i) => i !== index);
+    setWordMeaningPairs(newPairs);
+  };
+
+  // 更新单词
+  const updateWord = (index: number, word: string) => {
+    const newPairs = [...wordMeaningPairs];
+    newPairs[index].word = word.toLowerCase().trim();
+    setWordMeaningPairs(newPairs);
+  };
+
+  // 更新释义
+  const updateMeaning = (index: number, meaning: string) => {
+    const newPairs = [...wordMeaningPairs];
+    newPairs[index].meaning = meaning.trim();
+    setWordMeaningPairs(newPairs);
+  };
+
+  // 添加自定义词汇集（支持自定义释义）
   const handleAddCustomSet = async () => {
     if (!newSetName.trim()) {
       showMessage('error', '请输入词汇集名称');
       return;
     }
 
-    const wordsArray = newSetWords
-      .split(/[,\n]/)
-      .map((w) => w.trim().toLowerCase())
-      .filter((w) => w.length > 0);
-
-    if (wordsArray.length === 0) {
+    // 过滤掉空单词
+    const validPairs = wordMeaningPairs.filter(pair => pair.word.trim() !== '');
+    
+    if (validPairs.length === 0) {
       showMessage('error', '至少添加一个单词');
       return;
     }
 
     try {
+      // 提取单词列表
+      const wordsArray = validPairs.map(pair => pair.word);
+      
+      // 保存词汇集
       const newSet = await saveCustomWordSet(newSetName, wordsArray);
       setWordSets((prev) => [...prev, newSet]);
+      
+      // 批量保存单词释义到字典表
+      const meaningsToUpdate: Record<string, string> = {};
+      validPairs.forEach(pair => {
+        meaningsToUpdate[pair.word] = pair.meaning || '暂无释义';
+      });
+      
+      // 调用批量更新释义的接口
+      await invoke('batch_update_meanings', {
+        meanings: JSON.stringify(meaningsToUpdate)
+      });
+      
+      // 重新加载释义
+      await loadAllMeanings();
+      
       setShowCustomModal(false);
       setNewSetName('');
-      setNewSetWords('');
-      showMessage('success', '词汇集添加成功！');
+      setWordMeaningPairs([{ word: '', meaning: '' }]);
+      showMessage('success', `词汇集"${newSetName}"添加成功！已添加${validPairs.length}个单词及释义。`);
     } catch (error) {
       showMessage('error', '添加失败: ' + error);
     }
@@ -313,6 +393,7 @@ const TypingPractice: React.FC = () => {
   useEffect(() => {
     const initialize = async () => {
       await loadCustomWordSets();
+      await loadAllMeanings();
       setIsLoading(false);
     };
     initialize();
@@ -320,11 +401,11 @@ const TypingPractice: React.FC = () => {
 
   // 当前词汇集变化时重新初始化
   useEffect(() => {
-    if (!isLoading && currentWordSet && currentSetId !== -2) {
+    if (!isLoading && currentWordSet && currentSetId !== -2 && Object.keys(meaningsMap).length > 0) {
       initializeWordSet(currentSetId);
       inputRef.current?.focus();
     }
-  }, [currentSetId, isLoading, initializeWordSet, currentWordSet]);
+  }, [currentSetId, isLoading, initializeWordSet, currentWordSet, meaningsMap]);
 
   // 高亮显示输入对比
   const renderWordWithHighlight = () => {
@@ -456,23 +537,20 @@ const TypingPractice: React.FC = () => {
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 mb-8 shadow-md border border-gray-200">
           {/* 当前单词显示 */}
           <div className="text-center mb-8 flex">
-            <div className="w-60%">
+            <div className="w-3/5">
               <div className="text-gray-600 text-sm mb-2">
                 <span>当前单词</span>
               </div>
               <div className="text-6xl font-bold tracking-wider mb-4">
                 {renderWordWithHighlight()}
               </div>
-              <span className="text-gray-500 text-sm mt-2 absolute right-10%">
-                  
-                </span>
             </div>
             {/* 中文释义 */}
-            <div className="w-40%">
+            <div className="w-2/5">
               {currentMeaning && (
                 <div className="mt-2 mb-2">
                   <div className="text-gray-500 text-sm mb-1">中文释义</div>
-                  <div className="text-xl text-cyan">{currentMeaning}</div>
+                  <div className="text-xl text-cyan-600 font-semibold">{currentMeaning}</div>
                 </div>
               )}
             </div>
@@ -538,7 +616,7 @@ const TypingPractice: React.FC = () => {
                             {item.word}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {getWordMeaning(item.word)}
+                            {getWordMeaningFromDb(item.word)}
                           </div>
                         </div>
                       </div>
@@ -562,10 +640,10 @@ const TypingPractice: React.FC = () => {
           </button>
         </div>
 
-        {/* 自定义词汇集模态框 */}
+        {/* 自定义词汇集模态框 - 新版支持输入单词和释义 */}
         {showCustomModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-4">创建自定义词汇集</h2>
 
@@ -584,18 +662,46 @@ const TypingPractice: React.FC = () => {
 
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    单词列表{' '}
-                    <span className="text-xs text-gray-500">
-                      (每行一个或用逗号分隔)
-                    </span>
+                    单词和释义列表
                   </label>
-                  <textarea
-                    value={newSetWords}
-                    onChange={(e) => setNewSetWords(e.target.value)}
-                    placeholder="apple&#10;beautiful&#10;computer&#10;或: apple, beautiful, computer"
-                    rows={10}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 font-mono"
-                  />
+                  <div className="space-y-3">
+                    {wordMeaningPairs.map((pair, index) => (
+                      <div key={index} className="flex gap-3 items-start">
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            value={pair.word}
+                            onChange={(e) => updateWord(index, e.target.value)}
+                            placeholder="英文单词"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        <div className="flex-[2]">
+                          <input
+                            type="text"
+                            value={pair.meaning}
+                            onChange={(e) => updateMeaning(index, e.target.value)}
+                            placeholder="中文释义"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        {wordMeaningPairs.length > 1 && (
+                          <button
+                            onClick={() => removeWordMeaningPair(index)}
+                            className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                          >
+                            删除
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={addWordMeaningPair}
+                    className="mt-3 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                  >
+                    + 添加单词
+                  </button>
                 </div>
 
                 <div className="flex gap-3">
@@ -609,12 +715,18 @@ const TypingPractice: React.FC = () => {
                     onClick={() => {
                       setShowCustomModal(false);
                       setNewSetName('');
-                      setNewSetWords('');
+                      setWordMeaningPairs([{ word: '', meaning: '' }]);
                     }}
                     className="flex-1 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                   >
                     取消
                   </button>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    💡 提示：每个单词都会保存到字典中，以后创建其他词汇集时可以直接使用。
+                  </p>
                 </div>
               </div>
             </div>

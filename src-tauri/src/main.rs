@@ -16,7 +16,11 @@ use sqlite::{init_db, DbState, get_sidebar_items, update_sidebar_item, add_sideb
 // 英语练习模块
 #[path = "mods/typing.rs"]
 mod typing;
-use typing::{get_custom_word_sets, save_custom_word_set, delete_custom_word_set, update_custom_word_set, get_custom_word_set};
+use typing::{
+    get_custom_word_sets, save_custom_word_set, delete_custom_word_set, 
+    update_custom_word_set, get_custom_word_set, get_word_meaning, 
+    get_all_meanings, update_word_meaning, batch_update_meanings, delete_word_meaning
+};
 
 // 硬件信息模块
 use std::sync::Mutex;
@@ -49,6 +53,8 @@ fn main() {
             // 使用内存数据库作为后备
             let conn = Connection::open_in_memory().unwrap();
             let _ = typing::init_typing_table(&conn);
+            let _ = typing::init_dictionary_table(&conn);
+            let _ = typing::init_default_dictionary(&conn);
             typing::DbState::new(conn)
         }
     };
@@ -63,21 +69,32 @@ fn main() {
         .manage(db_state)
         .manage(typing_db_state)  // 添加 typing_db_state 到管理状态
         .invoke_handler(tauri::generate_handler![
+            // 命令相关
             execute_shell,
             get_current_dir,
             change_dir,
+            // 硬件信息
             get_hardware_info,
+            // 文件转换
             convert_file,
+            // 侧边栏相关
             get_sidebar_items,
             update_sidebar_item,
             add_sidebar_item,
             delete_sidebar_item,
             update_sidebar_items_order,
+            // 自定义词汇集相关
             get_custom_word_set,
             get_custom_word_sets,
             save_custom_word_set,
             delete_custom_word_set,
-            update_custom_word_set
+            update_custom_word_set,
+            // 字典相关（新增）
+            get_word_meaning,
+            get_all_meanings,
+            update_word_meaning,
+            batch_update_meanings,
+            delete_word_meaning,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

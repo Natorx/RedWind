@@ -1,5 +1,5 @@
 // typing.config.ts
-import { WordSet, WordWithMeaning } from "../interface/typing.interface";
+import { WordSet } from "../interface/typing.interface";
 
 // 单词及其中文释义
 export const WORDS_WITH_MEANINGS: Record<string, string> = {

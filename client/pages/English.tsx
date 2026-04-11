@@ -10,6 +10,7 @@ import {
 import {
   OFFICIAL_WORD_SET_1,
   OFFICIAL_WORD_SET_2,
+  getWordMeaning,
 } from '../config/typig.config';
 
 const TypingPractice: React.FC = () => {
@@ -20,6 +21,7 @@ const TypingPractice: React.FC = () => {
   ]);
   const [currentSetId, setCurrentSetId] = useState<number>(-2);
   const [currentWord, setCurrentWord] = useState<string>('');
+  const [currentMeaning, setCurrentMeaning] = useState<string>('');
   const [userInput, setUserInput] = useState<string>('');
   const [completedWords, setCompletedWords] = useState<string[]>([]);
   const [remainingWords, setRemainingWords] = useState<string[]>([]);
@@ -169,9 +171,11 @@ const TypingPractice: React.FC = () => {
         const shuffledWords = shuffleArray(selectedSet.words);
         setRemainingWords(shuffledWords.slice(1)); // 剩余单词（除第一个外）
         setCompletedWords([]);
-        
-        // 设置第一个单词
-        setCurrentWord(shuffledWords[0]);
+
+        // 设置第一个单词和中文释义
+        const firstWord = shuffledWords[0];
+        setCurrentWord(firstWord);
+        setCurrentMeaning(getWordMeaning(firstWord));
       }
     },
     [wordSets],
@@ -184,10 +188,10 @@ const TypingPractice: React.FC = () => {
       // 取出下一个单词（从剩余单词中取第一个）
       const nextWord = remainingWords[0];
       // 更新剩余单词（移除第一个）
-      setRemainingWords(prev => prev.slice(1));
+      setRemainingWords((prev) => prev.slice(1));
       return nextWord;
     }
-    
+
     // 没有剩余单词了，完成所有单词
     setIsActive(false);
     if (startTimeRef.current) {
@@ -267,6 +271,7 @@ const TypingPractice: React.FC = () => {
 
       if (nextWord) {
         setCurrentWord(nextWord);
+        setCurrentMeaning(getWordMeaning(nextWord));
         setUserInput('');
       } else {
         // 所有单词完成，清空输入
@@ -450,13 +455,26 @@ const TypingPractice: React.FC = () => {
         {/* 主要游戏区域 */}
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 mb-8 shadow-md border border-gray-200">
           {/* 当前单词显示 */}
-          <div className="text-center mb-8">
-            <div className="text-gray-600 text-sm mb-2">当前单词</div>
-            <div className="text-6xl font-bold tracking-wider mb-4">
-              {renderWordWithHighlight()}
+          <div className="text-center mb-8 flex">
+            <div className="w-60%">
+              <div className="text-gray-600 text-sm mb-2">
+                <span>当前单词</span>
+              </div>
+              <div className="text-6xl font-bold tracking-wider mb-4">
+                {renderWordWithHighlight()}
+              </div>
+              <span className="text-gray-500 text-sm mt-2 absolute right-10%">
+                  
+                </span>
             </div>
-            <div className="text-gray-500 text-sm">
-              长度: {currentWord?.length || 0} 个字符
+            {/* 中文释义 */}
+            <div className="w-40%">
+              {currentMeaning && (
+                <div className="mt-2 mb-2">
+                  <div className="text-gray-500 text-sm mb-1">中文释义</div>
+                  <div className="text-xl text-cyan">{currentMeaning}</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -472,7 +490,7 @@ const TypingPractice: React.FC = () => {
               }
               placeholder={
                 completedWords.length === 0
-                  ? '点击这里开始打字...'
+                  ? `${currentWord?.length || 0} 个字符`
                   : '输入上面的单词...'
               }
               className="w-full px-6 py-4 bg-white border-2 border-gray-300 rounded-xl text-gray-800 text-xl font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-gray-400"
@@ -490,13 +508,7 @@ const TypingPractice: React.FC = () => {
                 🎉 恭喜！你完成了所有单词！ 🎉
               </div>
             ) : (
-              <div>
-                按{' '}
-                <kbd className="px-2 py-1 bg-gray-200 rounded text-sm font-mono">
-                  Enter
-                </kbd>{' '}
-                提交单词 • 不区分大小写 • 先保证准确率！
-              </div>
+              <div></div>
             )}
           </div>
         </div>
@@ -521,9 +533,14 @@ const TypingPractice: React.FC = () => {
                     >
                       <div className="flex items-center space-x-3">
                         <span className="text-green-600">✓</span>
-                        <span className="text-gray-800 font-mono">
-                          {item.word}
-                        </span>
+                        <div>
+                          <div className="text-gray-800 font-mono">
+                            {item.word}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {getWordMeaning(item.word)}
+                          </div>
+                        </div>
                       </div>
                       <span className="text-gray-500 text-sm">
                         {new Date(item.time).toLocaleTimeString()}

@@ -1,9 +1,16 @@
+// typing.interface.ts
 export interface WordSet {
   id: number;
   name: string;
   words: string[];
   isOfficial: boolean;
   createdAt: string;
+}
+
+// 带中文释义的单词类型
+export interface WordWithMeaning {
+  word: string;
+  meaning: string;
 }
 
 // 后端返回的原始数据结构

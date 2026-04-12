@@ -38,7 +38,6 @@ const TypingPractice: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showCustomModal, setShowCustomModal] = useState<boolean>(false);
   const [newSetName, setNewSetName] = useState<string>('');
-  const [newSetWords, setNewSetWords] = useState<string>('');
   const [wordMeaningPairs, setWordMeaningPairs] = useState<Array<{word: string, meaning: string}>>([
     { word: '', meaning: '' }
   ]);

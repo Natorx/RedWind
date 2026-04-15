@@ -1,11 +1,11 @@
 /**src/components/RequestTool.tsx
  * @Author: Fofow
  * @Date: 2026/4/1
- * @Description: 
+ * @Description:
  * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
  */
 import React, { useState } from 'react';
-import request from '../utils/requests';
+import { request } from '../utils/requests';
 
 interface ParamItem {
   key: string;

@@ -18,13 +18,20 @@ request.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 request.interceptors.response.use(
-    (response) => response.data,
-    (error) => {
-        if(error.response?.status === 401) {
-            window.location.href = '/login';
-        }
-        return Promise.reject(error)
+  (response) => response.data,
+  (error) => {
+    if (error.response?.status === 401) {
+      window.location.href = '/login';
     }
-)
+    return Promise.reject(error);
+  },
+);
 
-export default request
+const req_to_server = axios.create({
+  baseURL: 'http://localhost:3000/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+export { request, req_to_server };

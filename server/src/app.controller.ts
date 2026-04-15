@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Get, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { AppService } from './app.service';
+import { VideoInfo } from 'interface/crawler.interface';
 
 export class PrintDto {
   text: string;
@@ -76,5 +77,10 @@ export class AppController {
       service: 'printer-service',
       timestamp: new Date().toISOString(),
     };
+  }
+
+  @Get('bili')
+  async getBiliData():Promise<VideoInfo[]>{
+    return await this.printerService.getBiliVideos();
   }
 }

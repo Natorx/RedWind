@@ -12,6 +12,7 @@ import QRCodeGenerator from '../pages/QRCodeGenerator';
 import Charts from '../pages/Charts';
 import FileFormatConverter from '../pages/Conversion';
 import FuncConfig from '../pages/FuncConfigs';
+import Crawler from '../pages/Crawler';
 const contentMap: Record<string, JSX.Element> = {
   'func-store': <FuncConfig />,
   dashboard: <Dashboard />,
@@ -26,6 +27,7 @@ const contentMap: Record<string, JSX.Element> = {
   recorder: <Recorder />,
   qrcode: <QRCodeGenerator />,
   charts: <Charts />,
+  'web-scraper': <Crawler />,
 };
 export default contentMap;
 
@@ -33,12 +35,6 @@ export default contentMap;
 //   <div className="content-card bg-white rounded-md p-24px shadow-sm mb-24px border-1px border-solid border-#f1f5f9">
 //     <h2>数据分析</h2>
 //     <p className="c-#64748b lh-3">查看详细的分析报告...</p>
-//   </div>
-// ),
-// 'web-scraper': (
-//   <div className="content-card bg-white rounded-md p-24px shadow-sm mb-24px border-1px border-solid border-#f1f5f9">
-//     <h2>网页解构</h2>
-//     <p className="c-#64748b lh-3">提取和分析网页内容...</p>
 //   </div>
 // ),
 // 'encryption': (

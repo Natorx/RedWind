@@ -1,5 +1,5 @@
+import { PrinterService } from './printer.service';
 import { Controller, Post, Body, Get, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import { AppService } from './app.service';
 import { VideoInfo } from 'interface/crawler.interface';
 
 export class PrintDto {
@@ -13,13 +13,12 @@ export class TestConnectionDto {
   port?: number;
 }
 
-@Controller('app')
-export class AppController {
-  private readonly logger = new Logger(AppController.name);
+@Controller('printer')
+export class PrinterController {
+  private readonly logger = new Logger(PrinterController.name);
+  constructor(private readonly printerService: PrinterService) {}
 
-  constructor(private readonly printerService: AppService) {}
-
-  @Post('print')
+    @Post('print')
   async print(@Body() printDto: PrintDto) {
     this.logger.log(`收到打印请求: ${printDto.text?.substring(0, 50)}...`);
     
@@ -77,10 +76,5 @@ export class AppController {
       service: 'printer-service',
       timestamp: new Date().toISOString(),
     };
-  }
-
-  @Get('bili')
-  async getBiliData():Promise<VideoInfo[]>{
-    return await this.printerService.getBiliVideos();
   }
 }

@@ -55,7 +55,7 @@ const Printer: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/app/test?ip=${encodeURIComponent(formData.ip)}&port=${formData.port}`,
+        `${API_BASE_URL}/printer/test?ip=${encodeURIComponent(formData.ip)}&port=${formData.port}`,
         {
           method: 'GET',
           headers: {
@@ -105,7 +105,7 @@ const Printer: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/app/print`, {
+      const response = await fetch(`${API_BASE_URL}/printer/print`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

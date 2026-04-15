@@ -1,132 +1,12 @@
-/* 打印模块和爬虫模块暂时放一起 */
-
-import { Injectable, Logger } from '@nestjs/common';
-import * as net from 'net';
-import * as iconv from 'iconv-lite';
+import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import * as cherrio from 'cheerio';
 import { VideoInfo } from 'interface/crawler.interface';
 import { cleanStatsText } from 'utils/text';
-
-export interface PrintOptions {
-  text: string;
-  ip?: string;
-  port?: number;
-}
-
-export interface PrintResult {
-  success: boolean;
-  message: string;
-  preview?: string;
-  error?: string;
-}
-
+import * as cherrio from 'cheerio';
 @Injectable()
-export class AppService {
-  private readonly logger = new Logger(AppService.name);
-  private readonly DEFAULT_IP = '192.168.101.8';
-  private readonly DEFAULT_PORT = 9100;
-  private readonly TIMEOUT = 3000;
+export class CrawlerService {
 
-  async printGB18030(options: PrintOptions): Promise<PrintResult> {
-    const { text, ip = this.DEFAULT_IP, port = this.DEFAULT_PORT } = options;
-
-    if (!text || text.trim() === '') {
-      return {
-        success: false,
-        message: '请输入要打印的文本内容',
-      };
-    }
-
-    // 将文本转为GB18030
-    const gbBuffer = iconv.encode(text, 'gb18030');
-    const client = new net.Socket();
-
-    return new Promise((resolve) => {
-      // 设置超时
-      client.setTimeout(this.TIMEOUT, () => {
-        client.destroy();
-        this.logger.error(`连接打印机超时 ${ip}:${port}`);
-        resolve({
-          success: false,
-          message: '打印失败',
-          error: '连接超时',
-        });
-      });
-
-      client.connect(port, ip, () => {
-        this.logger.log(`连接打印机成功 ${ip}:${port}`);
-
-        try {
-          // 1. 初始化打印机
-          client.write('\x1B\x40');
-
-          // 2. 设置GB18030编码
-          client.write('\x1B\x74\x17');
-
-          // 3. 发送中文文本
-          client.write(gbBuffer);
-          client.write('\n\n\n');
-
-          // 4. 切纸
-          client.write('\x1D\x56\x41\x00');
-
-          setTimeout(() => {
-            client.end();
-            this.logger.log(`打印任务完成: ${text.substring(0, 50)}...`);
-            resolve({
-              success: true,
-              message: `打印成功: ${text.substring(0, 50)}...`,
-              preview: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
-            });
-          }, 500);
-        } catch (error) {
-          this.logger.error(`打印错误: ${error.message}`);
-          client.destroy();
-          resolve({
-            success: false,
-            message: '打印失败',
-            error: error.message,
-          });
-        }
-      });
-
-      client.on('error', (err) => {
-        this.logger.error(`连接错误: ${err.message}`);
-        resolve({
-          success: false,
-          message: '打印失败',
-          error: `连接失败: ${err.message}`,
-        });
-      });
-    });
-  }
-
-  // 测试打印机连接
-  async testConnection(
-    ip: string = this.DEFAULT_IP,
-    port: number = this.DEFAULT_PORT,
-  ): Promise<boolean> {
-    const client = new net.Socket();
-
-    return new Promise((resolve) => {
-      client.setTimeout(2000, () => {
-        client.destroy();
-        resolve(false);
-      });
-
-      client.connect(port, ip, () => {
-        client.end();
-        resolve(true);
-      });
-
-      client.on('error', () => {
-        resolve(false);
-      });
-    });
-  }
-
-async getBiliVideos(): Promise<VideoInfo[]> {
+    async getBiliVideos(): Promise<VideoInfo[]> {
   try {
     const response = await axios.get('https://www.bilibili.com', {
       headers: {
@@ -223,17 +103,8 @@ async getBiliVideos(): Promise<VideoInfo[]> {
           views: views || '0播放',
           comments: comments || '0评论',
         });
-
-        console.log(`\n视频 ${index + 1}:`);
-        console.log(`  标题: ${title}`);
-        console.log(`  作者: ${author || '未知'}`);
-        console.log(`  播放量: ${views || '0'}`);
-        console.log(`  评论数: ${comments || '0'}`);
-        console.log(`  封面: ${coverUrl}`);
-        console.log(`  链接: ${videoLink}`);
       }
     });
-
     console.log(`\n总共提取到 ${videos.length} 个视频`);
     return videos;
   } catch (error) {
@@ -241,5 +112,4 @@ async getBiliVideos(): Promise<VideoInfo[]> {
     return [];
   }
 }
-
 }

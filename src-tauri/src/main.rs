@@ -11,7 +11,7 @@ use commands::{execute_shell, get_current_dir, change_dir};
 use rusqlite::Connection;
 #[path = "mods/sidebar.rs"]
 mod sidebar;
-use sidebar::{init_db, DbState, get_sidebar_items, update_sidebar_item, add_sidebar_item, delete_sidebar_item, update_sidebar_items_order};
+use sidebar::{ DbState, get_sidebar_items, update_sidebar_item, add_sidebar_item, delete_sidebar_item, update_sidebar_items_order};
 
 // 英语练习模块
 #[path = "mods/typing.rs"]
@@ -34,16 +34,12 @@ use hardinfo::{AppState, get_hardware_info};
 mod conversion;
 use conversion::convert_file;
 
+#[path = "database/init_sidebar.rs"]
+mod db;
+use db::init_db_state;
+
 fn main() {
-    let db_state = match init_db() {
-        Ok(state) => state,
-        Err(e) => {
-            eprintln!("Failed to initialize database: {}", e);
-            DbState {
-                conn: Mutex::new(Connection::open_in_memory().unwrap()),
-            }
-        }
-    };
+    let db_state = db::init_db_state();
 
     let typing_db_state = match typing::init_typing_database() {
         Ok(state) => state,

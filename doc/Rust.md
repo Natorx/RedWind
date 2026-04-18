@@ -5,3 +5,8 @@
 - 编译器自带
 ### tauri
 - ::State 全局状态管理
+
+
+### rusqlite
+使用sqlite的模块：typing.rs和sidebar.rs
+主函数

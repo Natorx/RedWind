@@ -11,6 +11,8 @@ import {
   OFFICIAL_WORD_SET_1,
   OFFICIAL_WORD_SET_2,
 } from '../config/typig.config';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeFile } from '@tauri-apps/plugin-fs';
 
 const TypingPractice: React.FC = () => {
   // 状态管理
@@ -38,9 +40,9 @@ const TypingPractice: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showCustomModal, setShowCustomModal] = useState<boolean>(false);
   const [newSetName, setNewSetName] = useState<string>('');
-  const [wordMeaningPairs, setWordMeaningPairs] = useState<Array<{word: string, meaning: string}>>([
-    { word: '', meaning: '' }
-  ]);
+  const [wordMeaningPairs, setWordMeaningPairs] = useState<
+    Array<{ word: string; meaning: string }>
+  >([{ word: '', meaning: '' }]);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -65,13 +67,13 @@ const TypingPractice: React.FC = () => {
       console.log('Loading meanings from database...');
       const meaningsJson = await invoke<string>('get_all_meanings');
       console.log('Raw JSON from backend:', meaningsJson);
-      
+
       const meanings = JSON.parse(meaningsJson);
       console.log('Parsed meanings:', meanings);
       console.log('Number of meanings:', Object.keys(meanings).length);
-      
+
       setMeaningsMap(meanings);
-      
+
       // 测试获取某个单词的释义
       if (meanings['apple']) {
         console.log('Test apple meaning:', meanings['apple']);
@@ -209,7 +211,9 @@ const TypingPractice: React.FC = () => {
         const firstWord = shuffledWords[0];
         setCurrentWord(firstWord);
         const meaning = getWordMeaningFromDb(firstWord);
-        console.log(`Initializing with word: ${firstWord}, meaning: ${meaning}`);
+        console.log(
+          `Initializing with word: ${firstWord}, meaning: ${meaning}`,
+        );
         setCurrentMeaning(meaning);
       }
     },
@@ -350,8 +354,10 @@ const TypingPractice: React.FC = () => {
     }
 
     // 过滤掉空单词
-    const validPairs = wordMeaningPairs.filter(pair => pair.word.trim() !== '');
-    
+    const validPairs = wordMeaningPairs.filter(
+      (pair) => pair.word.trim() !== '',
+    );
+
     if (validPairs.length === 0) {
       showMessage('error', '至少添加一个单词');
       return;
@@ -359,30 +365,33 @@ const TypingPractice: React.FC = () => {
 
     try {
       // 提取单词列表
-      const wordsArray = validPairs.map(pair => pair.word);
-      
+      const wordsArray = validPairs.map((pair) => pair.word);
+
       // 保存词汇集
       const newSet = await saveCustomWordSet(newSetName, wordsArray);
       setWordSets((prev) => [...prev, newSet]);
-      
+
       // 批量保存单词释义到字典表
       const meaningsToUpdate: Record<string, string> = {};
-      validPairs.forEach(pair => {
+      validPairs.forEach((pair) => {
         meaningsToUpdate[pair.word] = pair.meaning || '暂无释义';
       });
-      
+
       // 调用批量更新释义的接口
       await invoke('batch_update_meanings', {
-        meanings: JSON.stringify(meaningsToUpdate)
+        meanings: JSON.stringify(meaningsToUpdate),
       });
-      
+
       // 重新加载释义
       await loadAllMeanings();
-      
+
       setShowCustomModal(false);
       setNewSetName('');
       setWordMeaningPairs([{ word: '', meaning: '' }]);
-      showMessage('success', `词汇集"${newSetName}"添加成功！已添加${validPairs.length}个单词及释义。`);
+      showMessage(
+        'success',
+        `词汇集"${newSetName}"添加成功！已添加${validPairs.length}个单词及释义。`,
+      );
     } catch (error) {
       showMessage('error', '添加失败: ' + error);
     }
@@ -400,7 +409,12 @@ const TypingPractice: React.FC = () => {
 
   // 当前词汇集变化时重新初始化
   useEffect(() => {
-    if (!isLoading && currentWordSet && currentSetId !== -2 && Object.keys(meaningsMap).length > 0) {
+    if (
+      !isLoading &&
+      currentWordSet &&
+      currentSetId !== -2 &&
+      Object.keys(meaningsMap).length > 0
+    ) {
       initializeWordSet(currentSetId);
       inputRef.current?.focus();
     }
@@ -421,6 +435,46 @@ const TypingPractice: React.FC = () => {
         </span>
       );
     });
+  };
+
+  const exportCurrentWordSet = async () => {
+    if (!currentWordSet) {
+      console.warn('当前没有选中的词汇集');
+      return;
+    }
+
+    try {
+      const exportData = {
+        setName: currentWordSet.name,
+        setId: currentWordSet.id,
+        isOfficial: currentWordSet.isOfficial,
+        totalWords: currentWordSet.words.length,
+        currentWord: currentWord,
+        completedWords: completedWords,
+        remainingWords: remainingWords,
+        allWords: currentWordSet.words,
+        exportTime: new Date().toISOString(),
+      };
+
+      const fileName = `${currentWordSet.name}_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+
+      const filePath = await save({
+        defaultPath: fileName,
+        filters: [{ name: 'JSON文件', extensions: ['json'] }],
+      });
+
+      if (!filePath) return;
+
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const uint8Array = new TextEncoder().encode(jsonString);
+
+      await writeFile(filePath, uint8Array);
+
+      alert(`词汇集已导出至：${filePath}`);
+    } catch (err) {
+      console.error('导出失败:', err);
+      alert('导出失败，请重试');
+    }
   };
 
   if (isLoading) {
@@ -478,10 +532,17 @@ const TypingPractice: React.FC = () => {
                         {set.words.length} 个单词
                       </div>
                     </div>
-                    {set.isOfficial && (
+                    {set.isOfficial ? (
                       <span className="text-xs bg-gray-200 px-2 py-1 rounded">
                         官方
                       </span>
+                    ) : (
+                      <button
+                        onClick={exportCurrentWordSet}
+                        className="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300 transition-colors"
+                      >
+                        导出
+                      </button>
                     )}
                   </div>
                 </button>
@@ -539,7 +600,9 @@ const TypingPractice: React.FC = () => {
               {currentMeaning && (
                 <div className="mt-2 mb-2">
                   <div className="text-gray-500 text-sm mb-1">中文释义</div>
-                  <div className="text-xl text-cyan-600 font-semibold">{currentMeaning}</div>
+                  <div className="text-xl text-cyan-600 font-semibold">
+                    {currentMeaning}
+                  </div>
                 </div>
               )}
             </div>
@@ -669,7 +732,9 @@ const TypingPractice: React.FC = () => {
                           <input
                             type="text"
                             value={pair.meaning}
-                            onChange={(e) => updateMeaning(index, e.target.value)}
+                            onChange={(e) =>
+                              updateMeaning(index, e.target.value)
+                            }
                             placeholder="中文释义"
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                           />
@@ -714,7 +779,8 @@ const TypingPractice: React.FC = () => {
 
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-gray-600">
-                    💡 提示：每个单词都会保存到字典中，以后创建其他词汇集时可以直接使用。
+                    💡
+                    提示：每个单词都会保存到字典中，以后创建其他词汇集时可以直接使用。
                   </p>
                 </div>
               </div>

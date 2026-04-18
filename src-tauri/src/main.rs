@@ -9,9 +9,9 @@ use commands::{execute_shell, get_current_dir, change_dir};
 
 // SQLite and sidebar
 use rusqlite::Connection;
-#[path = "mods/sqlite.rs"]
-mod sqlite;
-use sqlite::{init_db, DbState, get_sidebar_items, update_sidebar_item, add_sidebar_item, delete_sidebar_item, update_sidebar_items_order};
+#[path = "mods/sidebar.rs"]
+mod sidebar;
+use sidebar::{init_db, DbState, get_sidebar_items, update_sidebar_item, add_sidebar_item, delete_sidebar_item, update_sidebar_items_order};
 
 // 英语练习模块
 #[path = "mods/typing.rs"]
@@ -39,7 +39,6 @@ fn main() {
         Ok(state) => state,
         Err(e) => {
             eprintln!("Failed to initialize database: {}", e);
-            // 创建一个空的DbState，但应用可能无法正常工作
             DbState {
                 conn: Mutex::new(Connection::open_in_memory().unwrap()),
             }
@@ -67,7 +66,7 @@ fn main() {
             sys: Mutex::new(System::new_all()),
         })
         .manage(db_state)
-        .manage(typing_db_state)  // 添加 typing_db_state 到管理状态
+        .manage(typing_db_state)
         .invoke_handler(tauri::generate_handler![
             // 命令相关
             execute_shell,

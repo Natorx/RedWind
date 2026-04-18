@@ -35,24 +35,15 @@ mod conversion;
 use conversion::convert_file;
 
 #[path = "database/init_sidebar.rs"]
-mod db;
-use db::init_db_state;
+mod db_sidebar;
+use db_sidebar::init_db_state;
+#[path = "database/init_typing.rs"]
+mod db_typing;
+use db_typing::init_typing_db_state;
 
 fn main() {
-    let db_state = db::init_db_state();
-
-    let typing_db_state = match typing::init_typing_database() {
-        Ok(state) => state,
-        Err(e) => {
-            eprintln!("Failed to initialize typing database: {}", e);
-            // 使用内存数据库作为后备
-            let conn = Connection::open_in_memory().unwrap();
-            let _ = typing::init_typing_table(&conn);
-            let _ = typing::init_dictionary_table(&conn);
-            let _ = typing::init_default_dictionary(&conn);
-            typing::DbState::new(conn)
-        }
-    };
+    let db_state = db_sidebar::init_db_state();
+    let typing_db_state = db_typing::init_typing_db_state();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())

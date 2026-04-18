@@ -434,16 +434,6 @@ const TypingPractice: React.FC = () => {
   return (
     <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* 标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Typing Practice
-          </h1>
-          <p className="text-gray-600">
-            Type the words as fast and accurately as you can!
-          </p>
-        </div>
-
         {/* 消息提示 */}
         {message && (
           <div

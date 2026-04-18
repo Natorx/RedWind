@@ -3,6 +3,7 @@ import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
+import iconSrc from '../assets/icon.png';
 interface SidebarItem {
   id: string;
   label: string;
@@ -14,29 +15,29 @@ interface SidebarItem {
 const Sidebar: React.FC = () => {
   const { activeItem, setActiveItem } = useActiveItem();
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
-  const [ _, setLoading] = useState(true);
+  const [_, setLoading] = useState(true);
   const { setIsSettingsOpen } = useSettingDrawer();
-    // 加载本地配置
-    const loadLocalItems = async () => {
-      try {
-        const sidebarItems = await invoke<SidebarItem[]>('get_sidebar_items');
-        setSidebarItems(sidebarItems);
-      } catch (error) {
-        console.error('加载本地配置失败:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    useEffect(() => {
-      loadLocalItems();
-    }, []);
+  // 加载本地配置
+  const loadLocalItems = async () => {
+    try {
+      const sidebarItems = await invoke<SidebarItem[]>('get_sidebar_items');
+      setSidebarItems(sidebarItems);
+    } catch (error) {
+      console.error('加载本地配置失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    loadLocalItems();
+  }, []);
   return (
     <aside className="sidebar w-240px bg-#ffffff border-r-1px border-r-solid border-r-#e2e8f0 flex flex-col shadow-sm">
-      <div className="sidebar-header py-24px px-20px border-b-1px border-b-solid border-b-#f1f5f9">
-        <h2 className="logo text-cyan font-700 font-size-20px mb-1">
-          Wind Project
+      <div className="sidebar-header flex items-center py-24px px-20px border-b-1px border-b-solid border-b-#f1f5f9">
+        <img className="w-10 h-10" src={iconSrc} alt="" />
+        <h2 className="logo text-red-500 font-700 font-size-20px mb-1">
+          Red Wind
         </h2>
-        <p className="logo-subtitle font-size-12px c-#64748b">个人PC助手</p>
       </div>
 
       {/* 列表 */}

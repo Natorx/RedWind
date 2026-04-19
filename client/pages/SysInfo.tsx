@@ -132,10 +132,10 @@ const SysInfo: React.FC = () => {
       </div>
 
       {/* 网格布局 - 紧凑卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         
         {/* 系统信息 */}
-        <div className="bg-white rounded-lg shadow-sm p-10 border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
             <span>💻</span> 系统
           </h3>
@@ -162,7 +162,7 @@ const SysInfo: React.FC = () => {
         </div>
 
         {/* CPU 信息 */}
-        <div className="bg-white rounded-lg shadow-sm p-10 border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
             <span>🖥️</span> CPU
           </h3>
@@ -191,7 +191,7 @@ const SysInfo: React.FC = () => {
         </div>
 
         {/* 内存信息 */}
-        <div className="bg-white rounded-lg shadow-sm p-10 border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
             <span>💾</span> 内存
           </h3>
@@ -221,7 +221,7 @@ const SysInfo: React.FC = () => {
 
         {/* Swap 信息 */}
         {info.swap_total > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-10 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
               <span>🔄</span> Swap
             </h3>
@@ -252,7 +252,7 @@ const SysInfo: React.FC = () => {
 
         {/* 磁盘信息 - 紧凑显示 */}
         {info.disks.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-10 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
               <span>💿</span> 磁盘
             </h3>
@@ -287,7 +287,7 @@ const SysInfo: React.FC = () => {
 
         {/* 网络信息 - 紧凑显示 */}
         {info.networks.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-10 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
               <span>🌐</span> 网络
             </h3>
@@ -310,7 +310,7 @@ const SysInfo: React.FC = () => {
 
         {/* 温度信息 - 紧凑显示 */}
         {info.components.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-10 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
               <span>🌡️</span> 温度
             </h3>

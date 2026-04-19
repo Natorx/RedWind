@@ -19,6 +19,8 @@ use mods::typing::{
     update_custom_word_set, get_custom_word_set, get_word_meaning, 
     get_all_meanings, update_word_meaning, batch_update_meanings, delete_word_meaning
 };
+// Node子进程模块
+use mods::node_server::{ ServerState,start_server,stop_server,get_server_status};
 
 mod database;
 use database::init_sidebar::init_db_state;
@@ -35,6 +37,7 @@ fn main() {
         .manage(AppState {
             sys: Mutex::new(System::new_all()),
         })
+        .manage(ServerState::default())
         .manage(db_state)
         .manage(typing_db_state)
         .invoke_handler(tauri::generate_handler![
@@ -64,6 +67,10 @@ fn main() {
             update_word_meaning,
             batch_update_meanings,
             delete_word_meaning,
+            // Node子进程
+            get_server_status,
+            start_server,
+            stop_server
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

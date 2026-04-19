@@ -13,6 +13,7 @@ import Charts from '../pages/Charts';
 import FileFormatConverter from '../pages/Conversion';
 import FuncConfig from '../pages/FuncConfigs';
 import Crawler from '../pages/Crawler';
+import ServerControl from '../pages/Server';
 const contentMap: Record<string, JSX.Element> = {
   'func-store': <FuncConfig />,
   dashboard: <Dashboard />,
@@ -28,6 +29,7 @@ const contentMap: Record<string, JSX.Element> = {
   qrcode: <QRCodeGenerator />,
   charts: <Charts />,
   'web-scraper': <Crawler />,
+  'node-server': <ServerControl/>
 };
 export default contentMap;
 

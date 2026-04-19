@@ -189,5 +189,12 @@ export const sidebarItems: SidebarItem[] = [
     order: 29,
     source: 'server' as const,
   },
+  {
+    id: 'node-server',
+    label: 'Node子进程',
+    icon: '🟢',
+    order: 30,
+    source: 'local' as const,
+  }
 ].sort((a, b) => a.order - b.order);
 export default sidebarItems;

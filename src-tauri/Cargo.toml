@@ -1,9 +1,9 @@
 [package]
-authors = ["you"]
-description = "A Tauri App"
+authors = ["fofow"]
+description = "Red wind tool library"
 edition = "2021"
-name = "wind-project"
-version = "0.1.4"
+name = "red-wind"
+version = "0.2.0"
 
 [[bin]]
 name = "wind-project"

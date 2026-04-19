@@ -1,6 +1,6 @@
 // src/database/init_typing.rs
-use crate::typing;  // 直接使用 crate::typing
-use crate::typing::DbState as TypingDbState;
+use crate::mods::typing;
+use crate::mods::typing::DbState as TypingDbState;
 use rusqlite::Connection;
 
 pub fn init_typing_db_state() -> TypingDbState {

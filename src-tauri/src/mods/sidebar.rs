@@ -17,46 +17,6 @@ pub struct DbState {
     pub conn: Mutex<Connection>,
 }
 
-pub fn init_db() -> Result<DbState> {
-    let mut db_path = std::env::temp_dir();
-    println!("数据库路径: {}", db_path.display());
-    db_path.push("red-wind-project.db");
-    let conn = Connection::open(db_path)?;
-    
-    // 创建表
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS sidebar_items (
-            id TEXT PRIMARY KEY,
-            label TEXT NOT NULL,
-            icon TEXT NOT NULL,
-            order_num INTEGER NOT NULL,
-            source TEXT NOT NULL
-        )",
-        [],
-    )?;
-    
-    // 检查并插入默认数据
-    let count: i32 = conn.query_row("SELECT COUNT(*) FROM sidebar_items", [], |row| row.get(0))?;
-    
-    if count == 0 {
-        let default_items = [
-            ("func-store", "功能配置", "", 0, "local"),
-            ("dashboard", "仪表盘", "📊", 1, "server"),
-        ];
-        
-        for (id, label, icon, order, source) in default_items {
-            conn.execute(
-                "INSERT INTO sidebar_items (id, label, icon, order_num, source) VALUES (?, ?, ?, ?, ?)",
-                params![id, label, icon, order, source],
-            )?;
-        }
-    }
-    
-    Ok(DbState {
-        conn: Mutex::new(conn),
-    })
-}
-
 #[tauri::command]
 pub fn get_sidebar_items(db_state: State<DbState>) -> Result<Vec<SidebarItem>, String> {
     let conn = db_state.conn.lock().map_err(|e| e.to_string())?;

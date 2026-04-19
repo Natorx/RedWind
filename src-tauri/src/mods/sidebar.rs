@@ -1,4 +1,5 @@
-// src-tauri/src/mods/sqlite.rs
+/* src-tauri/src/mods/sqlite.rs
+description:增删改查逻辑*/ 
 use rusqlite::{Connection, Result, params};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;

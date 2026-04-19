@@ -10,7 +10,7 @@ use sysinfo::System;
 use mods::hardinfo::{AppState, get_hardware_info};
 // 文件转换模块
 use mods::conversion::convert_file;
-// SQLite and sidebar
+// 侧栏模块
 use rusqlite::Connection;
 use mods::sidebar::{ DbState, get_sidebar_items, update_sidebar_item, add_sidebar_item, delete_sidebar_item, update_sidebar_items_order};
 // 英语练习模块

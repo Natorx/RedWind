@@ -40,7 +40,7 @@ export const sidebarItems: SidebarItem[] = [
     label: '本地打印',
     icon: '📁',
     order: 5,
-    source: 'local' as const,
+    source: 'server' as const,
   },
   {
     id: 'drill-ground',

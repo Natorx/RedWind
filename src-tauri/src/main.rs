@@ -3,24 +3,27 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod mods;
-use mods::commands::{execute_shell, get_current_dir, change_dir};
+use mods::commands::{change_dir, execute_shell, get_current_dir};
 // 硬件信息模块
+use mods::hardinfo::{get_hardware_info, AppState};
 use std::sync::Mutex;
 use sysinfo::System;
-use mods::hardinfo::{AppState, get_hardware_info};
 // 文件转换模块
 use mods::conversion::convert_file;
 // 侧栏模块
+use mods::sidebar::{
+    add_sidebar_item, delete_sidebar_item, get_sidebar_items, update_sidebar_item,
+    update_sidebar_items_order, DbState,
+};
 use rusqlite::Connection;
-use mods::sidebar::{ DbState, get_sidebar_items, update_sidebar_item, add_sidebar_item, delete_sidebar_item, update_sidebar_items_order};
 // 英语练习模块
 use mods::typing::{
-    get_custom_word_sets, save_custom_word_set, delete_custom_word_set, 
-    update_custom_word_set, get_custom_word_set, get_word_meaning, 
-    get_all_meanings, update_word_meaning, batch_update_meanings, delete_word_meaning
+    batch_update_meanings, delete_custom_word_set, delete_word_meaning, get_all_meanings,
+    get_custom_word_set, get_custom_word_sets, get_word_meaning, save_custom_word_set,
+    update_custom_word_set, update_word_meaning,
 };
 // Node子进程模块
-use mods::node_server::{ ServerState,start_server,stop_server,get_server_status};
+use mods::node_server::{get_server_status, start_server, stop_server, ServerState};
 
 mod database;
 use database::init_sidebar::init_db_state;

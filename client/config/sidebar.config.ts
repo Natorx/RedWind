@@ -51,7 +51,7 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     id: 'process-manager',
-    label: '进程调度查看',
+    label: '系统信息',
     icon: '📊',
     order: 7,
     source: 'local' as const,

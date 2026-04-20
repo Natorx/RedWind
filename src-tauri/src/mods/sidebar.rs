@@ -1,6 +1,6 @@
 /* src-tauri/src/mods/sqlite.rs
-description:增删改查逻辑*/ 
-use rusqlite::{Connection, Result, params};
+description:增删改查逻辑*/
+use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use tauri::State;
@@ -21,23 +21,25 @@ pub struct DbState {
 #[tauri::command]
 pub fn get_sidebar_items(db_state: State<DbState>) -> Result<Vec<SidebarItem>, String> {
     let conn = db_state.conn.lock().map_err(|e| e.to_string())?;
-    
-    let mut stmt = conn.prepare("SELECT id, label, icon, order_num, source FROM sidebar_items ORDER BY order_num")
+
+    let mut stmt = conn
+        .prepare("SELECT id, label, icon, order_num, source FROM sidebar_items ORDER BY order_num")
         .map_err(|e| e.to_string())?;
-    
-    let items = stmt.query_map([], |row| {
-        Ok(SidebarItem {
-            id: row.get(0)?,
-            label: row.get(1)?,
-            icon: row.get(2)?,
-            order: row.get(3)?,
-            source: row.get(4)?,
+
+    let items = stmt
+        .query_map([], |row| {
+            Ok(SidebarItem {
+                id: row.get(0)?,
+                label: row.get(1)?,
+                icon: row.get(2)?,
+                order: row.get(3)?,
+                source: row.get(4)?,
+            })
         })
-    })
-    .map_err(|e| e.to_string())?
-    .collect::<Result<Vec<_>, _>>()
-    .map_err(|e| e.to_string())?;
-    
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
     Ok(items)
 }
 
@@ -51,7 +53,7 @@ pub fn update_sidebar_item(
     source: Option<String>,
 ) -> Result<bool, String> {
     let mut conn = db_state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     // 构建动态更新语句
     let mut updates = Vec::new();
     let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
@@ -87,12 +89,10 @@ pub fn update_sidebar_item(
         updates.join(", ")
     );
 
-    let rusqlite_params: Vec<&dyn rusqlite::ToSql> = params
-        .iter()
-        .map(|p| &**p)
-        .collect();
+    let rusqlite_params: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| &**p).collect();
 
-    let affected_rows = conn.execute(&update_query, rusqlite_params.as_slice())
+    let affected_rows = conn
+        .execute(&update_query, rusqlite_params.as_slice())
         .map_err(|e| e.to_string())?;
 
     Ok(affected_rows > 0)
@@ -108,26 +108,24 @@ pub fn add_sidebar_item(
     source: String,
 ) -> Result<bool, String> {
     let mut conn = db_state.conn.lock().map_err(|e| e.to_string())?;
-    
-    let result = conn.execute(
-        "INSERT INTO sidebar_items (id, label, icon, order_num, source) VALUES (?, ?, ?, ?, ?)",
-        params![id, label, icon, order, source],
-    ).map_err(|e| e.to_string())?;
+
+    let result = conn
+        .execute(
+            "INSERT INTO sidebar_items (id, label, icon, order_num, source) VALUES (?, ?, ?, ?, ?)",
+            params![id, label, icon, order, source],
+        )
+        .map_err(|e| e.to_string())?;
 
     Ok(result > 0)
 }
 
 #[tauri::command]
-pub fn delete_sidebar_item(
-    db_state: State<DbState>,
-    id: String,
-) -> Result<bool, String> {
+pub fn delete_sidebar_item(db_state: State<DbState>, id: String) -> Result<bool, String> {
     let mut conn = db_state.conn.lock().map_err(|e| e.to_string())?;
-    
-    let result = conn.execute(
-        "DELETE FROM sidebar_items WHERE id = ?",
-        params![id],
-    ).map_err(|e| e.to_string())?;
+
+    let result = conn
+        .execute("DELETE FROM sidebar_items WHERE id = ?", params![id])
+        .map_err(|e| e.to_string())?;
 
     Ok(result > 0)
 }
@@ -138,14 +136,15 @@ pub fn update_sidebar_items_order(
     items: Vec<(String, i32)>,
 ) -> Result<bool, String> {
     let mut conn = db_state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     let tx = conn.transaction().map_err(|e| e.to_string())?;
 
     for (id, order) in items {
         tx.execute(
             "UPDATE sidebar_items SET order_num = ? WHERE id = ?",
             params![order, id],
-        ).map_err(|e| e.to_string())?;
+        )
+        .map_err(|e| e.to_string())?;
     }
 
     tx.commit().map_err(|e| e.to_string())?;

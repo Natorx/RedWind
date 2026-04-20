@@ -7,7 +7,7 @@ pub async fn convert_file(
     input_bytes: Vec<u8>,
     from_format: String,
     to_format: String,
-    _original_name: String,   // 暂时没用到，可保留
+    _original_name: String, // 暂时没用到，可保留
 ) -> Result<Vec<u8>, String> {
     // 1. 读取输入图像
     let img = ImageReader::new(Cursor::new(input_bytes))
@@ -21,22 +21,22 @@ pub async fn convert_file(
 
     match to_format.to_lowercase().as_str() {
         "png" => {
-            img.write_to(
-                &mut Cursor::new(&mut output_bytes),
-                image::ImageFormat::Png,
-            ).map_err(|e| format!("转换为 PNG 失败: {}", e))?;
+            img.write_to(&mut Cursor::new(&mut output_bytes), image::ImageFormat::Png)
+                .map_err(|e| format!("转换为 PNG 失败: {}", e))?;
         }
         "jpg" | "jpeg" => {
             img.write_to(
                 &mut Cursor::new(&mut output_bytes),
                 image::ImageFormat::Jpeg,
-            ).map_err(|e| format!("转换为 JPG 失败: {}", e))?;
+            )
+            .map_err(|e| format!("转换为 JPG 失败: {}", e))?;
         }
         "webp" => {
             img.write_to(
                 &mut Cursor::new(&mut output_bytes),
                 image::ImageFormat::WebP,
-            ).map_err(|e| format!("转换为 WebP 失败: {}", e))?;
+            )
+            .map_err(|e| format!("转换为 WebP 失败: {}", e))?;
         }
         _ => {
             return Err(format!("不支持的目标格式: {}", to_format));

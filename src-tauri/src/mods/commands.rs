@@ -1,5 +1,5 @@
-use std::{process::Command};
 use encoding_rs::GBK;
+use std::process::Command;
 
 pub fn decode_output(bytes: &[u8]) -> String {
     #[cfg(target_os = "windows")]

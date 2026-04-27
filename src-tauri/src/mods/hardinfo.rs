@@ -1,6 +1,6 @@
 /* src/module/hardinfo.rs
 description:获取硬件信息*/
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use sysinfo::{Components, Cpu, Disks, Networks, System};
 use tauri::State;
@@ -143,14 +143,40 @@ pub fn get_hardware_info(state: State<AppState>) -> HardwareInfo {
     }
 }
 
+
+// 进程调度查看函数
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProcessInfo {
+    pub pid: String,
+    pub name: String,
+    pub cpu_usage: f32,
+    pub memory_kb: u64,
+    pub total_written_bytes: u64,
+    pub written_bytes: u64,
+    pub total_read_bytes: u64,
+    pub read_bytes: u64,
+}
+
 #[tauri::command]
-pub fn get_process() -> String {
+pub fn get_process() -> Vec<ProcessInfo> {
     let mut sys = System::new_all();
     sys.refresh_all();
-    let mut output = String::new();
+    
+    let mut processes = Vec::new();
+    
     for (pid, process) in sys.processes() {
-        println!("[{pid}] {:?} {:?}", process.name(), process.disk_usage());
-        output.push_str(&format!("[{pid}] {:?} {:?}\n", process.name(), process.disk_usage()));
+        processes.push(ProcessInfo {
+            pid: pid.as_u32().to_string(),
+            name: process.name().to_string_lossy().to_string(),
+            cpu_usage: process.cpu_usage(),
+            memory_kb: process.memory() / 1024,
+            total_written_bytes: process.disk_usage().total_written_bytes,
+            written_bytes: process.disk_usage().written_bytes,
+            total_read_bytes: process.disk_usage().total_read_bytes,
+            read_bytes: process.disk_usage().read_bytes,
+        });
     }
-    output
+    
+    processes
 }

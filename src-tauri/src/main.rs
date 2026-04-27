@@ -5,7 +5,7 @@
 mod mods;
 use mods::commands::{change_dir, execute_shell, get_current_dir};
 // 硬件信息模块
-use mods::hardinfo::{get_hardware_info, AppState,get_process};
+use mods::hardinfo::{get_hardware_info, AppState,get_process,kill_process};
 use std::sync::Mutex;
 use sysinfo::System;
 // 文件转换模块
@@ -15,7 +15,6 @@ use mods::sidebar::{
     add_sidebar_item, delete_sidebar_item, get_sidebar_items, update_sidebar_item,
     update_sidebar_items_order, DbState,
 };
-use rusqlite::Connection;
 // 英语练习模块
 use mods::typing::{
     batch_update_meanings, delete_custom_word_set, delete_word_meaning, get_all_meanings,
@@ -51,6 +50,7 @@ fn main() {
             // 硬件信息
             get_hardware_info,
             get_process,
+            kill_process,
             // 文件转换
             convert_file,
             // 侧边栏相关

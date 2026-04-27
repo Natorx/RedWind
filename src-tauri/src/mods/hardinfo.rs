@@ -180,3 +180,21 @@ pub fn get_process() -> Vec<ProcessInfo> {
     
     processes
 }
+
+// 杀死进程
+#[tauri::command]
+pub fn kill_process(pid: u32) -> Result<String, String> {
+    let mut sys = System::new_all();
+    sys.refresh_all();
+    
+    // 查找对应 PID 的进程
+    if let Some(process) = sys.process(sysinfo::Pid::from_u32(pid)) {
+        if process.kill() {
+            Ok(format!("成功杀死进程 PID: {}", pid))
+        } else {
+            Err(format!("无法杀死进程 PID: {}，可能需要管理员权限", pid))
+        }
+    } else {
+        Err(format!("未找到 PID: {} 的进程", pid))
+    }
+}

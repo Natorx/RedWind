@@ -106,8 +106,8 @@ export const sidebarItems: SidebarItem[] = [
     source: 'server' as const,
   },
   {
-    id: 'debug',
-    label: '调试环境配置',
+    id: 'process',
+    label: '进程调度查看',
     icon: '🐛',
     order: 17,
     source: 'local' as const,

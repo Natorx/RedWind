@@ -13,10 +13,10 @@ import FileFormatConverter from '../pages/Conversion';
 import FuncConfig from '../pages/FuncConfigs';
 import Crawler from '../pages/Crawler';
 import ServerControl from '../pages/Server';
-import Debug from '../pages/Debug';
+import Process from '../pages/Process';
 const contentMap: Record<string, JSX.Element> = {
   'func-store': <FuncConfig />,
-  'debug':<Debug/>,
+  'process':<Process/>,
   dashboard: <Dashboard />,
   'api-debug': <RequestTool />,
   conversion: <FileFormatConverter />,

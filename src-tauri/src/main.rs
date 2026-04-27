@@ -5,7 +5,7 @@
 mod mods;
 use mods::commands::{change_dir, execute_shell, get_current_dir};
 // 硬件信息模块
-use mods::hardinfo::{get_hardware_info, AppState};
+use mods::hardinfo::{get_hardware_info, AppState,get_process};
 use std::sync::Mutex;
 use sysinfo::System;
 // 文件转换模块
@@ -50,6 +50,7 @@ fn main() {
             change_dir,
             // 硬件信息
             get_hardware_info,
+            get_process,
             // 文件转换
             convert_file,
             // 侧边栏相关

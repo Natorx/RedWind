@@ -43,13 +43,6 @@ export const sidebarItems: SidebarItem[] = [
     source: 'server' as const,
   },
   {
-    id: 'drill-ground',
-    label: '客户端数据库调试',
-    icon: '🧪',
-    order: 6,
-    source: 'local' as const,
-  },
-  {
     id: 'process-manager',
     label: '系统信息',
     icon: '📊',

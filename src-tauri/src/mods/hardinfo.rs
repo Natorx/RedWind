@@ -142,3 +142,15 @@ pub fn get_hardware_info(state: State<AppState>) -> HardwareInfo {
         components: component_list,
     }
 }
+
+#[tauri::command]
+pub fn get_process() -> String {
+    let mut sys = System::new_all();
+    sys.refresh_all();
+    let mut output = String::new();
+    for (pid, process) in sys.processes() {
+        println!("[{pid}] {:?} {:?}", process.name(), process.disk_usage());
+        output.push_str(&format!("[{pid}] {:?} {:?}\n", process.name(), process.disk_usage()));
+    }
+    output
+}

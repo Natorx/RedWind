@@ -4,7 +4,6 @@ import AIChat from '../pages/AIchat';
 import RequestTool from '../pages/RequestTool';
 import Dashboard from '../pages/Dashboard';
 import Printer from '../pages/Printer';
-import DrillGround from '../pages/DrillGround';
 import SysInfo from '../pages/SysInfo';
 import TypingPractice from '../pages/English';
 import Recorder from '../pages/Recorder';
@@ -14,8 +13,10 @@ import FileFormatConverter from '../pages/Conversion';
 import FuncConfig from '../pages/FuncConfigs';
 import Crawler from '../pages/Crawler';
 import ServerControl from '../pages/Server';
+import Debug from '../pages/Debug';
 const contentMap: Record<string, JSX.Element> = {
   'func-store': <FuncConfig />,
+  'debug':<Debug/>,
   dashboard: <Dashboard />,
   'api-debug': <RequestTool />,
   conversion: <FileFormatConverter />,
@@ -24,7 +25,6 @@ const contentMap: Record<string, JSX.Element> = {
   'process-manager': <SysInfo />,
   'typing-practice': <TypingPractice />,
   printer: <Printer />,
-  'drill-ground': <DrillGround />,
   recorder: <Recorder />,
   qrcode: <QRCodeGenerator />,
   charts: <Charts />,

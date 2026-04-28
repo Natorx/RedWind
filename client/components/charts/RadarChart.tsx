@@ -160,7 +160,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
                   onClick={() => toggleVisibility(datasetIndex)}
                   className="px-2 py-1 text-xs bg-white rounded-md shadow-sm hover:shadow transition-shadow"
                 >
-                  {dataset.visible ? '👁️ 隐藏' : '👁️‍🗨️ 显示'}
+
                 </button>
               </div>
               
@@ -369,7 +369,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
                         ({dataset.values.reduce((a, b) => a + b, 0).toFixed(0)})
                       </span>
                       <span className="text-xs">
-                        {isVisible ? '👁️' : '👁️‍🗨️'}
+
                       </span>
                     </div>
                   );

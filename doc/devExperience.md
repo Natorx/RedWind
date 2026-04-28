@@ -64,6 +64,19 @@ main.rs中主函数中的tauri::Builder就是应用的配置和启动入口
 - tokio：Rust的异步运行时
 - axum：基于tokio的Web框架(Rust版Express)
 
+#### serde
+    这是一个把Rust的数据结构和JSON等格式进行转换的库
+#### std
+    Rust标准库，包含核心功能，包括文件操作，线程，集合类型等
+- 编译器自带
+#### tauri
+- ::State 全局状态管理
+
+
+### rusqlite
+使用sqlite的模块：typing.rs和sidebar.rs
+主函数
+
 ### SQLite
 使用Rust调用，为了防止数据监测导致的重启，所以数据暂时放到了别的地方。
 
@@ -72,3 +85,4 @@ main.rs中主函数中的tauri::Builder就是应用的配置和启动入口
 
 ## 待办计划
 - [ ] 优化sidebar的配置名
+

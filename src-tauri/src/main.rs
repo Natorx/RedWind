@@ -3,7 +3,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod mods;
-use mods::commands::{change_dir, execute_shell, get_current_dir};
 // 硬件信息模块
 use mods::hardinfo::{get_hardware_info, AppState,get_process,kill_process};
 use std::sync::Mutex;
@@ -43,10 +42,6 @@ fn main() {
         .manage(db_state)
         .manage(typing_db_state)
         .invoke_handler(tauri::generate_handler![
-            // 命令相关
-            execute_shell,
-            get_current_dir,
-            change_dir,
             // 硬件信息
             get_hardware_info,
             get_process,

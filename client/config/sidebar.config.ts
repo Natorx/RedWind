@@ -22,13 +22,6 @@ export const sidebarItems: SidebarItem[] = [
     source: 'others' as const,
   },
   {
-    id: 'cli',
-    label: '命令行调用',
-    icon: '⌨️',
-    order: 3,
-    source: 'local' as const,
-  },
-  {
     id: 'api-debug',
     label: 'API接口调试',
     icon: '🔍',

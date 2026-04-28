@@ -1,5 +1,5 @@
 import { JSX } from 'react';
-import Terminal from '../pages/Terminal';
+
 import AIChat from '../pages/AIchat';
 import RequestTool from '../pages/RequestTool';
 import Dashboard from '../pages/Dashboard';
@@ -21,7 +21,6 @@ const contentMap: Record<string, JSX.Element> = {
   'api-debug': <RequestTool />,
   conversion: <FileFormatConverter />,
   chatbox: <AIChat />,
-  cli: <Terminal />,
   'process-manager': <SysInfo />,
   'typing-practice': <TypingPractice />,
   printer: <Printer />,

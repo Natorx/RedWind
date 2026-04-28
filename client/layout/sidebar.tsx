@@ -1,9 +1,12 @@
+// sidebar.tsx
 import { useActiveItem } from '../context/activeItemContext.tsx';
 import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
 import iconSrc from '../assets/icon.png';
+import { visibility } from '../utils/visible.ts';
+
 interface SidebarItem {
   id: string;
   label: string;
@@ -17,6 +20,15 @@ const Sidebar: React.FC = () => {
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
   const [_, setLoading] = useState(true);
   const { setIsSettingsOpen } = useSettingDrawer();
+  const [showSidebar, setShowSidebar] = useState(visibility.getShowSidebar());
+
+  useEffect(() => {
+    const unsubscribe = visibility.subscribe((newShowSidebar) => {
+      setShowSidebar(newShowSidebar);
+    });
+    return unsubscribe;
+  }, []);
+
   // 加载本地配置
   const loadLocalItems = async () => {
     try {
@@ -28,11 +40,15 @@ const Sidebar: React.FC = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     loadLocalItems();
   }, []);
+
+  if (!showSidebar) return null;
+
   return (
-    <aside className="sidebar w-240px bg-#ffffff border-r-1px border-r-solid border-r-#e2e8f0 flex flex-col shadow-sm">
+    <aside className="sidebar w-240px bg-#ffffff border-r-1px border-r-solid border-r-#e2e8f0 flex flex-col shadow-sm animate-drawer-out">
       <div className="sidebar-header flex items-center py-24px px-20px border-b-1px border-b-solid border-b-#f1f5f9">
         <img className="w-10 h-10" src={iconSrc} alt="" />
         <h2 className="logo text-red-500 font-700 font-size-20px mb-1">
@@ -76,8 +92,8 @@ const Sidebar: React.FC = () => {
                       item.source === 'server'
                         ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                         : item.source === 'local'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' // 绿色：本地提供
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' // 黄色：第三方提供
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                     }`}
                   >
                     {item.source === 'server'
@@ -112,7 +128,7 @@ const Sidebar: React.FC = () => {
               <p className="user-status text-xs text-gray-500">在线</p>
             </div>
             <button
-              className="ml-auto p-2  rounded-lg transition-colors border-none cursor-pointer"
+              className="ml-auto p-2 rounded-lg transition-colors border-none cursor-pointer"
               aria-label="打开设置"
             >
               ⚙️
@@ -123,4 +139,5 @@ const Sidebar: React.FC = () => {
     </aside>
   );
 };
+
 export default Sidebar;

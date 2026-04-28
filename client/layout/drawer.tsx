@@ -4,6 +4,7 @@ import Drawer from '../components/Drawer';
 import Modal from '../components/Modal';
 import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext';
+import { visibility } from '../utils/visible';
 
 export const DrawerPage: React.FC = () => {
   const { isSettingsOpen, setIsSettingsOpen } = useSettingDrawer();
@@ -64,15 +65,22 @@ export const DrawerPage: React.FC = () => {
             >
               <span className="text-gray-700">刷新应用</span>
             </div>
-          </div>
+            {/* 切换模式 */}
+            <div
+              className="setting-item p-3 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+              onClick={() => visibility.toggleSidebar()}
+            >
+              <span className="text-gray-700">切换模式</span>
+            </div>
 
-          {/* 操作按钮 */}
-          <div className="pt-4 border-t border-gray-200">
-            <button className="w-full py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors border-none cursor-pointer">
-              退出登录
-            </button>
+            {/* 操作按钮 */}
+            <div className="pt-4 border-t border-gray-200">
+              <button className="w-full py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors border-none cursor-pointer">
+                退出登录
+              </button>
+            </div>
           </div>
-        </div>
+        </div>{/* ← 这里添加缺失的闭合标签 */}
       </Drawer>
 
       {/* 个人资料 Modal */}
@@ -140,7 +148,7 @@ export const DrawerPage: React.FC = () => {
         title="扩展管理"
       >
         <div className="space-y-4">
-          <div>1</div>
+          <div>扩展设置内容</div>
           <div className="flex justify-end space-x-3 pt-4">
             <button
               onClick={() => setPluginModalOpen(false)}
@@ -150,12 +158,12 @@ export const DrawerPage: React.FC = () => {
             </button>
             <button
               onClick={() => {
-                alert('密码已更新');
+                alert('设置已保存');
                 setPluginModalOpen(false);
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
-              更新密码
+              保存
             </button>
           </div>
         </div>

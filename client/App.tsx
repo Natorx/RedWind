@@ -1,11 +1,14 @@
+// App.tsx
 import './styles/main.css';
-import { useActiveItem } from './context/activeItemContext'; // 新增导入
+import { useActiveItem } from './context/activeItemContext';
 import Sidebar from './layout/sidebar';
 import contentMap from './config/contentMap.config';
 import { DrawerPage } from './layout/drawer';
+import Circle from './layout/circle';
 
 function App() {
   const { activeItem } = useActiveItem();
+  
   return (
     <div className="app-container flex h-100vh overflow-hidden">
       {/* 左侧侧边栏 */}
@@ -16,7 +19,8 @@ function App() {
           {contentMap[activeItem] || <div>内容未找到</div>}
         </div>
       </main>
-      <DrawerPage/>
+      <DrawerPage />
+      <Circle />
     </div>
   );
 }

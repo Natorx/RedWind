@@ -5,7 +5,7 @@ use std::io::Cursor;
 #[tauri::command]
 pub async fn convert_file(
     input_bytes: Vec<u8>,
-    from_format: String,
+    _from_format: String,
     to_format: String,
     _original_name: String, // 暂时没用到，可保留
 ) -> Result<Vec<u8>, String> {

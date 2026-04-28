@@ -82,7 +82,3 @@ main.rs中主函数中的tauri::Builder就是应用的配置和启动入口
 
 ### 权限
 遇到了tauri新包和权限的问题，需要配置src-tauri/capabilities/default.json来让应用有足够权限，同时也下载了新的依赖，关于dialog和fs的。
-
-## 待办计划
-- [ ] 优化sidebar的配置名
-

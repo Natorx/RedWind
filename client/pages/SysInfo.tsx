@@ -1,4 +1,4 @@
-// src/components/Hardware.tsx
+// src/components/SysInfo.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -41,7 +41,21 @@ interface HardwareInfo {
   components: ComponentInfo[];
 }
 
-const Used: React.FC = () => {
+interface ProcessInfo {
+  pid: string;
+  name: string;
+  cpuUsage: number;
+  memoryKb: number;
+  totalWrittenBytes: number;
+  writtenBytes: number;
+  totalReadBytes: number;
+  readBytes: number;
+}
+
+type SortKey = 'pid' | 'name' | 'cpuUsage' | 'memoryKb' | 'totalWrittenBytes' | 'writtenBytes' | 'totalReadBytes' | 'readBytes';
+
+// 硬件信息组件
+const HardwareInfoCard: React.FC = () => {
   const [info, setInfo] = useState<HardwareInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
@@ -110,8 +124,8 @@ const Used: React.FC = () => {
   const swapPercent = info.swap_total > 0 ? (info.swap_used / info.swap_total) * 100 : 0;
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
-      {/* 控制栏 - 紧凑 */}
+    <div>
+      {/* 控制栏 */}
       <div className="flex justify-end gap-2 mb-4">
         <button
           onClick={manualRefresh}
@@ -131,11 +145,10 @@ const Used: React.FC = () => {
         </button>
       </div>
 
-      {/* 网格布局 - 紧凑卡片 */}
+      {/* 硬件信息网格 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        
         {/* 系统信息 */}
-        <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
             <span>💻</span> 系统
           </h3>
@@ -162,7 +175,7 @@ const Used: React.FC = () => {
         </div>
 
         {/* CPU 信息 */}
-        <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
             <span>🖥️</span> CPU
           </h3>
@@ -191,7 +204,7 @@ const Used: React.FC = () => {
         </div>
 
         {/* 内存信息 */}
-        <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
             <span>💾</span> 内存
           </h3>
@@ -221,7 +234,7 @@ const Used: React.FC = () => {
 
         {/* Swap 信息 */}
         {info.swap_total > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
               <span>🔄</span> Swap
             </h3>
@@ -250,9 +263,9 @@ const Used: React.FC = () => {
           </div>
         )}
 
-        {/* 磁盘信息 - 紧凑显示 */}
+        {/* 磁盘信息 */}
         {info.disks.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
               <span>💿</span> 磁盘
             </h3>
@@ -285,9 +298,9 @@ const Used: React.FC = () => {
           </div>
         )}
 
-        {/* 网络信息 - 紧凑显示 */}
+        {/* 网络信息 */}
         {info.networks.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
               <span>🌐</span> 网络
             </h3>
@@ -308,9 +321,9 @@ const Used: React.FC = () => {
           </div>
         )}
 
-        {/* 温度信息 - 紧凑显示 */}
+        {/* 温度信息 */}
         {info.components.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-14 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 border-b pb-1">
               <span>🌡️</span> 温度
             </h3>
@@ -346,7 +359,7 @@ const Used: React.FC = () => {
         )}
       </div>
 
-      {/* 时间戳 - 更紧凑 */}
+      {/* 时间戳 */}
       <div className="text-center text-xs text-gray-400 mt-4">
         {new Date().toLocaleString()}
       </div>
@@ -354,32 +367,26 @@ const Used: React.FC = () => {
   );
 };
 
-interface ProcessInfo {
-  pid: string;
-  name: string;
-  cpuUsage: number;
-  memoryKb: number;
-  totalWrittenBytes: number;
-  writtenBytes: number;
-  totalReadBytes: number;
-  readBytes: number;
-}
-
-type SortKey = 'pid' | 'name' | 'cpuUsage' | 'memoryKb' | 'totalWrittenBytes' | 'writtenBytes' | 'totalReadBytes' | 'readBytes';
-
-
-const Debug: React.FC = () => {
+// 进程信息组件
+const ProcessInfoCard: React.FC = () => {
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>('pid');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [loading, setLoading] = useState(false);
   const [killingPid, setKillingPid] = useState<string | null>(null);
+  const maxCpuUsage = useRef<number>(100); // 动态计算最大CPU使用率
+  const maxMemoryKb = useRef<number>(1024 * 1024); // 动态计算最大内存使用
 
   const fetchProcesses = () => {
     setLoading(true);
     invoke<ProcessInfo[]>('get_process')
       .then((result) => {
         setProcesses(result);
+        // 更新最大值用于进度条
+        if (result.length > 0) {
+          maxCpuUsage.current = Math.max(...result.map(p => p.cpuUsage), 100);
+          maxMemoryKb.current = Math.max(...result.map(p => p.memoryKb), 1024 * 1024);
+        }
         console.log('进程列表已更新:', new Date().toLocaleTimeString(), result.length);
       })
       .catch((error) => {
@@ -397,7 +404,7 @@ const Debug: React.FC = () => {
         .then((result) => {
           console.log(result);
           alert(`✅ ${result}`);
-          fetchProcesses(); // 刷新进程列表
+          fetchProcesses();
         })
         .catch((error) => {
           console.error('杀死进程失败:', error);
@@ -409,12 +416,10 @@ const Debug: React.FC = () => {
     }
   };
 
-  // 页面加载时获取一次
   useEffect(() => {
     fetchProcesses();
   }, []);
 
-  // 每隔3秒自动刷新
   useEffect(() => {
     const interval = setInterval(() => {
       fetchProcesses();
@@ -434,7 +439,7 @@ const Debug: React.FC = () => {
   const formatMemory = (kb: number): string => {
     if (kb < 1024) return `${kb} KB`;
     const mb = kb / 1024;
-    if (mb < 1024) return `${mb.toFixed(2)} MB`;
+    if (mb < 1024) return `${mb.toFixed(1)} MB`;
     const gb = mb / 1024;
     return `${gb.toFixed(2)} GB`;
   };
@@ -471,7 +476,6 @@ const Debug: React.FC = () => {
     return sorted;
   };
 
-  // 判断是否是系统关键进程（避免误杀）
   const isSystemProcess = (name: string): boolean => {
     const systemProcesses = [
       'System', 'System Idle Process', 'svchost.exe', 'winlogon.exe', 
@@ -481,95 +485,117 @@ const Debug: React.FC = () => {
     return systemProcesses.some(sp => name.toLowerCase().includes(sp.toLowerCase()));
   };
 
+  // 获取CPU进度条颜色
+  const getCpuBarColor = (usage: number): string => {
+    if (usage > 80) return 'bg-red-500';
+    if (usage > 50) return 'bg-orange-500';
+    return 'bg-blue-500';
+  };
+
+  // 获取内存进度条颜色
+  const getMemoryBarColor = (usagePercent: number): string => {
+    if (usagePercent > 80) return 'bg-red-500';
+    if (usagePercent > 50) return 'bg-orange-500';
+    return 'bg-green-500';
+  };
+
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
+    <div className="mt-8">
+      <div className="border-t border-gray-200 pt-6 mb-4">
+        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <span>📊</span> 进程管理
+        </h2>
+      </div>
+      
+      <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600">
+          <span className="text-xs text-gray-600">
             共 {processes.length} 个进程
           </span>
           {loading && (
-            <span className="text-sm text-blue-500">
+            <span className="text-xs text-blue-500">
               刷新中...
             </span>
           )}
         </div>
         <button 
           onClick={fetchProcesses}
-          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+          className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
           disabled={loading}
         >
-          🔄 手动刷新
+          🔄 刷新
         </button>
       </div>
       
       {processes.length > 0 && (
-        <div className="overflow-auto max-h-120 mb-4">
-          <table className="min-w-full bg-white border border-gray-300 text-sm">
+        <div className="overflow-auto max-h-96 mb-4">
+          <table className="min-w-full bg-white border border-gray-300 text-xs">
             <thead className="bg-gray-200 sticky top-0">
               <tr>
-                <th className="px-2 py-2 border text-center w-24">操作</th>
+                <th className="px-2 py-1.5 border text-center w-20">操作</th>
                 <th 
-                  className="px-3 py-2 border text-left cursor-pointer hover:bg-gray-300 w-20"
+                  className="px-2 py-1.5 border text-left cursor-pointer hover:bg-gray-300 w-16"
                   onClick={() => handleSort('pid')}
                 >
                   PID
                 </th>
                 <th 
-                  className="px-2 py-2 border text-left cursor-pointer hover:bg-gray-300"
+                  className="px-2 py-1.5 border text-left cursor-pointer hover:bg-gray-300"
                   onClick={() => handleSort('name')}
                 >
                   进程名称
                 </th>
                 <th 
-                  className="px-3 py-2 border text-right cursor-pointer hover:bg-gray-300 w-28"
+                  className="px-2 py-1.5 border text-left cursor-pointer hover:bg-gray-300 w-32"
                   onClick={() => handleSort('cpuUsage')}
                 >
-                  CPU使用率 
+                  CPU
                 </th>
                 <th 
-                  className="px-3 py-2 border text-right cursor-pointer hover:bg-gray-300 w-28"
+                  className="px-2 py-1.5 border text-left cursor-pointer hover:bg-gray-300 w-36"
                   onClick={() => handleSort('memoryKb')}
                 >
-                  内存占用 
+                  内存
                 </th>
                 <th 
-                  className="px-3 py-2 border text-right cursor-pointer hover:bg-gray-300 w-32"
+                  className="px-2 py-1.5 border text-right cursor-pointer hover:bg-gray-300 w-24"
                   onClick={() => handleSort('totalWrittenBytes')}
                 >
-                  历史写入 
+                  写入(总)
                 </th>
                 <th 
-                  className="px-3 py-2 border text-right cursor-pointer hover:bg-gray-300 w-28"
+                  className="px-2 py-1.5 border text-right cursor-pointer hover:bg-gray-300 w-20"
                   onClick={() => handleSort('writtenBytes')}
                 >
-                  增量写入 
+                  写入(增)
                 </th>
                 <th 
-                  className="px-3 py-2 border text-right cursor-pointer hover:bg-gray-300 w-32"
+                  className="px-2 py-1.5 border text-right cursor-pointer hover:bg-gray-300 w-24"
                   onClick={() => handleSort('totalReadBytes')}
                 >
-                  历史读取 
+                  读取(总)
                 </th>
                 <th 
-                  className="px-3 py-2 border text-right cursor-pointer hover:bg-gray-300 w-28"
+                  className="px-2 py-1.5 border text-right cursor-pointer hover:bg-gray-300 w-20"
                   onClick={() => handleSort('readBytes')}
                 >
-                  增量读取 
+                  读取(增)
                 </th>
               </tr>
             </thead>
             <tbody>
               {getSortedProcesses().map((proc, idx) => {
                 const isSystem = isSystemProcess(proc.name);
+                const cpuPercent = Math.min((proc.cpuUsage / maxCpuUsage.current) * 100, 100);
+                const memPercent = Math.min((proc.memoryKb / maxMemoryKb.current) * 100, 100);
                 return (
                   <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-2 py-2 border text-center">
+                    <td className="px-2 py-1 border text-center">
                       <button
                         onClick={() => handleKillProcess(proc.pid, proc.name)}
                         disabled={killingPid === proc.pid || isSystem}
                         className={`
-                          w-full px-2 py-1 rounded text-xs font-medium transition-colors
+                          px-1.5 py-0.5 rounded text-xs font-medium transition-colors w-full
                           ${isSystem 
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                             : 'bg-red-500 text-white hover:bg-red-600'
@@ -578,28 +604,44 @@ const Debug: React.FC = () => {
                         `}
                         title={isSystem ? '系统关键进程，禁止杀死' : '杀死进程'}
                       >
-                        {killingPid === proc.pid ? '⏳ 杀死中...' : '关闭'}
+                        {killingPid === proc.pid ? '⏳' : '关闭'}
                       </button>
                     </td>
-                    <td className="px-3 py-2 border font-mono">{proc.pid}</td>
-                    <td className="px-2 py-2 border truncate max-w-xs" title={proc.name}>
+                    <td className="px-2 py-1 border font-mono">{proc.pid}</td>
+                    <td className="px-2 py-1 border truncate max-w-xs" title={proc.name}>
                       {proc.name}
                       {isSystem && (
-                        <span className="ml-2 text-xs bg-yellow-200 text-yellow-800 px-1 rounded whitespace-nowrap">
-                          系统进程
+                        <span className="ml-1 text-xs bg-yellow-200 text-yellow-800 px-1 rounded">
+                          系统
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2 border text-right">
-                      <span className={proc.cpuUsage > 10 ? 'text-red-600 font-bold' : ''}>
-                        {proc.cpuUsage.toFixed(2)}%
-                      </span>
+                    <td className="px-2 py-1 border">
+                      <div className="flex items-center gap-1">
+                        <span className="font-mono w-10 text-right">{proc.cpuUsage.toFixed(1)}%</span>
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className={`${getCpuBarColor(proc.cpuUsage)} rounded-full h-1.5 transition-all`}
+                            style={{ width: `${cpuPercent}%` }}
+                          />
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-3 py-2 border text-right font-mono">{formatMemory(proc.memoryKb)}</td>
-                    <td className="px-3 py-2 border text-right font-mono">{formatBytes(proc.totalWrittenBytes)}</td>
-                    <td className="px-3 py-2 border text-right font-mono">{formatBytes(proc.writtenBytes)}</td>
-                    <td className="px-3 py-2 border text-right font-mono">{formatBytes(proc.totalReadBytes)}</td>
-                    <td className="px-3 py-2 border text-right font-mono">{formatBytes(proc.readBytes)}</td>
+                    <td className="px-2 py-1 border">
+                      <div className="flex items-center gap-1">
+                        <span className="font-mono w-16 text-right text-xs">{formatMemory(proc.memoryKb)}</span>
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className={`${getMemoryBarColor(memPercent)} rounded-full h-1.5 transition-all`}
+                            style={{ width: `${memPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-2 py-1 border text-right font-mono text-xs">{formatBytes(proc.totalWrittenBytes)}</td>
+                    <td className="px-2 py-1 border text-right font-mono text-xs">{formatBytes(proc.writtenBytes)}</td>
+                    <td className="px-2 py-1 border text-right font-mono text-xs">{formatBytes(proc.totalReadBytes)}</td>
+                    <td className="px-2 py-1 border text-right font-mono text-xs">{formatBytes(proc.readBytes)}</td>
                   </tr>
                 );
               })}
@@ -608,30 +650,31 @@ const Debug: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-gray-50 p-3 rounded text-sm">
-        <h3 className="font-bold mb-2">📊 字段说明</h3>
-        <ul className="space-y-1">
-          <li className="p-1">🔖 <strong>PID</strong>: 操作系统分配给每个进程的唯一标识符</li>
-          <li className="p-1">💻 <strong>CPU使用率</strong>: 进程占用的CPU百分比（多核可能超过100%）</li>
-          <li className="p-1">🧠 <strong>内存占用</strong>: 进程占用的物理内存大小</li>
-          <li className="p-1">💾 <strong>历史写入</strong>: 从进程启动到现在，总共向磁盘写入了多少数据</li>
-          <li className="p-1">📈 <strong>增量写入</strong>: 自上次调用以来，新增的写入数据量</li>
-          <li className="p-1">📖 <strong>历史读取</strong>: 从进程启动到现在，总共从磁盘读取了多少数据</li>
-          <li className="p-1">📊 <strong>增量读取</strong>: 自上次调用以来，新增的读取数据量</li>
-          <li className="p-1 text-red-600">⚠️ <strong>杀死进程</strong>: 红色按钮可杀死进程，系统关键进程会被保护禁止杀死</li>
+      <div className="bg-gray-50 p-3 rounded text-xs">
+        <h3 className="font-bold mb-1.5 text-sm">📊 字段说明</h3>
+        <ul className="space-y-0.5">
+          <li>🔖 <strong>PID</strong>: 进程唯一标识符</li>
+          <li>💻 <strong>CPU</strong>: CPU使用率百分比 (含进度条)</li>
+          <li>🧠 <strong>内存</strong>: 物理内存占用 (含进度条)</li>
+          <li>💾 <strong>写入(总)</strong>: 进程启动至今总写入量</li>
+          <li>📈 <strong>写入(增)</strong>: 3秒内新增写入量</li>
+          <li>📖 <strong>读取(总)</strong>: 进程启动至今总读取量</li>
+          <li>📊 <strong>读取(增)</strong>: 3秒内新增读取量</li>
+          <li className="text-red-600">⚠️ <strong>关闭</strong>: 红色按钮可杀死进程，系统进程被保护</li>
         </ul>
       </div>
     </div>
   );
 };
 
-const SysInfo:React.FC = () => {
-  return(
-    <div>
-      <Used/>
-      <Debug/>
+// 主组件
+const SysInfo: React.FC = () => {
+  return (
+    <div className="max-w-7xl mx-auto p-4">
+      <HardwareInfoCard />
+      <ProcessInfoCard />
     </div>
-  )
-}
+  );
+};
 
 export default SysInfo;

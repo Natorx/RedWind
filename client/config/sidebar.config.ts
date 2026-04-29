@@ -99,13 +99,6 @@ export const sidebarItems: SidebarItem[] = [
     source: 'server' as const,
   },
   {
-    id: 'process',
-    label: '进程调度查看',
-    icon: '🐛',
-    order: 17,
-    source: 'local' as const,
-  },
-  {
     id: 'docs',
     label: '层级结构文档',
     icon: '📄',

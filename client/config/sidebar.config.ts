@@ -36,6 +36,13 @@ export const sidebarItems: SidebarItem[] = [
     source: 'server' as const,
   },
   {
+    id: 'algorithms',
+    label: '算法',
+    icon: '🔍',
+    order: 6,
+    source: 'local' as const,
+  },
+  {
     id: 'process-manager',
     label: '系统信息',
     icon: '📊',
@@ -174,6 +181,6 @@ export const sidebarItems: SidebarItem[] = [
     icon: '🟢',
     order: 30,
     source: 'local' as const,
-  }
+  },
 ].sort((a, b) => a.order - b.order);
 export default sidebarItems;

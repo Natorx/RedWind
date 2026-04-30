@@ -30,7 +30,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
   const [data, setData] = useState(initialData.map(d => ({ ...d, visible: d.visible !== false })));
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<{ lineIndex: number; pointIndex: number } | null>(null);
-  const [editValue, setEditValue] = useState<number>(0);
+  const [_, setEditValue] = useState<number>(0);
   const [showValues, setShowValues] = useState<boolean>(true);
   const [smoothCurves, setSmoothCurves] = useState<boolean>(false);
   

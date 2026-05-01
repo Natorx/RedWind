@@ -22,6 +22,13 @@ export const sidebarItems: SidebarItem[] = [
     source: 'others' as const,
   },
   {
+    id:'audio-control',
+    label: '音频控制',
+    icon: '🔊',
+    order: 3,
+    source: 'local' as const,
+  },
+  {
     id: 'api-debug',
     label: 'API接口调试',
     icon: '🔍',

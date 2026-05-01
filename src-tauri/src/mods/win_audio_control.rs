@@ -1,4 +1,5 @@
 use serde::Serialize;
+use tauri::async_runtime::spawn_blocking;
 use windows::{
     core::*,
     Win32::System::Com::{CoInitializeEx, COINIT_MULTITHREADED, CoUninitialize, CLSCTX_ALL, CoCreateInstance},
@@ -104,9 +105,14 @@ pub fn get_all_audio_sessions() -> windows::core::Result<Vec<AudioSessionInfo>> 
 }
 
 #[tauri::command]
-pub fn get_all_audio_sessions_cmd() -> std::result::Result<Vec<AudioSessionInfo>, String> {
-    match get_all_audio_sessions() {
-        Ok(sessions) => Ok(sessions),
-        Err(e) => Err(e.to_string()),
+pub async fn get_all_audio_sessions_cmd() -> std::result::Result<Vec<AudioSessionInfo>, String> {
+    let result = tauri::async_runtime::spawn_blocking(|| {
+        get_all_audio_sessions()
+    }).await;
+    
+    match result {
+        Ok(Ok(sessions)) => Ok(sessions),
+        Ok(Err(e)) => Err(e.to_string()),
+        Err(join_error) => Err(format!("线程任务失败: {}", join_error)),
     }
 }

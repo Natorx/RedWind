@@ -14,6 +14,7 @@ import FuncConfig from '../pages/FuncConfigs';
 import Crawler from '../pages/Crawler';
 import ServerControl from '../pages/Server';
 import Algorithms from '../pages/Algorithms';
+import WAudioController from '../pages/WAudioController';
 
 const contentMap: Record<string, JSX.Element> = {
   'func-store': <FuncConfig />,
@@ -30,6 +31,7 @@ const contentMap: Record<string, JSX.Element> = {
   'web-scraper': <Crawler />,
   'node-server': <ServerControl />,
   algorithms: <Algorithms />,
+  'audio-control': <WAudioController />,
 };
 export default contentMap;
 

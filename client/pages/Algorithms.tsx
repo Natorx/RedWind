@@ -357,11 +357,11 @@ const Algorithms: React.FC = () => {
           {/* 速度调节 */}
           <div>
             <label style={{ marginRight: '8px', color: '#555' }}>
-              速度：{speed === 50 ? '快' : speed === 100 ? '中' : speed === 200 ? '慢' : '很慢'}
+              速度：{speed === 20 ? '快' : speed === 100 ? '中' : speed === 200 ? '慢' : '很慢'}
             </label>
             <input
               type="range"
-              min="50"
+              min="20"
               max="400"
               step="50"
               value={speed}

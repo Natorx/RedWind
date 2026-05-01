@@ -30,4 +30,22 @@ saorsa-webrtc使用QUIC协议通信
 2. 库较新，只能看API文档
 3. 调试比较难
 #### 系统音频控制
-    使用smtc-suite库丨这个库下载量只有5048，但是版本更新到2.6.1了，试试吧。
+    方案：使用windows::Win32::Media::Audio的
+- `IAudioSessionManager2` 总管理入口：获取系统音频会话管理器
+
+    枚举器：GetSessionEnumerator
+- `IAudioSessionEnumerator` 列表生成器：获取当前系统中所有活跃音频的列表和总数
+
+    会话总数：GetCount
+    根据索引获取对象：GetSession
+- `IAudioSessionControl` 单个会话控制器
+
+    会话名称：GetDisplayName
+    会话状态：GetState
+- `IAudioSessionControl2` 增强控制器：IAudioSessionControl Plus
+
+    GetProcessId：进程以及关联进程
+- `ISimpleAudioVolume` 音频控制
+
+    GetMasterVolume/SetMasterVolume获取/设置音量
+    GetMute/SetMute获取/设置静音

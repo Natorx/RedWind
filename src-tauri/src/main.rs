@@ -20,6 +20,11 @@ use mods::typing::{
     get_custom_word_set, get_custom_word_sets, get_word_meaning, save_custom_word_set,
     update_custom_word_set, update_word_meaning,
 };
+// Windows音频模块
+use mods::win_audio_control::get_all_audio_sessions_cmd;
+
+
+
 // Node子进程模块
 use mods::node_server::{get_server_status, start_server, stop_server, ServerState};
 
@@ -69,7 +74,9 @@ fn main() {
             // Node子进程
             get_server_status,
             start_server,
-            stop_server
+            stop_server,
+            // Windows Audio
+            get_all_audio_sessions_cmd,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

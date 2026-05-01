@@ -21,7 +21,7 @@ use mods::typing::{
     update_custom_word_set, update_word_meaning,
 };
 // Windows音频模块
-use mods::win_audio_control::get_all_audio_sessions_cmd;
+use mods::win_audio_control::{set_system_volume_cmd,set_app_volume_cmd,set_app_mute_cmd,get_all_audio_sessions_cmd,get_system_volume_cmd};
 
 
 
@@ -77,6 +77,10 @@ fn main() {
             stop_server,
             // Windows Audio
             get_all_audio_sessions_cmd,
+            get_system_volume_cmd,
+            set_system_volume_cmd,
+            set_app_volume_cmd,
+            set_app_mute_cmd,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

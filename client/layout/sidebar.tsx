@@ -6,13 +6,21 @@ import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
 import iconSrc from '../assets/icon.png';
 import { visibility } from '../utils/visible.ts';
+import { sourceConfig } from '../config/sidebar_style.ts';
 
 interface SidebarItem {
   id: string;
   label: string;
   icon: string;
   order: number;
-  source: 'local' | 'server' | 'others';
+  source:
+    | 'server'
+    | 'local'
+    | 'coming_soon'
+    | 'incomplete'
+    | 'external'
+    | 'basic'
+    | 'others';
 }
 
 const Sidebar: React.FC = () => {
@@ -61,8 +69,8 @@ const Sidebar: React.FC = () => {
         <ul>
           <li className="mb-2">
             <button
-              className={`nav-btn w-full px-4 py-3 border-none bg-transparent rounded-lg flex items-center cursor-pointer text-sm text-slate-500 transition-all duration-200 ease-in-out hover:bg-slate-100 hover:text-slate-700 ${activeItem === 'func-store' ? 'active' : ''}`}
-              onClick={() => setActiveItem('func-store')}
+              className={`nav-btn w-full px-4 py-3 border-none bg-transparent rounded-lg flex items-center cursor-pointer text-sm text-slate-500 transition-all duration-200 ease-in-out hover:bg-slate-100 hover:text-slate-700 ${activeItem === 'module-config' ? 'active' : ''}`}
+              onClick={() => setActiveItem('module-config')}
             >
               <span className="nav-icon mr-3 font-size-18px">🖥️</span>
 
@@ -88,19 +96,9 @@ const Sidebar: React.FC = () => {
                 <div className="flex flex-col items-start">
                   <span className="nav-label font-500">{item.label}</span>
                   <span
-                    className={`text-xs mt-0.5 px-1.5 py-0.5 rounded ${
-                      item.source === 'server'
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                        : item.source === 'local'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                    }`}
+                    className={`text-xs mt-0.5 px-1.5 py-0.5 rounded ${sourceConfig[item.source].className}`}
                   >
-                    {item.source === 'server'
-                      ? '服务端提供'
-                      : item.source === 'local'
-                        ? '本地提供'
-                        : '第三方提供'}
+                    {sourceConfig[item.source].label}
                   </span>
                 </div>
               </button>

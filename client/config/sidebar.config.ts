@@ -3,198 +3,187 @@ type SidebarItem = {
   label: string;
   icon: string;
   order: number;
-  source: 'server' | 'local' | 'others';
+  source:
+    | 'server'
+    | 'local'
+    | 'coming_soon'
+    | 'incomplete'
+    | 'external'
+    | 'basic'
+    | 'others'
 };
 
 export const sidebarItems: SidebarItem[] = [
+  // ========== incomplete ==========
   {
     id: 'dashboard',
     label: '仪表盘',
     icon: '📊',
     order: 1,
-    source: 'server' as const,
+    source: 'incomplete',
   },
   {
-    id: 'chatbox',
-    label: 'Chatbox Mini',
-    icon: '💬',
+    id: 'typing-practice',
+    label: '英语打字练习',
+    icon: '⌨️',
     order: 2,
-    source: 'others' as const,
+    source: 'incomplete',
   },
+
+  // ========== local ==========
   {
-    id:'audio-control',
+    id: 'audio-control',
     label: '音频控制',
     icon: '🔊',
     order: 3,
-    source: 'local' as const,
+    source: 'local',
   },
   {
     id: 'api-debug',
     label: 'API接口调试',
     icon: '🔍',
     order: 4,
-    source: 'local' as const,
-  },
-  {
-    id: 'printer',
-    label: '本地打印',
-    icon: '📁',
-    order: 5,
-    source: 'server' as const,
+    source: 'local',
   },
   {
     id: 'algorithms',
     label: '算法',
     icon: '🔍',
     order: 6,
-    source: 'local' as const,
+    source: 'local',
   },
   {
     id: 'process-manager',
     label: '系统信息',
     icon: '📊',
     order: 7,
-    source: 'local' as const,
-  },
-  {
-    id: 'typing-practice',
-    label: '英语打字练习',
-    icon: '⌨️',
-    order: 8,
-    source: 'local' as const,
+    source: 'local',
   },
   {
     id: 'conversion',
     label: '文件格式转换',
     icon: '🔄',
     order: 9,
-    source: 'local' as const,
+    source: 'local',
   },
   {
     id: 'recorder',
     label: '录音机',
     icon: '📼',
     order: 10,
-    source: 'local' as const,
+    source: 'local',
   },
   {
     id: 'qrcode',
     label: '二维码生成',
     icon: '📱',
     order: 11,
-    source: 'local' as const,
+    source: 'local',
   },
   {
     id: 'charts',
     label: '图表',
     icon: '📊',
     order: 12,
-    source: 'local' as const,
+    source: 'local',
   },
   {
     id: 'sys-commands',
     label: '系统命令',
     icon: '💻',
     order: 13,
-    source: 'local' as const,
-  },
-  {
-    id: 'web-scraper',
-    label: '网页解构',
-    icon: '🕸️',
-    order: 14,
-    source: 'server' as const,
-  },
-  {
-    id: 'encryption',
-    label: '加密算法',
-    icon: '🔐',
-    order: 15,
-    source: 'local' as const,
-  },
-  {
-    id: 'analytics',
-    label: '分析',
-    icon: '📈',
-    order: 16,
-    source: 'server' as const,
-  },
-  {
-    id: 'docs',
-    label: '层级结构文档',
-    icon: '📄',
-    order: 18,
-    source: 'local' as const,
+    source: 'local',
   },
   {
     id: 'hardware',
     label: '硬件配置读取',
     icon: '💻',
     order: 19,
-    source: 'local' as const,
-  },
-  {
-    id: 'file-explorer',
-    label: '路径镜像',
-    icon: '📂',
-    order: 20,
-    source: 'local' as const,
-  },
-  {
-    id: 'music-player',
-    label: '音乐播放器',
-    icon: '🎵',
-    order: 21,
-    source: 'local' as const,
-  },
-  {
-    id: 'app-launcher',
-    label: '应用管理启动',
-    icon: '🚀',
-    order: 22,
-    source: 'local' as const,
-  },
-  {
-    id: 'email',
-    label: '基础邮件收发',
-    icon: '📧',
-    order: 23,
-    source: 'server' as const,
-  },
-  {
-    id: 'file-sharing',
-    label: '文件共享',
-    icon: '📤',
-    order: 26,
-    source: 'server' as const,
-  },
-  {
-    id: 'multi-device-login',
-    label: '多设备登录',
-    icon: '🔑',
-    order: 27,
-    source: 'server' as const,
-  },
-  {
-    id: 'plugins',
-    label: '插件扩展',
-    icon: '🧩',
-    order: 28,
-    source: 'server' as const,
-  },
-  {
-    id: 'remote-desktop',
-    label: '桌面远程控制',
-    icon: '🖥️',
-    order: 29,
-    source: 'server' as const,
+    source: 'local',
   },
   {
     id: 'node-server',
     label: 'Node子进程',
     icon: '🟢',
     order: 30,
-    source: 'local' as const,
+    source: 'local',
   },
-].sort((a, b) => a.order - b.order);
+
+  // ========== server ==========
+  {
+    id: 'printer',
+    label: '本地打印',
+    icon: '📁',
+    order: 5,
+    source: 'server',
+  },
+  {
+    id: 'web-scraper',
+    label: '网页解构',
+    icon: '🕸️',
+    order: 14,
+    source: 'server',
+  },
+
+  // ========== external ==========
+  {
+    id: 'chatbox',
+    label: 'Chatbox Mini',
+    icon: '💬',
+    order: 8,
+    source: 'external',
+  },
+
+  // ========== coming_soon ==========
+  {
+    id: 'docs',
+    label: '层级结构文档',
+    icon: '📄',
+    order: 18,
+    source: 'coming_soon',
+  },
+  {
+    id: 'music-player',
+    label: '音乐播放器',
+    icon: '🎵',
+    order: 21,
+    source: 'coming_soon',
+  },
+  {
+    id: 'email',
+    label: '基础邮件收发',
+    icon: '📧',
+    order: 23,
+    source: 'coming_soon',
+  },
+  {
+    id: 'file-sharing',
+    label: '文件共享',
+    icon: '📤',
+    order: 26,
+    source: 'coming_soon',
+  },
+  {
+    id: 'multi-device-login',
+    label: '多设备登录',
+    icon: '🔑',
+    order: 27,
+    source: 'coming_soon',
+  },
+  {
+    id: 'plugins',
+    label: '插件扩展',
+    icon: '🧩',
+    order: 28,
+    source: 'coming_soon',
+  },
+  {
+    id: 'remote-desktop',
+    label: '桌面远程控制',
+    icon: '🖥️',
+    order: 29,
+    source: 'coming_soon',
+  },
+];
+
 export default sidebarItems;

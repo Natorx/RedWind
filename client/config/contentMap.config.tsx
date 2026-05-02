@@ -18,7 +18,7 @@ import WAudioController from '../pages/WAudioController';
 import SysCommands from '../pages/SysCommands';
 
 const contentMap: Record<string, JSX.Element> = {
-  'func-store': <FuncConfig />,
+  'module-config': <FuncConfig />,
   dashboard: <Dashboard />,
   'api-debug': <RequestTool />,
   conversion: <FileFormatConverter />,

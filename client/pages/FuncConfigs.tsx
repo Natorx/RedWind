@@ -1,13 +1,21 @@
 import { invoke } from '@tauri-apps/api/core';
 import React, { useState, useEffect } from 'react';
 import sidebarItems from '../config/sidebar.config';
+import { labelSourceConfig } from '../config/sidebar_style';
 
 interface SidebarItem {
   id: string;
   label: string;
   icon: string;
   order: number;
-  source: 'local' | 'server' | 'others';
+  source:
+    | 'server'
+    | 'local'
+    | 'coming_soon'
+    | 'incomplete'
+    | 'external'
+    | 'basic'
+    | 'others';
 }
 
 // 所有可用模块
@@ -189,15 +197,9 @@ const SidebarModuleManager: React.FC = () => {
                           ID: {item.id}
                         </span>
                         <span
-                          className={`text-xs px-2 py-0.5 rounded ${
-                            item.source === 'local'
-                              ? 'bg-green-100 text-green-700'
-                              : item.source === 'server'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-purple-100 text-purple-700'
-                          }`}
+                          className={`text-xs px-2 py-0.5 rounded ${labelSourceConfig[item.source]?.className || labelSourceConfig.others.className}`}
                         >
-                          {item.source}
+                          {labelSourceConfig[item.source]?.label || item.source}
                         </span>
                         <span className="text-xs text-gray-400">
                           顺序: {item.order}
@@ -252,15 +254,9 @@ const SidebarModuleManager: React.FC = () => {
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-gray-500">{item.id}</span>
                       <span
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          item.source === 'local'
-                            ? 'bg-green-100 text-green-700'
-                            : item.source === 'server'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-purple-100 text-purple-700'
-                        }`}
+                        className={`text-xs px-2 py-0.5 rounded ${labelSourceConfig[item.source]?.className || labelSourceConfig.others.className}`}
                       >
-                        {item.source}
+                        {labelSourceConfig[item.source]?.label || item.source}
                       </span>
                     </div>
                   </div>

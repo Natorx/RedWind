@@ -58,7 +58,7 @@ const Circle: React.FC = () => {
   // 所有菜单项（包括固定项和动态项）
   const allMenuItems = [
     {
-      id: 'func-store',
+      id: 'module-config',
       label: '模块配置',
       icon: '🖥️',
       source: 'local' as const,

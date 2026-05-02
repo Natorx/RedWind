@@ -183,19 +183,19 @@ const Printer: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-red-950/20 to-neutral-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 p-4">
       <div className="max-w-6xl mx-auto">
         {/* 紧凑头部 */}
         <div className="flex items-center justify-between mb-4 pb-2 border-b border-red-500/30">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🖨️</span>
             <div>
-              <h1 className="text-xl font-bold text-white">打印机控制台</h1>
-              <p className="text-xs text-gray-400">TCP/IP 直连 | GB18030 编码</p>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">打印机控制台</h1>
+              <p className="text-xs text-neutral-400">TCP/IP 直连 | GB18030 编码</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-gray-500">后端服务</p>
+            <p className="text-xs text-neutral-500">后端服务</p>
             <p className="text-xs font-mono text-red-400">{API_BASE_URL}</p>
           </div>
         </div>
@@ -209,30 +209,30 @@ const Printer: React.FC = () => {
               <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">⚙️</span>
-                  <h2 className="text-sm font-semibold text-gray-200">连接配置</h2>
+                  <h2 className="text-sm font-semibold text-neutral-200">连接配置</h2>
                 </div>
               </div>
               <div className="p-3 space-y-2.5">
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-400 mb-0.5">IP 地址</label>
+                    <label className="block text-xs font-medium text-neutral-400 mb-0.5">IP 地址</label>
                     <input
                       type="text"
                       name="ip"
                       value={formData.ip}
                       onChange={handleInputChange}
-                      className="w-full px-2 py-1 text-xs bg-neutral-800 border border-red-500/30 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-white"
+                      className="w-full px-2 py-1 text-xs bg-neutral-800 border border-red-500/30 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-neutral-200"
                       placeholder="192.168.101.8"
                     />
                   </div>
                   <div className="w-24">
-                    <label className="block text-xs font-medium text-gray-400 mb-0.5">端口</label>
+                    <label className="block text-xs font-medium text-neutral-400 mb-0.5">端口</label>
                     <input
                       type="number"
                       name="port"
                       value={formData.port}
                       onChange={handleInputChange}
-                      className="w-full px-2 py-1 text-xs bg-neutral-800 border border-red-500/30 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-white"
+                      className="w-full px-2 py-1 text-xs bg-neutral-800 border border-red-500/30 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-neutral-200"
                       placeholder="9100"
                     />
                   </div>
@@ -240,7 +240,7 @@ const Printer: React.FC = () => {
                     <button
                       onClick={testConnection}
                       disabled={connectionTest.testing}
-                      className="px-3 py-1 text-xs font-medium border border-red-500/30 rounded-md hover:bg-red-500/20 text-gray-300 disabled:opacity-50 transition"
+                      className="px-3 py-1 text-xs font-medium border border-red-500/30 rounded-md hover:bg-red-500/20 text-neutral-300 disabled:opacity-50 transition"
                     >
                       {connectionTest.testing ? '测试中' : '测试'}
                     </button>
@@ -262,11 +262,11 @@ const Printer: React.FC = () => {
               <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20 flex justify-between items-center">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">📝</span>
-                  <h2 className="text-sm font-semibold text-gray-200">打印内容</h2>
+                  <h2 className="text-sm font-semibold text-neutral-200">打印内容</h2>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={fillTestText} className="text-xs text-red-400 hover:text-red-300">填充示例</button>
-                  <button onClick={clearForm} className="text-xs text-gray-500 hover:text-gray-400">清空</button>
+                  <button onClick={clearForm} className="text-xs text-neutral-500 hover:text-neutral-400">清空</button>
                 </div>
               </div>
               <div className="p-3">
@@ -275,12 +275,12 @@ const Printer: React.FC = () => {
                   value={formData.text}
                   onChange={handleInputChange}
                   rows={5}
-                  className="w-full px-2 py-1.5 text-xs bg-neutral-800 border border-red-500/30 rounded font-mono focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-white"
+                  className="w-full px-2 py-1.5 text-xs bg-neutral-800 border border-red-500/30 rounded font-mono focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-neutral-200"
                   placeholder="输入要打印的内容..."
                 />
                 <div className="flex justify-between items-center mt-1.5">
-                  <p className="text-[10px] text-gray-500">💡 使用 {'${currentTime}'} 插入时间</p>
-                  <p className="text-[10px] text-gray-500">{formData.text.length} 字</p>
+                  <p className="text-[10px] text-neutral-500">💡 使用 {'${currentTime}'} 插入时间</p>
+                  <p className="text-[10px] text-neutral-500">{formData.text.length} 字</p>
                 </div>
               </div>
             </div>
@@ -291,7 +291,7 @@ const Printer: React.FC = () => {
               disabled={loading}
               className={`w-full py-2 rounded-md font-medium text-sm transition ${
                 loading
-                  ? 'bg-gray-700 cursor-not-allowed text-gray-500'
+                  ? 'bg-neutral-700 cursor-not-allowed text-neutral-500'
                   : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg shadow-red-500/25'
               }`}
             >
@@ -320,10 +320,10 @@ const Printer: React.FC = () => {
                       {result.message}
                     </p>
                     {result.details && (
-                      <p className="text-[11px] mt-1 text-gray-400">{result.details}</p>
+                      <p className="text-[11px] mt-1 text-neutral-400">{result.details}</p>
                     )}
                   </div>
-                  <button onClick={clearResult} className="text-xs text-gray-500 hover:text-gray-400">✕</button>
+                  <button onClick={clearResult} className="text-xs text-neutral-500 hover:text-neutral-400">✕</button>
                 </div>
               </div>
             )}
@@ -336,27 +336,27 @@ const Printer: React.FC = () => {
               <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">📊</span>
-                  <h2 className="text-sm font-semibold text-gray-200">当前状态</h2>
+                  <h2 className="text-sm font-semibold text-neutral-200">当前状态</h2>
                 </div>
               </div>
               <div className="p-3 space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">目标打印机：</span>
-                  <span className="font-mono text-gray-300">{formData.ip}:{formData.port}</span>
+                  <span className="text-neutral-400">目标打印机：</span>
+                  <span className="font-mono text-neutral-300">{formData.ip}:{formData.port}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">连接状态：</span>
-                  <span className={connectionTest.result === true ? 'text-green-400' : connectionTest.result === false ? 'text-red-400' : 'text-gray-500'}>
+                  <span className="text-neutral-400">连接状态：</span>
+                  <span className={connectionTest.result === true ? 'text-green-400' : connectionTest.result === false ? 'text-red-400' : 'text-neutral-500'}>
                     {connectionTest.result === true ? '● 在线' : connectionTest.result === false ? '● 离线' : '○ 未测试'}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">编码格式：</span>
-                  <span className="text-gray-300">GB18030</span>
+                  <span className="text-neutral-400">编码格式：</span>
+                  <span className="text-neutral-300">GB18030</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">打印内容长度：</span>
-                  <span className="text-gray-300">{formData.text.length} 字符</span>
+                  <span className="text-neutral-400">打印内容长度：</span>
+                  <span className="text-neutral-300">{formData.text.length} 字符</span>
                 </div>
               </div>
             </div>
@@ -371,27 +371,27 @@ const Printer: React.FC = () => {
               </div>
               <div className="p-3">
                 <ul className="space-y-1.5">
-                  <li className="text-xs text-gray-300 flex items-start gap-1.5">
+                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
                     <span className="text-red-400">•</span>
                     <span>确保打印机已开机并连接到网络</span>
                   </li>
-                  <li className="text-xs text-gray-300 flex items-start gap-1.5">
+                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
                     <span className="text-red-400">•</span>
                     <span>确认 IP 地址和端口号（默认 9100）正确</span>
                   </li>
-                  <li className="text-xs text-gray-300 flex items-start gap-1.5">
+                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
                     <span className="text-red-400">•</span>
                     <span>先点击「测试」按钮确认连通性</span>
                   </li>
-                  <li className="text-xs text-gray-300 flex items-start gap-1.5">
+                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
                     <span className="text-red-400">•</span>
                     <span>支持 GB18030 编码，可正常打印中文</span>
                   </li>
-                  <li className="text-xs text-gray-300 flex items-start gap-1.5">
+                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
                     <span className="text-red-400">•</span>
                     <span>使用 {'${currentTime}'} 自动替换为当前时间</span>
                   </li>
-                  <li className="text-xs text-gray-300 flex items-start gap-1.5">
+                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
                     <span className="text-red-400">•</span>
                     <span>确保后端服务已启动（端口 3000）</span>
                   </li>
@@ -404,20 +404,20 @@ const Printer: React.FC = () => {
               <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">⚡</span>
-                  <h2 className="text-sm font-semibold text-gray-200">快捷操作</h2>
+                  <h2 className="text-sm font-semibold text-neutral-200">快捷操作</h2>
                 </div>
               </div>
               <div className="p-3">
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setFormData(prev => ({ ...prev, text: prev.text + '\n' }))}
-                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-gray-300 transition"
+                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-neutral-300 transition"
                   >
                     添加换行
                   </button>
                   <button
                     onClick={() => setFormData(prev => ({ ...prev, text: prev.text + '${currentTime}' }))}
-                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-gray-300 transition"
+                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-neutral-300 transition"
                   >
                     插入时间
                   </button>
@@ -426,7 +426,7 @@ const Printer: React.FC = () => {
                       const currentText = formData.text;
                       setFormData(prev => ({ ...prev, text: currentText + '\n------------------\n' }));
                     }}
-                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-gray-300 transition"
+                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-neutral-300 transition"
                   >
                     添加分隔线
                   </button>

@@ -220,36 +220,27 @@ const handleDownload = async (url: string, filename: string) => {
     );
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8">
+return (
+    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* 标题 */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-            文件格式转换器
-          </h1>
-          <p className="text-gray-600">
-            支持图片、文档、视频、音频等多种格式转换
-          </p>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* 左侧：文件上传区域 */}
           <div className="lg:col-span-2 space-y-6">
             {/* 上传区域 */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
               <div 
-                className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 transition-colors"
+                className="border-2 border-dashed border-red-500/30 rounded-xl m-6 p-8 text-center cursor-pointer hover:border-red-500/60 hover:bg-red-500/5 transition-all duration-300"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                <Upload className="w-12 h-12 text-neutral-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-neutral-200 mb-2">
                   点击或拖拽文件上传
                 </h3>
-                <p className="text-gray-500 text-sm mb-4">
+                <p className="text-neutral-400 text-sm mb-4">
                   支持 {Object.values(SUPPORTED_FORMATS).flat().join(', ')} 等格式
                 </p>
-                <button className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                <button className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25">
                   选择文件
                 </button>
                 <input
@@ -265,28 +256,30 @@ const handleDownload = async (url: string, filename: string) => {
 
             {/* 已上传文件列表 */}
             {files.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  已上传文件 ({files.length})
-                </h3>
-                <div className="space-y-3 max-h-80 overflow-y-auto">
+              <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-neutral-200 mb-4">
+                    已上传文件 ({files.length})
+                  </h3>
+                </div>
+                <div className="space-y-3 max-h-80 overflow-y-auto px-6 pb-6 custom-scrollbar">
                   {files.map((file, index) => (
                     <div
                       key={index}
-                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                      className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
                         selectedFile === file 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:bg-gray-50'
-                      } cursor-pointer transition-all`}
+                          ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/25' 
+                          : 'border-red-500/30 hover:bg-red-500/5'
+                      }`}
                       onClick={() => setSelectedFile(file)}
                     >
                       <div className="flex items-center space-x-3">
                         <FileIcon type={file.category} />
                         <div>
-                          <p className="font-medium text-gray-800 truncate max-w-xs">
+                          <p className="font-medium text-neutral-200 truncate max-w-xs">
                             {file.name}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-neutral-500">
                             {formatFileSize(file.size)} • {file.type.toUpperCase()}
                           </p>
                         </div>
@@ -296,9 +289,9 @@ const handleDownload = async (url: string, filename: string) => {
                           e.stopPropagation();
                           removeFile(index);
                         }}
-                        className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                        className="p-1 hover:bg-neutral-700 rounded-full transition-colors"
                       >
-                        <X className="w-5 h-5 text-gray-500" />
+                        <X className="w-5 h-5 text-neutral-500" />
                       </button>
                     </div>
                   ))}
@@ -310,116 +303,120 @@ const handleDownload = async (url: string, filename: string) => {
           {/* 右侧：转换控制区域 */}
           <div className="space-y-6">
             {/* 转换设置 */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                转换设置
-              </h3>
-              
-              {selectedFile ? (
-                <div className="space-y-4">
-                  {/* 当前选中文件 */}
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <FileIcon type={selectedFile.category} />
-                      <div>
-                        <p className="font-medium text-gray-800 truncate">
-                          {selectedFile.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {formatFileSize(selectedFile.size)}
-                        </p>
+            <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-neutral-200 mb-4">
+                  转换设置
+                </h3>
+                
+                {selectedFile ? (
+                  <div className="space-y-4">
+                    {/* 当前选中文件 */}
+                    <div className="p-3 bg-neutral-800/50 rounded-lg border border-red-500/20">
+                      <div className="flex items-center space-x-3">
+                        <FileIcon type={selectedFile.category} />
+                        <div>
+                          <p className="font-medium text-neutral-200 truncate">
+                            {selectedFile.name}
+                          </p>
+                          <p className="text-sm text-neutral-500">
+                            {formatFileSize(selectedFile.size)}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* 转换选项 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      选择转换格式
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {getAvailableConversions().map((option, index) => (
-                        <button
-                          key={index}
-                          className={`p-3 rounded-lg border text-center transition-all ${
-                            conversionType === `${option.from}_${option.to}`
-                              ? 'border-blue-500 bg-blue-50 text-blue-600'
-                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                          }`}
-                          onClick={() => setConversionType(`${option.from}_${option.to}`)}
-                        >
-                          <div className="font-medium">{option.label}</div>
-                        </button>
-                      ))}
-                    </div>
-                    
-                    {getAvailableConversions().length === 0 && (
-                      <div className="text-center py-4 text-gray-500">
-                        暂无可用转换选项
+                    {/* 转换选项 */}
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-300 mb-2">
+                        选择转换格式
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {getAvailableConversions().map((option, index) => (
+                          <button
+                            key={index}
+                            className={`p-3 rounded-lg border text-center transition-all ${
+                              conversionType === `${option.from}_${option.to}`
+                                ? 'border-red-500 bg-red-500/10 text-red-400 shadow-lg shadow-red-500/25'
+                                : 'border-red-500/30 hover:border-red-500/50 hover:bg-red-500/5 text-neutral-300'
+                            }`}
+                            onClick={() => setConversionType(`${option.from}_${option.to}`)}
+                          >
+                            <div className="font-medium">{option.label}</div>
+                          </button>
+                        ))}
                       </div>
-                    )}
+                      
+                      {getAvailableConversions().length === 0 && (
+                        <div className="text-center py-4 text-neutral-500">
+                          暂无可用转换选项
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 转换按钮 */}
+                    <button
+                      onClick={handleConvert}
+                      disabled={!conversionType || isConverting}
+                      className={`w-full py-3 rounded-lg font-medium transition-all ${
+                        !conversionType || isConverting
+                          ? 'bg-neutral-700 cursor-not-allowed text-neutral-500'
+                          : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg shadow-red-500/25'
+                      }`}
+                    >
+                      {isConverting ? (
+                        <span className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          转换中...
+                        </span>
+                      ) : (
+                        '开始转换'
+                      )}
+                    </button>
                   </div>
+                ) : (
+                  <div className="text-center py-8 text-neutral-500">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-neutral-600" />
+                    <p>请先上传文件</p>
+                  </div>
+                )}
 
-                  {/* 转换按钮 */}
-                  <button
-                    onClick={handleConvert}
-                    disabled={!conversionType || isConverting}
-                    className={`w-full py-3 rounded-lg font-medium transition-colors ${
-                      !conversionType || isConverting
-                        ? 'bg-gray-300 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white'
-                    }`}
-                  >
-                    {isConverting ? (
-                      <span className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                        转换中...
-                      </span>
-                    ) : (
-                      '开始转换'
-                    )}
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                  <p>请先上传文件</p>
-                </div>
-              )}
-
-              {/* 错误提示 */}
-              {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
-                  <AlertCircle className="w-5 h-5 text-red-500" />
-                  <span className="text-red-600 text-sm">{error}</span>
-                </div>
-              )}
+                {/* 错误提示 */}
+                {error && (
+                  <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center space-x-2">
+                    <AlertCircle className="w-5 h-5 text-red-400" />
+                    <span className="text-red-400 text-sm">{error}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* 转换结果 */}
             {convertedFiles.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  转换结果 ({convertedFiles.length})
-                </h3>
-                <div className="space-y-3">
+              <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-neutral-200 mb-4">
+                    转换结果 ({convertedFiles.length})
+                  </h3>
+                </div>
+                <div className="space-y-3 px-6 pb-6">
                   {convertedFiles.map((file, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30 rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <CheckCircle className="w-5 h-5 text-green-400" />
                         <div>
-                          <p className="font-medium text-gray-800 truncate max-w-xs">
+                          <p className="font-medium text-neutral-200 truncate max-w-xs">
                             {file.name}
                           </p>
-                          <p className="text-sm text-green-600">转换成功</p>
+                          <p className="text-sm text-green-400">转换成功</p>
                         </div>
                       </div>
                       <button
                         onClick={() => handleDownload(file.url, file.name)}
-                        className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                        className="p-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg shadow-green-500/25"
                       >
                         <Download className="w-4 h-4" />
                       </button>
@@ -432,11 +429,36 @@ const handleDownload = async (url: string, filename: string) => {
         </div>
 
         {/* 底部信息 */}
-        <div className="mt-8 text-center text-gray-500 text-sm">
-          <p>注意：这是一个前端演示组件，实际文件转换需要后端API支持</p>
-          <p className="mt-1">最大支持文件大小：100MB • 支持格式：图片、文档、视频、音频</p>
+        <div className="mt-8 text-center">
+          <p className="text-neutral-500 text-sm">
+            注意：这是一个前端演示组件，实际文件转换需要后端API支持
+          </p>
+          <p className="text-neutral-500 text-sm mt-1">
+            最大支持文件大小：100MB • 支持格式：图片、文档、视频、音频
+          </p>
         </div>
       </div>
+
+      <style>{`
+        /* 自定义滚动条 */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #3f3f46;
+          border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #ef4444;
+          border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #dc2626;
+        }
+      `}</style>
     </div>
   );
 };

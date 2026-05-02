@@ -318,18 +318,25 @@ const AIChat: React.FC = () => {
     localStorage.setItem('use_streaming', newValue.toString());
   };
 
-  return (
-    <div className="flex flex-col h-full bg-gray-50">
+return (
+    <div className="flex flex-col h-full bg-gradient-to-br from-red-950 to-neutral-900">
       {/* 标题栏 */}
-      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
-        <h1 className="text-xl font-semibold text-gray-800">DeepSeek AI 助手</h1>
+      <div className="flex items-center justify-between p-4 bg-neutral-900/80 backdrop-blur-sm border-b border-red-500/20">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center">
+            <span className="text-white text-sm font-bold">AI</span>
+          </div>
+          <h1 className="text-xl font-semibold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+            DeepSeek AI 助手
+          </h1>
+        </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={toggleStreaming}
-            className={`px-3 py-1 text-sm rounded-md transition-colors ${
+            className={`px-3 py-1 text-sm rounded-md transition-all ${
               useStreaming 
-                ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30' 
+                : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-red-500/30'
             }`}
             title={useStreaming ? '点击关闭流式输出' : '点击开启流式输出'}
           >
@@ -337,7 +344,7 @@ const AIChat: React.FC = () => {
           </button>
           <button
             onClick={clearChat}
-            className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            className="px-3 py-1 text-sm text-neutral-300 bg-neutral-700 rounded-md hover:bg-neutral-600 transition-all border border-red-500/30"
           >
             清空对话
           </button>
@@ -345,18 +352,18 @@ const AIChat: React.FC = () => {
       </div>
 
       {/* API Key 设置 */}
-      <div className="p-4 bg-blue-50 border-b border-blue-100">
+      <div className="p-4 bg-red-500/5 border-b border-red-500/20">
         <div className="flex items-center space-x-2 mb-2">
           <input
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="请输入 DeepSeek API Key"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500"
           />
           <button
             onClick={saveApiKey}
-            className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-md hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
           >
             保存
           </button>
@@ -369,28 +376,28 @@ const AIChat: React.FC = () => {
               id="streaming-toggle"
               checked={useStreaming}
               onChange={toggleStreaming}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-red-600 rounded focus:ring-red-500 bg-neutral-700 border-red-500/30"
             />
-            <label htmlFor="streaming-toggle" className="text-sm text-gray-700">
+            <label htmlFor="streaming-toggle" className="text-sm text-neutral-300">
               启用流式输出（打字机效果）
             </label>
           </div>
           
           <button
             onClick={saveStreamingSetting}
-            className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            className="px-3 py-1 text-sm text-neutral-300 bg-neutral-700 rounded-md hover:bg-neutral-600 transition-all border border-red-500/30"
           >
             保存设置
           </button>
         </div>
         
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-neutral-500">
           API Key 仅保存在本地浏览器中，不会发送到任何其他服务器
         </p>
       </div>
 
       {/* 消息区域 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -399,20 +406,20 @@ const AIChat: React.FC = () => {
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
                 message.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white border border-gray-200 text-gray-800'
+                  ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/25'
+                  : 'bg-neutral-800/80 border border-red-500/20 text-neutral-200 backdrop-blur-sm'
               }`}
             >
               <div className="whitespace-pre-wrap">
                 {message.content}
                 {message.role === 'assistant' && message.content === '' && (
-                  <span className="text-gray-400">正在输入...</span>
+                  <span className="text-neutral-500">正在输入...</span>
                 )}
               </div>
-              <div className={`text-xs mt-1 ${message.role === 'user' ? 'text-blue-200' : 'text-gray-500'}`}>
+              <div className={`text-xs mt-1 ${message.role === 'user' ? 'text-red-300' : 'text-neutral-500'}`}>
                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 {message.role === 'assistant' && useStreaming && (
-                  <span className="ml-2 text-green-500">• 流式</span>
+                  <span className="ml-2 text-green-400">• 流式</span>
                 )}
               </div>
             </div>
@@ -421,11 +428,11 @@ const AIChat: React.FC = () => {
         
         {isLoading && !useStreaming && (
           <div className="flex justify-start">
-            <div className="bg-white border border-gray-200 rounded-lg p-3">
+            <div className="bg-neutral-800/80 border border-red-500/20 rounded-lg p-3 backdrop-blur-sm">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           </div>
@@ -435,14 +442,14 @@ const AIChat: React.FC = () => {
       </div>
 
       {/* 输入区域 */}
-      <div className="p-4 bg-white border-t border-gray-200">
+      <div className="p-4 bg-neutral-900/80 backdrop-blur-sm border-t border-red-500/20">
         <div className="flex space-x-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="输入您的问题..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="flex-1 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500 resize-none"
             rows={3}
             disabled={isLoading}
           />
@@ -450,26 +457,47 @@ const AIChat: React.FC = () => {
             <button
               onClick={handleSendMessage}
               disabled={isLoading || !input.trim()}
-              className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-md hover:from-red-700 hover:to-red-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-500/25"
             >
               {isLoading ? '发送中...' : '发送'}
             </button>
-            <div className="text-xs text-center text-gray-500">
+            <div className="text-xs text-center text-neutral-500">
               {useStreaming ? '流式模式' : '普通模式'}
             </div>
           </div>
         </div>
         <div className="flex justify-between items-center mt-2">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-neutral-500">
             按 Enter 发送，Shift + Enter 换行
           </p>
-          <p className="text-sm text-gray-500">
-            当前模式: <span className={useStreaming ? 'text-green-600 font-medium' : 'text-blue-600 font-medium'}>
+          <p className="text-sm text-neutral-500">
+            当前模式: <span className={useStreaming ? 'text-green-400 font-medium' : 'text-red-400 font-medium'}>
               {useStreaming ? '流式输出' : '普通输出'}
             </span>
           </p>
         </div>
       </div>
+
+      <style>{`
+        /* 自定义滚动条 */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #3f3f46;
+          border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #ef4444;
+          border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #dc2626;
+        }
+      `}</style>
     </div>
   );
 };

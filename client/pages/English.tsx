@@ -486,13 +486,15 @@ const TypingPractice: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* 消息提示 */}
         {message && (
           <div
             className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
-              message.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+              message.type === 'success'
+                ? 'bg-green-500/90 backdrop-blur-sm border border-green-400/30'
+                : 'bg-red-500/90 backdrop-blur-sm border border-red-400/30'
             } text-white animate-fade-in`}
           >
             {message.text}
@@ -502,12 +504,12 @@ const TypingPractice: React.FC = () => {
         {/* 词汇集选择器 */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-3">
-            <label className="text-sm font-semibold text-gray-700">
+            <label className="text-sm font-semibold text-neutral-300">
               选择词汇集
             </label>
             <button
               onClick={() => setShowCustomModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/25 text-sm"
             >
               + 自定义词汇集
             </button>
@@ -519,27 +521,29 @@ const TypingPractice: React.FC = () => {
                   onClick={() => switchWordSet(set.id)}
                   className={`w-full p-3 rounded-lg border-2 transition-all ${
                     currentSetId === set.id
-                      ? 'border-blue-500 bg-blue-50 shadow-md'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                      ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/25'
+                      : 'border-red-500/30 hover:border-red-500/50 bg-neutral-900/50 backdrop-blur-sm'
                   }`}
                 >
                   <div className="flex justify-between items-center">
                     <div className="text-left">
-                      <div className="font-semibold text-gray-800">
+                      <div
+                        className={`font-semibold ${currentSetId === set.id ? 'text-red-400' : 'text-neutral-200'}`}
+                      >
                         {set.name}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-neutral-500">
                         {set.words.length} 个单词
                       </div>
                     </div>
                     {set.isOfficial ? (
-                      <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                      <span className="text-xs bg-neutral-700 text-neutral-400 px-2 py-1 rounded">
                         官方
                       </span>
                     ) : (
                       <button
                         onClick={exportCurrentWordSet}
-                        className="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300 transition-colors"
+                        className="text-xs bg-neutral-700 text-neutral-300 px-2 py-1 rounded hover:bg-neutral-600 transition-colors"
                       >
                         导出
                       </button>
@@ -554,7 +558,7 @@ const TypingPractice: React.FC = () => {
                         deleteCustomWordSet(set.id);
                       }
                     }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
                   >
                     ×
                   </button>
@@ -566,16 +570,16 @@ const TypingPractice: React.FC = () => {
 
         {/* 进度条 */}
         <div className="mt-8 mb-2">
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <div className="flex justify-between text-sm text-neutral-400 mb-2">
             <span>进度</span>
             <span>
               {completedWords.length} / {currentWordSet?.words.length || 0}{' '}
               个单词
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-neutral-700 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-red-600 to-red-700 h-2 rounded-full transition-all duration-300"
               style={{
                 width: `${(completedWords.length / (currentWordSet?.words.length || 1)) * 100}%`,
               }}
@@ -584,14 +588,14 @@ const TypingPractice: React.FC = () => {
         </div>
 
         {/* 主要游戏区域 */}
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 mb-8 shadow-md border border-gray-200">
+        <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl p-8 mb-8 shadow-lg border border-red-500/20">
           {/* 当前单词显示 */}
           <div className="text-center mb-8 flex">
             <div className="w-3/5">
-              <div className="text-gray-600 text-sm mb-2">
+              <div className="text-neutral-400 text-sm mb-2">
                 <span>当前单词</span>
               </div>
-              <div className="text-6xl font-bold tracking-wider mb-4">
+              <div className="text-6xl font-bold tracking-wider mb-4 text-neutral-100">
                 {renderWordWithHighlight()}
               </div>
             </div>
@@ -599,8 +603,8 @@ const TypingPractice: React.FC = () => {
             <div className="w-2/5">
               {currentMeaning && (
                 <div className="mt-2 mb-2">
-                  <div className="text-gray-500 text-sm mb-1">中文释义</div>
-                  <div className="text-xl text-cyan-600 font-semibold">
+                  <div className="text-neutral-400 text-sm mb-1">中文释义</div>
+                  <div className="text-xl text-cyan-400 font-semibold">
                     {currentMeaning}
                   </div>
                 </div>
@@ -623,7 +627,7 @@ const TypingPractice: React.FC = () => {
                   ? `${currentWord?.length || 0} 个字符`
                   : '输入上面的单词...'
               }
-              className="w-full px-6 py-4 bg-white border-2 border-gray-300 rounded-xl text-gray-800 text-xl font-mono focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-gray-400"
+              className="w-full px-6 py-4 bg-neutral-800 border-2 border-red-500/30 rounded-xl text-neutral-100 text-xl font-mono focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all placeholder-neutral-500"
               autoComplete="off"
               autoCapitalize="none"
               autoCorrect="off"
@@ -632,9 +636,9 @@ const TypingPractice: React.FC = () => {
           </div>
 
           {/* 提示信息 */}
-          <div className="text-center text-gray-600 text-sm">
+          <div className="text-center text-neutral-400 text-sm">
             {completedWords.length === (currentWordSet?.words.length || 0) ? (
-              <div className="text-green-600 font-semibold">
+              <div className="text-green-400 font-semibold">
                 🎉 恭喜！你完成了所有单词！ 🎉
               </div>
             ) : (
@@ -644,11 +648,13 @@ const TypingPractice: React.FC = () => {
         </div>
 
         {/* 历史记录 */}
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <h3 className="text-gray-800 font-semibold mb-3">最近输入的单词</h3>
-          <div className="max-h-64 overflow-y-auto">
+        <div className="bg-neutral-900/80 backdrop-blur-sm rounded-xl p-4 border border-red-500/20">
+          <h3 className="text-neutral-200 font-semibold mb-3">
+            最近输入的单词
+          </h3>
+          <div className="max-h-64 overflow-y-auto custom-scrollbar">
             {history.length === 0 ? (
-              <div className="text-gray-500 text-center py-8">
+              <div className="text-neutral-500 text-center py-8">
                 还没有输入单词，开始打字吧！
               </div>
             ) : (
@@ -659,20 +665,20 @@ const TypingPractice: React.FC = () => {
                   .map((item, index) => (
                     <div
                       key={index}
-                      className="p-3 rounded-lg flex justify-between items-center bg-green-50 border border-green-200"
+                      className="p-3 rounded-lg flex justify-between items-center bg-green-500/10 border border-green-500/20"
                     >
                       <div className="flex items-center space-x-3">
-                        <span className="text-green-600">✓</span>
+                        <span className="text-green-400">✓</span>
                         <div>
-                          <div className="text-gray-800 font-mono">
+                          <div className="text-neutral-200 font-mono">
                             {item.word}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-neutral-500">
                             {getWordMeaningFromDb(item.word)}
                           </div>
                         </div>
                       </div>
-                      <span className="text-gray-500 text-sm">
+                      <span className="text-neutral-500 text-sm">
                         {new Date(item.time).toLocaleTimeString()}
                       </span>
                     </div>
@@ -686,7 +692,7 @@ const TypingPractice: React.FC = () => {
         <div className="mt-6 text-center">
           <button
             onClick={resetGame}
-            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="px-6 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors border border-red-500/30"
           >
             重置进度
           </button>
@@ -694,13 +700,15 @@ const TypingPractice: React.FC = () => {
 
         {/* 自定义词汇集模态框 - 新版支持输入单词和释义 */}
         {showCustomModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-neutral-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-red-500/20">
               <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4">创建自定义词汇集</h2>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent mb-4">
+                  创建自定义词汇集
+                </h2>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-neutral-300 mb-2">
                     词汇集名称
                   </label>
                   <input
@@ -708,12 +716,12 @@ const TypingPractice: React.FC = () => {
                     value={newSetName}
                     onChange={(e) => setNewSetName(e.target.value)}
                     placeholder="例如：雅思词汇"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
                   />
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-neutral-300 mb-2">
                     单词和释义列表
                   </label>
                   <div className="space-y-3">
@@ -725,7 +733,7 @@ const TypingPractice: React.FC = () => {
                             value={pair.word}
                             onChange={(e) => updateWord(index, e.target.value)}
                             placeholder="英文单词"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                            className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
                           />
                         </div>
                         <div className="flex-[2]">
@@ -736,13 +744,13 @@ const TypingPractice: React.FC = () => {
                               updateMeaning(index, e.target.value)
                             }
                             placeholder="中文释义"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                            className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
                           />
                         </div>
                         {wordMeaningPairs.length > 1 && (
                           <button
                             onClick={() => removeWordMeaningPair(index)}
-                            className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                            className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors border border-red-500/30"
                           >
                             删除
                           </button>
@@ -752,7 +760,7 @@ const TypingPractice: React.FC = () => {
                   </div>
                   <button
                     onClick={addWordMeaningPair}
-                    className="mt-3 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                    className="mt-3 px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm border border-red-500/30"
                   >
                     + 添加单词
                   </button>
@@ -761,7 +769,7 @@ const TypingPractice: React.FC = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={handleAddCustomSet}
-                    className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex-1 px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
                   >
                     保存
                   </button>
@@ -771,14 +779,14 @@ const TypingPractice: React.FC = () => {
                       setNewSetName('');
                       setWordMeaningPairs([{ word: '', meaning: '' }]);
                     }}
-                    className="flex-1 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="flex-1 px-6 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors border border-red-500/30"
                   >
                     取消
                   </button>
                 </div>
 
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-gray-600">
+                <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <p className="text-sm text-neutral-400">
                     💡
                     提示：每个单词都会保存到字典中，以后创建其他词汇集时可以直接使用。
                   </p>
@@ -802,6 +810,25 @@ const TypingPractice: React.FC = () => {
         }
         .animate-fade-in {
           animation: fade-in 0.3s ease-out;
+        }
+        
+        /* 自定义滚动条 */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #3f3f46;
+          border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #ef4444;
+          border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #dc2626;
         }
       `}</style>
     </div>

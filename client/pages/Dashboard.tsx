@@ -19,11 +19,11 @@ const StatCard = ({ title, value, icon: Icon, trend, trendValue, color }: any) =
   const isPositive = trend === 'up';
   
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 transition-all hover:shadow-md">
+    <div className="bg-neutral-900/80 rounded-xl shadow-lg p-6 border border-red-500/20 backdrop-blur-sm transition-all hover:shadow-xl hover:border-red-500/40">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-800">{value}</p>
+          <p className="text-sm font-medium text-neutral-400 mb-1">{title}</p>
+          <p className="text-2xl font-bold text-neutral-100">{value}</p>
           
           {trend && (
             <div className="flex items-center mt-2">
@@ -32,10 +32,10 @@ const StatCard = ({ title, value, icon: Icon, trend, trendValue, color }: any) =
               ) : (
                 <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
               )}
-              <span className={`text-xs font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`text-xs font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
                 {trendValue}
               </span>
-              <span className="text-xs text-gray-400 ml-1">vs last month</span>
+              <span className="text-xs text-neutral-500 ml-1">vs last month</span>
             </div>
           )}
         </div>
@@ -54,10 +54,10 @@ const SimpleChart = () => {
   const maxValue = Math.max(...data);
   
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div className="bg-neutral-900/80 rounded-xl shadow-lg p-6 border border-red-500/20 backdrop-blur-sm">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-800">Revenue Overview</h3>
-        <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <h3 className="text-lg font-semibold text-neutral-100">Revenue Overview</h3>
+        <select className="text-sm bg-neutral-800 border border-red-500/30 rounded-lg px-3 py-1.5 text-neutral-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
           <option>Last 12 months</option>
           <option>Last 6 months</option>
           <option>Last 3 months</option>
@@ -68,23 +68,23 @@ const SimpleChart = () => {
         {data.map((value, index) => (
           <div key={index} className="flex-1 flex flex-col items-center">
             <div 
-              className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-500"
+              className="w-full bg-gradient-to-t from-red-500 to-red-400 rounded-lg transition-all duration-300 hover:from-red-600 hover:to-red-500"
               style={{ height: `${(value / maxValue) * 100}%` }}
             />
-            <span className="text-xs text-gray-500 mt-2">{index + 1}</span>
+            <span className="text-xs text-neutral-500 mt-2">{index + 1}</span>
           </div>
         ))}
       </div>
       
-      <div className="mt-6 pt-4 border-t border-gray-100">
+      <div className="mt-6 pt-4 border-t border-red-500/20">
         <div className="flex justify-between text-sm">
           <div>
-            <p className="text-gray-500">Total Revenue</p>
-            <p className="text-xl font-bold text-gray-800">$48,295</p>
+            <p className="text-neutral-400">Total Revenue</p>
+            <p className="text-xl font-bold text-neutral-100">$48,295</p>
           </div>
           <div className="text-right">
-            <p className="text-gray-500">Growth</p>
-            <p className="text-green-600 font-semibold">+23.5%</p>
+            <p className="text-neutral-400">Growth</p>
+            <p className="text-green-400 font-semibold">+23.5%</p>
           </div>
         </div>
       </div>
@@ -95,42 +95,42 @@ const SimpleChart = () => {
 // 最近活动列表组件
 const RecentActivities = () => {
   const activities = [
-    { id: 1, user: 'John Doe', action: 'purchased', item: 'Premium Plan', amount: '$99', time: '2 minutes ago', icon: ShoppingCart, color: 'bg-blue-100 text-blue-600' },
-    { id: 2, user: 'Jane Smith', action: 'signed up', item: 'Free Trial', amount: '$0', time: '1 hour ago', icon: Users, color: 'bg-green-100 text-green-600' },
-    { id: 3, user: 'Mike Johnson', action: 'upgraded to', item: 'Business Plan', amount: '$299', time: '3 hours ago', icon: TrendingUp, color: 'bg-purple-100 text-purple-600' },
-    { id: 4, user: 'Sarah Williams', action: 'refunded', item: 'Basic Plan', amount: '$49', time: '5 hours ago', icon: DollarSign, color: 'bg-red-100 text-red-600' },
-    { id: 5, user: 'Robert Brown', action: 'cancelled', item: 'Subscription', amount: '-$79', time: '1 day ago', icon: Activity, color: 'bg-orange-100 text-orange-600' },
+    { id: 1, user: 'John Doe', action: 'purchased', item: 'Premium Plan', amount: '$99', time: '2 minutes ago', icon: ShoppingCart, color: 'bg-blue-500/20 text-blue-400' },
+    { id: 2, user: 'Jane Smith', action: 'signed up', item: 'Free Trial', amount: '$0', time: '1 hour ago', icon: Users, color: 'bg-green-500/20 text-green-400' },
+    { id: 3, user: 'Mike Johnson', action: 'upgraded to', item: 'Business Plan', amount: '$299', time: '3 hours ago', icon: TrendingUp, color: 'bg-purple-500/20 text-purple-400' },
+    { id: 4, user: 'Sarah Williams', action: 'refunded', item: 'Basic Plan', amount: '$49', time: '5 hours ago', icon: DollarSign, color: 'bg-red-500/20 text-red-400' },
+    { id: 5, user: 'Robert Brown', action: 'cancelled', item: 'Subscription', amount: '-$79', time: '1 day ago', icon: Activity, color: 'bg-orange-500/20 text-orange-400' },
   ];
   
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div className="p-6 border-b border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-800">Recent Activities</h3>
-        <p className="text-sm text-gray-500 mt-1">Latest user actions and transactions</p>
+    <div className="bg-neutral-900/80 rounded-xl shadow-lg border border-red-500/20 backdrop-blur-sm">
+      <div className="p-6 border-b border-red-500/20">
+        <h3 className="text-lg font-semibold text-neutral-100">Recent Activities</h3>
+        <p className="text-sm text-neutral-400 mt-1">Latest user actions and transactions</p>
       </div>
       
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-red-500/10">
         {activities.map((activity) => {
           const IconComponent = activity.icon;
           return (
-            <div key={activity.id} className="p-4 hover:bg-gray-50 transition-colors">
+            <div key={activity.id} className="p-4 hover:bg-red-500/5 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className={`p-2 rounded-lg ${activity.color}`}>
                     <IconComponent className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-800">
+                    <p className="text-sm font-medium text-neutral-200">
                       <span className="font-semibold">{activity.user}</span>{' '}
-                      <span className="text-gray-600">{activity.action}</span>{' '}
-                      <span className="font-semibold">{activity.item}</span>
+                      <span className="text-neutral-400">{activity.action}</span>{' '}
+                      <span className="font-semibold text-neutral-200">{activity.item}</span>
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">{activity.time}</p>
+                    <p className="text-xs text-neutral-500 mt-0.5">{activity.time}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm font-semibold text-gray-700">{activity.amount}</span>
-                  <button className="text-gray-400 hover:text-gray-600">
+                  <span className="text-sm font-semibold text-neutral-300">{activity.amount}</span>
+                  <button className="text-neutral-500 hover:text-neutral-400">
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
                 </div>
@@ -140,8 +140,8 @@ const RecentActivities = () => {
         })}
       </div>
       
-      <div className="p-4 border-t border-gray-100">
-        <button className="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium">
+      <div className="p-4 border-t border-red-500/20">
+        <button className="w-full text-center text-sm text-red-400 hover:text-red-300 font-medium transition-colors">
           View all activities →
         </button>
       </div>
@@ -160,27 +160,29 @@ const Dashboard = () => {
   ];
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900">
       {/* 顶部导航栏 */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-neutral-900/80 backdrop-blur-sm border-b border-red-500/20 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center">
                   <Activity className="w-5 h-5 text-white" />
                 </div>
               </div>
-              <h1 className="ml-3 text-xl font-bold text-gray-800">Dashboard</h1>
+              <h1 className="ml-3 text-xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+                Dashboard
+              </h1>
             </div>
             
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <button className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                <button className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-500/10 transition-colors">
+                  <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white text-sm font-medium">
                     JD
                   </div>
-                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">John Doe</span>
+                  <span className="text-sm font-medium text-neutral-300 hidden sm:inline">John Doe</span>
                 </button>
               </div>
             </div>
@@ -209,40 +211,40 @@ const Dashboard = () => {
         
         {/* 底部额外信息 */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h4 className="text-sm font-semibold text-gray-600 mb-3">Quick Actions</h4>
+          <div className="bg-neutral-900/80 rounded-xl shadow-lg p-6 border border-red-500/20 backdrop-blur-sm">
+            <h4 className="text-sm font-semibold text-neutral-400 mb-3">Quick Actions</h4>
             <div className="space-y-2">
-              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-700">
+              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/10 transition-colors text-sm text-neutral-300">
                 📊 Generate Report
               </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-700">
+              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/10 transition-colors text-sm text-neutral-300">
                 👥 Invite Users
               </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-700">
+              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/10 transition-colors text-sm text-neutral-300">
                 ⚙️ Settings
               </button>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h4 className="text-sm font-semibold text-gray-600 mb-3">System Status</h4>
+          <div className="bg-neutral-900/80 rounded-xl shadow-lg p-6 border border-red-500/20 backdrop-blur-sm">
+            <h4 className="text-sm font-semibold text-neutral-400 mb-3">System Status</h4>
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">API Response Time</span>
-                <span className="text-sm font-medium text-green-600">124ms</span>
+              <div className="flex justify-between items-center border-b border-red-500/10 pb-2">
+                <span className="text-sm text-neutral-400">API Response Time</span>
+                <span className="text-sm font-medium text-green-400">124ms</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-red-500/10 pb-2">
+                <span className="text-sm text-neutral-400">Uptime</span>
+                <span className="text-sm font-medium text-green-400">99.98%</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Uptime</span>
-                <span className="text-sm font-medium text-green-600">99.98%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Active Users</span>
-                <span className="text-sm font-medium text-blue-600">347</span>
+                <span className="text-sm text-neutral-400">Active Users</span>
+                <span className="text-sm font-medium text-blue-400">347</span>
               </div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm p-6 text-white">
+          <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-xl shadow-lg p-6 text-white">
             <h4 className="text-sm font-semibold opacity-90 mb-2">Monthly Target</h4>
             <p className="text-2xl font-bold">78%</p>
             <div className="mt-3 bg-white/20 rounded-full h-2">

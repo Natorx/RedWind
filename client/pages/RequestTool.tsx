@@ -141,22 +141,22 @@ const RequestTool: React.FC = () => {
     }
   };
 
-  return (
-    <div className="h-screen flex flex-col bg-gray-50">
+return (
+    <div className="h-screen flex flex-col bg-gradient-to-br from-red-950 to-neutral-900">
       {/* 请求栏 */}
-      <div className="bg-white border-b border-gray-200 p-4">
+      <div className="bg-neutral-900/80 backdrop-blur-sm border-b border-red-500/20 p-4">
         <div className="flex gap-2">
           {/* 请求方法 */}
           <select
             value={method}
             onChange={(e) => setMethod(e.target.value as HttpMethod)}
-            className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-red-500/30 rounded-lg bg-neutral-800 text-neutral-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
-            <option value="GET">GET</option>
-            <option value="POST">POST</option>
-            <option value="PUT">PUT</option>
-            <option value="DELETE">DELETE</option>
-            <option value="PATCH">PATCH</option>
+            <option value="GET" className="text-green-400">GET</option>
+            <option value="POST" className="text-yellow-400">POST</option>
+            <option value="PUT" className="text-blue-400">PUT</option>
+            <option value="DELETE" className="text-red-400">DELETE</option>
+            <option value="PATCH" className="text-purple-400">PATCH</option>
           </select>
 
           {/* URL 输入框 */}
@@ -165,14 +165,14 @@ const RequestTool: React.FC = () => {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="请输入请求地址，例如：/users 或 https://api.example.com/users"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+            className="flex-1 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500 font-mono text-sm"
           />
 
           {/* 发送按钮 */}
           <button
             onClick={sendRequest}
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-red-500/50 disabled:to-red-600/50 text-white rounded-lg font-medium transition-all shadow-lg shadow-red-500/25 disabled:shadow-none"
           >
             {loading ? '发送中...' : '发送请求'}
           </button>
@@ -180,34 +180,34 @@ const RequestTool: React.FC = () => {
       </div>
 
       {/* 参数配置区域 */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-neutral-900/80 backdrop-blur-sm border-b border-red-500/20">
         <div className="flex gap-4 px-4">
           <button
             onClick={() => setActiveTab('params')}
-            className={`px-3 py-2 text-sm font-medium transition-colors ${
+            className={`px-3 py-2 text-sm font-medium transition-all ${
               activeTab === 'params'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-red-400 border-b-2 border-red-500'
+                : 'text-neutral-400 hover:text-neutral-300'
             }`}
           >
             Query 参数
           </button>
           <button
             onClick={() => setActiveTab('headers')}
-            className={`px-3 py-2 text-sm font-medium transition-colors ${
+            className={`px-3 py-2 text-sm font-medium transition-all ${
               activeTab === 'headers'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-red-400 border-b-2 border-red-500'
+                : 'text-neutral-400 hover:text-neutral-300'
             }`}
           >
             请求头
           </button>
           <button
             onClick={() => setActiveTab('body')}
-            className={`px-3 py-2 text-sm font-medium transition-colors ${
+            className={`px-3 py-2 text-sm font-medium transition-all ${
               activeTab === 'body'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-red-400 border-b-2 border-red-500'
+                : 'text-neutral-400 hover:text-neutral-300'
             }`}
           >
             Body
@@ -219,10 +219,10 @@ const RequestTool: React.FC = () => {
           {activeTab === 'params' && (
             <div>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm text-gray-600">Query 参数</span>
+                <span className="text-sm text-neutral-400">Query 参数</span>
                 <button
                   onClick={() => addParam('params')}
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
                 >
                   + 添加参数
                 </button>
@@ -241,7 +241,7 @@ const RequestTool: React.FC = () => {
                           e.target.checked,
                         )
                       }
-                      className="w-4 h-4"
+                      className="w-4 h-4 rounded border-red-500/30 bg-neutral-800 text-red-500 focus:ring-red-500 focus:ring-offset-0"
                     />
                     <input
                       type="text"
@@ -250,7 +250,7 @@ const RequestTool: React.FC = () => {
                         updateParam('params', index, 'key', e.target.value)
                       }
                       placeholder="参数名"
-                      className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="flex-1 px-2 py-1.5 bg-neutral-800 border border-red-500/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                     />
                     <input
                       type="text"
@@ -259,11 +259,11 @@ const RequestTool: React.FC = () => {
                         updateParam('params', index, 'value', e.target.value)
                       }
                       placeholder="参数值"
-                      className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="flex-1 px-2 py-1.5 bg-neutral-800 border border-red-500/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                     />
                     <button
                       onClick={() => removeParam('params', index)}
-                      className="text-red-500 hover:text-red-700 text-sm"
+                      className="text-red-400 hover:text-red-300 text-sm transition-colors"
                     >
                       删除
                     </button>
@@ -276,10 +276,10 @@ const RequestTool: React.FC = () => {
           {activeTab === 'headers' && (
             <div>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm text-gray-600">请求头</span>
+                <span className="text-sm text-neutral-400">请求头</span>
                 <button
                   onClick={() => addParam('headers')}
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
                 >
                   + 添加请求头
                 </button>
@@ -298,7 +298,7 @@ const RequestTool: React.FC = () => {
                           e.target.checked,
                         )
                       }
-                      className="w-4 h-4"
+                      className="w-4 h-4 rounded border-red-500/30 bg-neutral-800 text-red-500 focus:ring-red-500 focus:ring-offset-0"
                     />
                     <input
                       type="text"
@@ -307,7 +307,7 @@ const RequestTool: React.FC = () => {
                         updateParam('headers', index, 'key', e.target.value)
                       }
                       placeholder="Header 名称"
-                      className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="flex-1 px-2 py-1.5 bg-neutral-800 border border-red-500/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                     />
                     <input
                       type="text"
@@ -316,11 +316,11 @@ const RequestTool: React.FC = () => {
                         updateParam('headers', index, 'value', e.target.value)
                       }
                       placeholder="Header 值"
-                      className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="flex-1 px-2 py-1.5 bg-neutral-800 border border-red-500/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                     />
                     <button
                       onClick={() => removeParam('headers', index)}
-                      className="text-red-500 hover:text-red-700 text-sm"
+                      className="text-red-400 hover:text-red-300 text-sm transition-colors"
                     >
                       删除
                     </button>
@@ -332,7 +332,7 @@ const RequestTool: React.FC = () => {
 
           {activeTab === 'body' && (
             <div>
-              <span className="text-sm text-gray-600 mb-2 block">
+              <span className="text-sm text-neutral-400 mb-2 block">
                 请求体 (JSON 格式)
               </span>
               <textarea
@@ -342,7 +342,7 @@ const RequestTool: React.FC = () => {
   "name": "example",
   "value": 123
 }'
-                className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-48 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-lg font-mono text-sm text-neutral-200 placeholder-neutral-500 resize-none focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
           )}
@@ -352,11 +352,11 @@ const RequestTool: React.FC = () => {
       {/* 响应区域 */}
       <div className="flex-1 overflow-auto p-4">
         <div className="mb-2 flex justify-between items-center">
-          <span className="text-sm font-medium text-gray-700">响应结果</span>
+          <span className="text-sm font-medium text-neutral-300">响应结果</span>
           {response && (
             <button
               onClick={() => navigator.clipboard.writeText(formatResponse())}
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-red-400 hover:text-red-300 transition-colors"
             >
               复制
             </button>
@@ -364,21 +364,26 @@ const RequestTool: React.FC = () => {
         </div>
 
         {loading && (
-          <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-500">
-            请求发送中...
+          <div className="bg-neutral-800/50 rounded-lg p-8 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce"></div>
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              <span className="text-neutral-400 ml-2">请求发送中...</span>
+            </div>
           </div>
         )}
 
         {error && !loading && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="text-red-600 text-sm font-medium mb-1">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+            <div className="text-red-400 text-sm font-medium mb-1">
               请求失败
             </div>
-            <pre className="text-red-600 text-sm whitespace-pre-wrap">
+            <pre className="text-red-400 text-sm whitespace-pre-wrap">
               {error}
             </pre>
             {response && (
-              <pre className="text-red-600 text-sm whitespace-pre-wrap mt-2">
+              <pre className="text-red-400 text-sm whitespace-pre-wrap mt-2">
                 {formatResponse()}
               </pre>
             )}
@@ -386,7 +391,7 @@ const RequestTool: React.FC = () => {
         )}
 
         {response && !loading && !error && (
-          <div className="bg-gray-900 rounded-lg p-4 overflow-auto">
+          <div className="bg-neutral-900 rounded-lg p-4 overflow-auto border border-red-500/20">
             <pre className="text-green-400 text-sm font-mono whitespace-pre-wrap">
               {formatResponse()}
             </pre>
@@ -394,11 +399,24 @@ const RequestTool: React.FC = () => {
         )}
 
         {!response && !loading && !error && (
-          <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-400">
+          <div className="bg-neutral-800/30 rounded-lg p-8 text-center text-neutral-500 border border-red-500/20">
+            <svg className="w-12 h-12 mx-auto mb-3 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+            </svg>
             点击发送按钮查看响应结果
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        .animate-bounce {
+          animation: bounce 0.6s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

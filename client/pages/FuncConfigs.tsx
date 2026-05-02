@@ -52,22 +52,24 @@ const SidebarModuleManager: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">加载中...</div>
+        <div className="text-neutral-400">加载中...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-red-950/20 to-neutral-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-white">侧边栏模块管理</h1>
+        <h1 className="text-2xl font-bold mb-6 bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+          侧边栏模块管理
+        </h1>
 
         {/* 本地配置列表 */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-200">
+            <h2 className="text-lg font-semibold text-neutral-200">
               当前本地配置
-              <span className="ml-2 text-sm font-normal text-gray-400">
+              <span className="ml-2 text-sm font-normal text-neutral-400">
                 ({localItems.length} 个模块)
               </span>
             </h2>
@@ -75,7 +77,7 @@ const SidebarModuleManager: React.FC = () => {
 
           <div className="bg-neutral-900/80 rounded-lg border border-red-500/20 overflow-hidden backdrop-blur-sm">
             {localItems.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-neutral-500">
                 暂无配置，请从下方模块库导入
               </div>
             ) : (
@@ -88,12 +90,12 @@ const SidebarModuleManager: React.FC = () => {
                       className={`flex items-center p-4 hover:bg-red-500/5 transition-colors cursor-move`}
                     >
                       {/* 拖拽手柄 */}
-                      <div className="mr-3 text-gray-500 cursor-grab active:cursor-grabbing">
+                      <div className="mr-3 text-neutral-500 cursor-grab active:cursor-grabbing">
                         ⋮⋮
                       </div>
 
                       {/* 图标 */}
-                      <div className="w-10 h-10 flex items-center justify-center bg-neutral-800 rounded-lg mr-3 text-xl">
+                      <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-red-500/20 to-red-700/20 rounded-lg mr-3 text-xl">
                         {item.icon || '📦'}
                       </div>
 
@@ -102,10 +104,10 @@ const SidebarModuleManager: React.FC = () => {
                         <input
                           type="text"
                           value={item.label}
-                          className="font-medium text-gray-200 bg-transparent border border-transparent hover:border-red-500/30 focus:border-red-500 rounded px-2 py-1 outline-none transition-colors"
+                          className="font-medium text-neutral-200 bg-transparent border border-transparent hover:border-red-500/30 focus:border-red-500 rounded px-2 py-1 outline-none transition-colors"
                         />
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-neutral-400">
                             ID: {item.id}
                           </span>
                           <span
@@ -113,7 +115,7 @@ const SidebarModuleManager: React.FC = () => {
                           >
                             {labelSourceConfig[item.source]?.label || item.source}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-neutral-500">
                             顺序: {item.order}
                           </span>
                         </div>
@@ -135,9 +137,9 @@ const SidebarModuleManager: React.FC = () => {
 
         {/* 所有可用模块 */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-200 mb-3">
+          <h2 className="text-lg font-semibold text-neutral-200 mb-3">
             可用模块库
-            <span className="ml-2 text-sm font-normal text-gray-400">
+            <span className="ml-2 text-sm font-normal text-neutral-400">
               ({allAvailableItems.length} 个可用)
             </span>
           </h2>
@@ -162,15 +164,15 @@ const SidebarModuleManager: React.FC = () => {
 
                   <div className="relative z-10 flex items-center flex-1">
                     {/* 图标 */}
-                    <div className="w-10 h-10 flex items-center justify-center mr-3 text-xl">
+                    <div className="w-10 h-10 flex items-center justify-center mr-3 text-xl bg-gradient-to-br from-red-500/20 to-red-700/20 rounded-lg">
                       {item.icon || '📦'}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-200">
+                      <div className="font-medium text-neutral-200">
                         {item.label}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-400">{item.id}</span>
+                        <span className="text-xs text-neutral-400">{item.id}</span>
                         <span
                           className={`text-xs px-2 py-0.5 rounded ${
                             labelSourceConfig[item.source]?.className ||

@@ -111,7 +111,7 @@ const HardwareInfoCard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-400">加载中...</div>
+        <div className="text-neutral-400">加载中...</div>
       </div>
     );
   }
@@ -129,16 +129,16 @@ const HardwareInfoCard: React.FC = () => {
       <div className="flex justify-end gap-2 mb-4">
         <button
           onClick={manualRefresh}
-          className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          className="px-3 py-1.5 text-sm bg-gradient-to-r from-red-600 to-red-700 text-white rounded-md hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
         >
           刷新
         </button>
         <button
           onClick={toggleAutoRefresh}
-          className={`px-3 py-1.5 text-sm rounded transition-colors ${
+          className={`px-3 py-1.5 text-sm rounded-md transition-all ${
             isAutoRefresh 
-              ? 'bg-green-600 hover:bg-green-700 text-white' 
-              : 'bg-gray-600 hover:bg-gray-700 text-white'
+              ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg shadow-green-500/25' 
+              : 'bg-neutral-700 hover:bg-neutral-600 text-neutral-300'
           }`}
         >
           {isAutoRefresh ? '自动' : '手动'}
@@ -149,26 +149,26 @@ const HardwareInfoCard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* 系统信息 */}
         <div className="bg-neutral-900/80 rounded-lg shadow-lg p-4 border border-red-500/20 backdrop-blur-sm">
-          <h3 className="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
+          <h3 className="text-sm font-semibold text-neutral-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
             <span>💻</span> 系统
           </h3>
           <div className="space-y-1 text-xs">
             {info.system_name && (
               <div className="flex justify-between">
-                <span className="text-gray-400">系统:</span>
-                <span className="font-mono text-gray-300 truncate ml-2">{info.system_name}</span>
+                <span className="text-neutral-400">系统:</span>
+                <span className="font-mono text-neutral-300 truncate ml-2">{info.system_name}</span>
               </div>
             )}
             {info.system_kernel && (
               <div className="flex justify-between">
-                <span className="text-gray-400">内核:</span>
-                <span className="font-mono text-gray-300 truncate ml-2">{info.system_kernel}</span>
+                <span className="text-neutral-400">内核:</span>
+                <span className="font-mono text-neutral-300 truncate ml-2">{info.system_kernel}</span>
               </div>
             )}
             {info.host_name && (
               <div className="flex justify-between">
-                <span className="text-gray-400">主机:</span>
-                <span className="font-mono text-gray-300 truncate ml-2">{info.host_name}</span>
+                <span className="text-neutral-400">主机:</span>
+                <span className="font-mono text-neutral-300 truncate ml-2">{info.host_name}</span>
               </div>
             )}
           </div>
@@ -176,24 +176,24 @@ const HardwareInfoCard: React.FC = () => {
 
         {/* CPU 信息 */}
         <div className="bg-neutral-900/80 rounded-lg shadow-lg p-4 border border-red-500/20 backdrop-blur-sm">
-          <h3 className="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
+          <h3 className="text-sm font-semibold text-neutral-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
             <span>🖥️</span> CPU
           </h3>
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
-              <span className="text-gray-400">{info.cpu_name.split('@')[0].trim()}</span>
-              <span className="font-mono text-gray-300">{info.cpu_cores}核</span>
+              <span className="text-neutral-400">{info.cpu_name.split('@')[0].trim()}</span>
+              <span className="font-mono text-neutral-300">{info.cpu_cores}核</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-gray-400">频率</span>
-              <span className="font-mono text-gray-300">{info.cpu_frequency} MHz</span>
+              <span className="text-neutral-400">频率</span>
+              <span className="font-mono text-neutral-300">{info.cpu_frequency} MHz</span>
             </div>
             <div>
               <div className="flex justify-between text-xs mb-0.5">
-                <span className="text-gray-400">使用率</span>
+                <span className="text-neutral-400">使用率</span>
                 <span className="font-mono font-medium text-red-400">{info.cpu_usage.toFixed(0)}%</span>
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-1.5">
+              <div className="w-full bg-neutral-700 rounded-full h-1.5">
                 <div 
                   className="bg-red-500 rounded-full h-1.5 transition-all"
                   style={{ width: `${info.cpu_usage}%` }}
@@ -205,24 +205,24 @@ const HardwareInfoCard: React.FC = () => {
 
         {/* 内存信息 */}
         <div className="bg-neutral-900/80 rounded-lg shadow-lg p-4 border border-red-500/20 backdrop-blur-sm">
-          <h3 className="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
+          <h3 className="text-sm font-semibold text-neutral-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
             <span>💾</span> 内存
           </h3>
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
-              <span className="text-gray-400">总计</span>
-              <span className="font-mono text-gray-300">{formatBytes(info.memory_total)}</span>
+              <span className="text-neutral-400">总计</span>
+              <span className="font-mono text-neutral-300">{formatBytes(info.memory_total)}</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-gray-400">已用/空闲</span>
-              <span className="font-mono text-gray-300">{formatBytes(info.memory_used)} / {formatBytes(info.memory_free)}</span>
+              <span className="text-neutral-400">已用/空闲</span>
+              <span className="font-mono text-neutral-300">{formatBytes(info.memory_used)} / {formatBytes(info.memory_free)}</span>
             </div>
             <div>
               <div className="flex justify-between text-xs mb-0.5">
-                <span className="text-gray-400">使用率</span>
+                <span className="text-neutral-400">使用率</span>
                 <span className="font-mono font-medium text-green-400">{memoryPercent.toFixed(0)}%</span>
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-1.5">
+              <div className="w-full bg-neutral-700 rounded-full h-1.5">
                 <div 
                   className="bg-green-500 rounded-full h-1.5 transition-all"
                   style={{ width: `${memoryPercent}%` }}
@@ -235,24 +235,24 @@ const HardwareInfoCard: React.FC = () => {
         {/* Swap 信息 */}
         {info.swap_total > 0 && (
           <div className="bg-neutral-900/80 rounded-lg shadow-lg p-4 border border-red-500/20 backdrop-blur-sm">
-            <h3 className="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
+            <h3 className="text-sm font-semibold text-neutral-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
               <span>🔄</span> Swap
             </h3>
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">总计</span>
-                <span className="font-mono text-gray-300">{formatBytes(info.swap_total)}</span>
+                <span className="text-neutral-400">总计</span>
+                <span className="font-mono text-neutral-300">{formatBytes(info.swap_total)}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">已用</span>
-                <span className="font-mono text-gray-300">{formatBytes(info.swap_used)}</span>
+                <span className="text-neutral-400">已用</span>
+                <span className="font-mono text-neutral-300">{formatBytes(info.swap_used)}</span>
               </div>
               <div>
                 <div className="flex justify-between text-xs mb-0.5">
-                  <span className="text-gray-400">使用率</span>
+                  <span className="text-neutral-400">使用率</span>
                   <span className="font-mono font-medium text-orange-400">{swapPercent.toFixed(0)}%</span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-1.5">
+                <div className="w-full bg-neutral-700 rounded-full h-1.5">
                   <div 
                     className="bg-orange-500 rounded-full h-1.5 transition-all"
                     style={{ width: `${swapPercent}%` }}
@@ -266,7 +266,7 @@ const HardwareInfoCard: React.FC = () => {
         {/* 磁盘信息 */}
         {info.disks.length > 0 && (
           <div className="bg-neutral-900/80 rounded-lg shadow-lg p-4 border border-red-500/20 backdrop-blur-sm">
-            <h3 className="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
+            <h3 className="text-sm font-semibold text-neutral-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
               <span>💿</span> 磁盘
             </h3>
             <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
@@ -276,13 +276,13 @@ const HardwareInfoCard: React.FC = () => {
                 return (
                   <div key={index} className="text-xs">
                     <div className="flex justify-between mb-0.5">
-                      <span className="font-mono text-gray-300">
+                      <span className="font-mono text-neutral-300">
                         {disk.mount_point}
-                        {disk.is_removable && <span className="ml-1 text-gray-500">📀</span>}
+                        {disk.is_removable && <span className="ml-1 text-neutral-500">📀</span>}
                       </span>
-                      <span className="text-gray-400">{formatSmallBytes(used)}/{formatSmallBytes(disk.total_space)}</span>
+                      <span className="text-neutral-400">{formatSmallBytes(used)}/{formatSmallBytes(disk.total_space)}</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-1">
+                    <div className="w-full bg-neutral-700 rounded-full h-1">
                       <div 
                         className="bg-purple-500 rounded-full h-1 transition-all"
                         style={{ width: `${usage}%` }}
@@ -292,7 +292,7 @@ const HardwareInfoCard: React.FC = () => {
                 );
               })}
               {info.disks.length > 4 && (
-                <div className="text-center text-gray-500 text-xs">+{info.disks.length - 4} 更多</div>
+                <div className="text-center text-neutral-500 text-xs">+{info.disks.length - 4} 更多</div>
               )}
             </div>
           </div>
@@ -301,21 +301,21 @@ const HardwareInfoCard: React.FC = () => {
         {/* 网络信息 */}
         {info.networks.length > 0 && (
           <div className="bg-neutral-900/80 rounded-lg shadow-lg p-4 border border-red-500/20 backdrop-blur-sm">
-            <h3 className="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
+            <h3 className="text-sm font-semibold text-neutral-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
               <span>🌐</span> 网络
             </h3>
             <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
               {info.networks.slice(0, 3).map((network, index) => (
                 <div key={index} className="text-xs">
-                  <div className="font-mono text-gray-300 truncate">{network.name}</div>
+                  <div className="font-mono text-neutral-300 truncate">{network.name}</div>
                   <div className="flex justify-between mt-0.5">
-                    <span className="text-gray-400">↓ {formatSmallBytes(network.total_received)}</span>
-                    <span className="text-gray-400">↑ {formatSmallBytes(network.total_transmitted)}</span>
+                    <span className="text-neutral-400">↓ {formatSmallBytes(network.total_received)}</span>
+                    <span className="text-neutral-400">↑ {formatSmallBytes(network.total_transmitted)}</span>
                   </div>
                 </div>
               ))}
               {info.networks.length > 3 && (
-                <div className="text-center text-gray-500 text-xs">+{info.networks.length - 3} 更多</div>
+                <div className="text-center text-neutral-500 text-xs">+{info.networks.length - 3} 更多</div>
               )}
             </div>
           </div>
@@ -324,7 +324,7 @@ const HardwareInfoCard: React.FC = () => {
         {/* 温度信息 */}
         {info.components.length > 0 && (
           <div className="bg-neutral-900/80 rounded-lg shadow-lg p-4 border border-red-500/20 backdrop-blur-sm">
-            <h3 className="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
+            <h3 className="text-sm font-semibold text-neutral-200 mb-2 flex items-center gap-1 border-b border-red-500/30 pb-1">
               <span>🌡️</span> 温度
             </h3>
             <div className="space-y-2">
@@ -334,12 +334,12 @@ const HardwareInfoCard: React.FC = () => {
                 return (
                   <div key={index} className="text-xs">
                     <div className="flex justify-between">
-                      <span className="text-gray-300 truncate">{component.label.split(' ')[0]}</span>
+                      <span className="text-neutral-300 truncate">{component.label.split(' ')[0]}</span>
                       <span className={`font-mono font-medium ${tempColor}`}>
                         {component.temperature.toFixed(0)}°C
                       </span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-1 mt-0.5">
+                    <div className="w-full bg-neutral-700 rounded-full h-1 mt-0.5">
                       <div 
                         className={`rounded-full h-1 transition-all ${
                           component.temperature > 80 ? 'bg-red-500' : 
@@ -352,7 +352,7 @@ const HardwareInfoCard: React.FC = () => {
                 );
               })}
               {info.components.length > 4 && (
-                <div className="text-center text-gray-500 text-xs">+{info.components.length - 4} 更多</div>
+                <div className="text-center text-neutral-500 text-xs">+{info.components.length - 4} 更多</div>
               )}
             </div>
           </div>
@@ -360,7 +360,7 @@ const HardwareInfoCard: React.FC = () => {
       </div>
 
       {/* 时间戳 */}
-      <div className="text-center text-xs text-gray-500 mt-4">
+      <div className="text-center text-xs text-neutral-500 mt-4">
         {new Date().toLocaleString()}
       </div>
     </div>
@@ -499,14 +499,14 @@ const ProcessInfoCard: React.FC = () => {
   return (
     <div className="mt-8">
       <div className="border-t border-red-500/30 pt-6 mb-4">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <h2 className="text-lg font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent flex items-center gap-2">
           <span>📊</span> 进程管理
         </h2>
       </div>
       
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-neutral-400">
             共 {processes.length} 个进程
           </span>
           {loading && (
@@ -517,7 +517,7 @@ const ProcessInfoCard: React.FC = () => {
         </div>
         <button 
           onClick={fetchProcesses}
-          className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs transition"
+          className="px-2 py-1 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-md hover:from-green-700 hover:to-green-800 text-xs transition shadow-lg shadow-green-500/25"
           disabled={loading}
         >
           🔄 刷新
@@ -529,51 +529,51 @@ const ProcessInfoCard: React.FC = () => {
           <table className="min-w-full bg-neutral-900/80 border border-red-500/20 text-xs rounded-lg">
             <thead className="bg-red-500/10 sticky top-0">
               <tr>
-                <th className="px-2 py-1.5 border border-red-500/20 text-center w-20 text-gray-200">操作</th>
+                <th className="px-2 py-1.5 border border-red-500/20 text-center w-20 text-neutral-200">操作</th>
                 <th 
-                  className="px-2 py-1.5 border border-red-500/20 text-left cursor-pointer hover:bg-red-500/20 w-16 text-gray-200"
+                  className="px-2 py-1.5 border border-red-500/20 text-left cursor-pointer hover:bg-red-500/20 w-16 text-neutral-200"
                   onClick={() => handleSort('pid')}
                 >
                   PID
                 </th>
                 <th 
-                  className="px-2 py-1.5 border border-red-500/20 text-left cursor-pointer hover:bg-red-500/20 text-gray-200"
+                  className="px-2 py-1.5 border border-red-500/20 text-left cursor-pointer hover:bg-red-500/20 text-neutral-200"
                   onClick={() => handleSort('name')}
                 >
                   进程名称
                 </th>
                 <th 
-                  className="px-2 py-1.5 border border-red-500/20 text-left cursor-pointer hover:bg-red-500/20 w-32 text-gray-200"
+                  className="px-2 py-1.5 border border-red-500/20 text-left cursor-pointer hover:bg-red-500/20 w-32 text-neutral-200"
                   onClick={() => handleSort('cpuUsage')}
                 >
                   CPU
                 </th>
                 <th 
-                  className="px-2 py-1.5 border border-red-500/20 text-left cursor-pointer hover:bg-red-500/20 w-36 text-gray-200"
+                  className="px-2 py-1.5 border border-red-500/20 text-left cursor-pointer hover:bg-red-500/20 w-36 text-neutral-200"
                   onClick={() => handleSort('memoryKb')}
                 >
                   内存
                 </th>
                 <th 
-                  className="px-2 py-1.5 border border-red-500/20 text-right cursor-pointer hover:bg-red-500/20 w-24 text-gray-200"
+                  className="px-2 py-1.5 border border-red-500/20 text-right cursor-pointer hover:bg-red-500/20 w-24 text-neutral-200"
                   onClick={() => handleSort('totalWrittenBytes')}
                 >
                   写入(总)
                 </th>
                 <th 
-                  className="px-2 py-1.5 border border-red-500/20 text-right cursor-pointer hover:bg-red-500/20 w-20 text-gray-200"
+                  className="px-2 py-1.5 border border-red-500/20 text-right cursor-pointer hover:bg-red-500/20 w-20 text-neutral-200"
                   onClick={() => handleSort('writtenBytes')}
                 >
                   写入(增)
                 </th>
                 <th 
-                  className="px-2 py-1.5 border border-red-500/20 text-right cursor-pointer hover:bg-red-500/20 w-24 text-gray-200"
+                  className="px-2 py-1.5 border border-red-500/20 text-right cursor-pointer hover:bg-red-500/20 w-24 text-neutral-200"
                   onClick={() => handleSort('totalReadBytes')}
                 >
                   读取(总)
                 </th>
                 <th 
-                  className="px-2 py-1.5 border border-red-500/20 text-right cursor-pointer hover:bg-red-500/20 w-20 text-gray-200"
+                  className="px-2 py-1.5 border border-red-500/20 text-right cursor-pointer hover:bg-red-500/20 w-20 text-neutral-200"
                   onClick={() => handleSort('readBytes')}
                 >
                   读取(增)
@@ -594,8 +594,8 @@ const ProcessInfoCard: React.FC = () => {
                         className={`
                           px-1.5 py-0.5 rounded text-xs font-medium transition-colors w-full
                           ${isSystem 
-                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed' 
-                            : 'bg-red-600 text-white hover:bg-red-700'
+                            ? 'bg-neutral-700 text-neutral-500 cursor-not-allowed' 
+                            : 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800'
                           }
                           ${killingPid === proc.pid ? 'opacity-50 cursor-wait' : ''}
                         `}
@@ -604,8 +604,8 @@ const ProcessInfoCard: React.FC = () => {
                         {killingPid === proc.pid ? '⏳' : '关闭'}
                       </button>
                     </td>
-                    <td className="px-2 py-1 border border-red-500/20 font-mono text-gray-300">{proc.pid}</td>
-                    <td className="px-2 py-1 border border-red-500/20 truncate max-w-xs text-gray-300" title={proc.name}>
+                    <td className="px-2 py-1 border border-red-500/20 font-mono text-neutral-300">{proc.pid}</td>
+                    <td className="px-2 py-1 border border-red-500/20 truncate max-w-xs text-neutral-300" title={proc.name}>
                       {proc.name}
                       {isSystem && (
                         <span className="ml-1 text-xs bg-yellow-500/20 text-yellow-400 px-1 rounded">
@@ -615,8 +615,8 @@ const ProcessInfoCard: React.FC = () => {
                     </td>
                     <td className="px-2 py-1 border border-red-500/20">
                       <div className="flex items-center gap-1">
-                        <span className="font-mono w-10 text-right text-gray-300">{proc.cpuUsage.toFixed(1)}%</span>
-                        <div className="flex-1 bg-gray-700 rounded-full h-1.5">
+                        <span className="font-mono w-10 text-right text-neutral-300">{proc.cpuUsage.toFixed(1)}%</span>
+                        <div className="flex-1 bg-neutral-700 rounded-full h-1.5">
                           <div 
                             className={`${getCpuBarColor(proc.cpuUsage)} rounded-full h-1.5 transition-all`}
                             style={{ width: `${cpuPercent}%` }}
@@ -626,8 +626,8 @@ const ProcessInfoCard: React.FC = () => {
                     </td>
                     <td className="px-2 py-1 border border-red-500/20">
                       <div className="flex items-center gap-1">
-                        <span className="font-mono w-16 text-right text-xs text-gray-300">{formatMemory(proc.memoryKb)}</span>
-                        <div className="flex-1 bg-gray-700 rounded-full h-1.5">
+                        <span className="font-mono w-16 text-right text-xs text-neutral-300">{formatMemory(proc.memoryKb)}</span>
+                        <div className="flex-1 bg-neutral-700 rounded-full h-1.5">
                           <div 
                             className={`${getMemoryBarColor(memPercent)} rounded-full h-1.5 transition-all`}
                             style={{ width: `${memPercent}%` }}
@@ -635,10 +635,10 @@ const ProcessInfoCard: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-2 py-1 border border-red-500/20 text-right font-mono text-xs text-gray-300">{formatBytes(proc.totalWrittenBytes)}</td>
-                    <td className="px-2 py-1 border border-red-500/20 text-right font-mono text-xs text-gray-300">{formatBytes(proc.writtenBytes)}</td>
-                    <td className="px-2 py-1 border border-red-500/20 text-right font-mono text-xs text-gray-300">{formatBytes(proc.totalReadBytes)}</td>
-                    <td className="px-2 py-1 border border-red-500/20 text-right font-mono text-xs text-gray-300">{formatBytes(proc.readBytes)}</td>
+                    <td className="px-2 py-1 border border-red-500/20 text-right font-mono text-xs text-neutral-300">{formatBytes(proc.totalWrittenBytes)}</td>
+                    <td className="px-2 py-1 border border-red-500/20 text-right font-mono text-xs text-neutral-300">{formatBytes(proc.writtenBytes)}</td>
+                    <td className="px-2 py-1 border border-red-500/20 text-right font-mono text-xs text-neutral-300">{formatBytes(proc.totalReadBytes)}</td>
+                    <td className="px-2 py-1 border border-red-500/20 text-right font-mono text-xs text-neutral-300">{formatBytes(proc.readBytes)}</td>
                   </tr>
                 );
               })}
@@ -648,15 +648,15 @@ const ProcessInfoCard: React.FC = () => {
       )}
 
       <div className="bg-neutral-900/60 p-3 rounded-lg border border-red-500/20 text-xs">
-        <h3 className="font-bold mb-1.5 text-sm text-gray-200">📊 字段说明</h3>
-        <ul className="space-y-0.5 text-gray-400">
-          <li>🔖 <strong className="text-gray-300">PID</strong>: 进程唯一标识符</li>
-          <li>💻 <strong className="text-gray-300">CPU</strong>: CPU使用率百分比 (含进度条)</li>
-          <li>🧠 <strong className="text-gray-300">内存</strong>: 物理内存占用 (含进度条)</li>
-          <li>💾 <strong className="text-gray-300">写入(总)</strong>: 进程启动至今总写入量</li>
-          <li>📈 <strong className="text-gray-300">写入(增)</strong>: 3秒内新增写入量</li>
-          <li>📖 <strong className="text-gray-300">读取(总)</strong>: 进程启动至今总读取量</li>
-          <li>📊 <strong className="text-gray-300">读取(增)</strong>: 3秒内新增读取量</li>
+        <h3 className="font-bold mb-1.5 text-sm text-neutral-200">📊 字段说明</h3>
+        <ul className="space-y-0.5 text-neutral-400">
+          <li>🔖 <strong className="text-neutral-300">PID</strong>: 进程唯一标识符</li>
+          <li>💻 <strong className="text-neutral-300">CPU</strong>: CPU使用率百分比 (含进度条)</li>
+          <li>🧠 <strong className="text-neutral-300">内存</strong>: 物理内存占用 (含进度条)</li>
+          <li>💾 <strong className="text-neutral-300">写入(总)</strong>: 进程启动至今总写入量</li>
+          <li>📈 <strong className="text-neutral-300">写入(增)</strong>: 3秒内新增写入量</li>
+          <li>📖 <strong className="text-neutral-300">读取(总)</strong>: 进程启动至今总读取量</li>
+          <li>📊 <strong className="text-neutral-300">读取(增)</strong>: 3秒内新增读取量</li>
           <li className="text-red-400">⚠️ <strong>关闭</strong>: 红色按钮可杀死进程，系统进程被保护</li>
         </ul>
       </div>
@@ -667,7 +667,7 @@ const ProcessInfoCard: React.FC = () => {
 // 主组件
 const SysInfo: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-red-950/20 to-neutral-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 p-4">
       <div className="max-w-7xl mx-auto">
         <HardwareInfoCard />
         <ProcessInfoCard />

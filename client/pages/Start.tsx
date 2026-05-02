@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import iconSrc from '../assets/icon.png';
 import { startPage_latestFeatures } from '../config/startItem.config';
 import { useActiveItem } from '../context/activeItemContext';
@@ -6,6 +7,7 @@ import { useModuleStore } from '../stores/moduleItemsStore';
 const StartPage: React.FC = () => {
   const { sidebarItems } = useModuleStore();
   const { setActiveItem } = useActiveItem();
+  const [showIntro, setShowIntro] = useState(false);
 
   // 快速开始：前3个已导入的模块
   const quickStartItems = sidebarItems.slice(0, 3);
@@ -14,18 +16,31 @@ const StartPage: React.FC = () => {
     setActiveItem(id);
   };
 
+  const handleLogoClick = () => {
+    setShowIntro(!showIntro);
+  };
+
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
       {/* 左侧 - Logo 和信息 */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
+      <div
+        className={`
+          flex-1 flex flex-col items-center justify-center p-8 
+          transition-all duration-700 ease-out
+          ${showIntro ? '-translate-x-12' : 'translate-x-0'}
+        `}
+      >
         <div className="text-center animate-in fade-in slide-in-from-left-4 duration-500">
           {/* Logo */}
-          <div className="mb-6 inline-block">
-            <div className="w-28 h-28 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 p-0.5 shadow-lg animate-in zoom-in duration-300">
+          <div
+            className="mb-6 inline-block cursor-pointer group"
+            onClick={handleLogoClick}
+          >
+            <div className="w-28 h-28 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 p-0.5 shadow-lg animate-in zoom-in duration-300 group-hover:scale-105 transition-transform">
               <div className="w-full h-full rounded-2xl bg-neutral-900 flex items-center justify-center overflow-hidden">
-                <img 
-                  src={iconSrc} 
-                  alt="Red Wind" 
+                <img
+                  src={iconSrc}
+                  alt="Red Wind"
                   className="w-20 h-20 object-contain"
                 />
               </div>
@@ -35,7 +50,7 @@ const StartPage: React.FC = () => {
           <h1 className="text-5xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent mb-3">
             Red Wind
           </h1>
-          
+
           <p className="text-neutral-400 text-lg mb-6">
             轻量便捷的工具库，你的个人小助手
           </p>
@@ -51,6 +66,34 @@ const StartPage: React.FC = () => {
               <span className="text-red-500">🎨</span>
               <span className="text-neutral-300">享受简洁的界面体验</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 浮动的介绍文字 - 无背景，淡入效果 */}
+      <div
+        className={`
+    absolute top-1/2 transform -translate-y-70%
+    transition-all duration-700 ease-out pointer-events-none
+    ${
+      showIntro
+        ? 'opacity-100 translate-x-0'
+        : 'opacity-0 -translate-x-8 pointer-events-none'
+    }
+  `}
+        style={{ left: '42%' }}
+      >
+        <div className="text-center space-y-3">
+          <div className="text-red-400/50 text-xs tracking-wider">
+            ABOUT RED WIND
+          </div>
+          <p className="text-neutral-300/50 text-sm leading-relaxed max-w-xs">
+            集成常用工具、实用系统工具
+            <br />
+            快捷操作，提升工作效率
+          </p>
+          <div className="text-neutral-400/40 text-xs leading-relaxed">
+            ⚡ 轻量快速 &nbsp;|&nbsp; 🎨 简洁美观
           </div>
         </div>
       </div>
@@ -79,7 +122,9 @@ const StartPage: React.FC = () => {
                     <div className="text-white font-medium">{item.label}</div>
                     <div className="text-xs text-neutral-500">点击打开</div>
                   </div>
-                  <span className="text-neutral-600 group-hover:text-red-500 transition-colors">→</span>
+                  <span className="text-neutral-600 group-hover:text-red-500 transition-colors">
+                    →
+                  </span>
                 </button>
               ))
             ) : (
@@ -111,7 +156,9 @@ const StartPage: React.FC = () => {
                   <div className="text-white font-medium">{feature.label}</div>
                   <div className="text-xs text-neutral-500">{feature.date}</div>
                 </div>
-                <span className="text-neutral-600 group-hover:text-red-500 transition-colors">→</span>
+                <span className="text-neutral-600 group-hover:text-red-500 transition-colors">
+                  →
+                </span>
               </button>
             ))}
           </div>

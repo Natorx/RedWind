@@ -1,6 +1,6 @@
 // src/database/init_sidebar.rs
 use crate::DbState;
-use rusqlite::{ Connection};
+use rusqlite::Connection;
 use std::sync::Mutex;
 
 pub fn init_db_state() -> DbState {

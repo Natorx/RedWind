@@ -143,7 +143,6 @@ pub fn get_hardware_info(state: State<AppState>) -> HardwareInfo {
     }
 }
 
-
 // 进程调度查看函数
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -162,9 +161,9 @@ pub struct ProcessInfo {
 pub fn get_process() -> Vec<ProcessInfo> {
     let mut sys = System::new_all();
     sys.refresh_all();
-    
+
     let mut processes = Vec::new();
-    
+
     for (pid, process) in sys.processes() {
         processes.push(ProcessInfo {
             pid: pid.as_u32().to_string(),
@@ -177,7 +176,7 @@ pub fn get_process() -> Vec<ProcessInfo> {
             read_bytes: process.disk_usage().read_bytes,
         });
     }
-    
+
     processes
 }
 
@@ -186,7 +185,7 @@ pub fn get_process() -> Vec<ProcessInfo> {
 pub fn kill_process(pid: u32) -> Result<String, String> {
     let mut sys = System::new_all();
     sys.refresh_all();
-    
+
     // 查找对应 PID 的进程
     if let Some(process) = sys.process(sysinfo::Pid::from_u32(pid)) {
         if process.kill() {

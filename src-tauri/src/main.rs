@@ -34,7 +34,7 @@ use mods::node_server::{get_server_status, start_server, stop_server, ServerStat
 use mods::open::open_path;
 
 // About app config
-use mods::rd_config::{ConfigManager,get_active_ui,set_active_ui};
+use mods::rd_config::{get_active_ui, set_active_ui, ConfigManager};
 
 mod database;
 use database::init_sidebar::init_db_state;
@@ -51,11 +51,11 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-.setup(|app| {
-    let config_manager = ConfigManager::new(app.handle());
-    app.manage(config_manager);  // 如果还是报错，用上面的写法
-    Ok(())
-})
+        .setup(|app| {
+            let config_manager = ConfigManager::new(app.handle());
+            app.manage(config_manager); // 如果还是报错，用上面的写法
+            Ok(())
+        })
         .manage(AppState {
             sys: Mutex::new(System::new_all()),
         })

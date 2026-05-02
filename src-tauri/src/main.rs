@@ -2,9 +2,10 @@
 // 在非调试构建时，隐藏 Windows 控制台窗口
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::Manager;
 mod mods;
 // 硬件信息模块
-use mods::hardinfo::{get_hardware_info, AppState,get_process,kill_process};
+use mods::hardinfo::{get_hardware_info, get_process, kill_process, AppState};
 use std::sync::Mutex;
 use sysinfo::System;
 // 文件转换模块
@@ -21,13 +22,19 @@ use mods::typing::{
     update_custom_word_set, update_word_meaning,
 };
 // Windows音频模块
-use mods::win_audio_control::{set_system_volume_cmd,set_app_volume_cmd,set_app_mute_cmd,get_all_audio_sessions_cmd,get_system_volume_cmd};
+use mods::win_audio_control::{
+    get_all_audio_sessions_cmd, get_system_volume_cmd, set_app_mute_cmd, set_app_volume_cmd,
+    set_system_volume_cmd,
+};
 
 // Node子进程模块
 use mods::node_server::{get_server_status, start_server, stop_server, ServerState};
 
 // Open 模块
 use mods::open::open_path;
+
+// About app config
+use mods::rd_config::{ConfigManager,get_active_ui,set_active_ui};
 
 mod database;
 use database::init_sidebar::init_db_state;
@@ -41,6 +48,11 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+.setup(|app| {
+    let config_manager = ConfigManager::new(app.handle());
+    app.manage(config_manager);  // 如果还是报错，用上面的写法
+    Ok(())
+})
         .manage(AppState {
             sys: Mutex::new(System::new_all()),
         })
@@ -84,6 +96,9 @@ fn main() {
             set_system_volume_cmd,
             set_app_volume_cmd,
             set_app_mute_cmd,
+            // Config
+            get_active_ui,
+            set_active_ui
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

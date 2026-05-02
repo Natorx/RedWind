@@ -1,10 +1,10 @@
 // circle.tsx
 import React, { useState, useEffect } from 'react';
-import { visibility } from '../utils/visible';
 import { useActiveItem } from '../context/activeItemContext';
 import { invoke } from '@tauri-apps/api/core';
 import iconSrc from '../assets/icon.png';
 import { useSettingDrawer } from '../context/drawerSettingContext';
+import { uiState } from '../utils/uiState';
 
 interface SidebarItem {
   id: string;
@@ -15,16 +15,16 @@ interface SidebarItem {
 }
 
 const Circle: React.FC = () => {
-  const [showCircle, setShowCircle] = useState(visibility.getShowCircle());
+  const [showCircle, setShowCircle] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
   const { activeItem, setActiveItem } = useActiveItem();
   const { setIsSettingsOpen } = useSettingDrawer();
 
   useEffect(() => {
-    const unsubscribe = visibility.subscribe((_, newShowCircle) => {
-      setShowCircle(newShowCircle);
-      if (!newShowCircle) {
+    const unsubscribe = uiState.subscribe((activeUi) => {
+      setShowCircle(activeUi === 'circle');
+      if (activeUi !== 'circle') {
         setIsExpanded(false);
       }
     });

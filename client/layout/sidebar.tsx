@@ -5,8 +5,8 @@ import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
 import iconSrc from '../assets/icon.png';
-import { visibility } from '../utils/visible.ts';
 import { sourceConfig } from '../config/sidebar_style.ts';
+import { uiState } from '../utils/uiState.ts';
 
 interface SidebarItem {
   id: string;
@@ -28,11 +28,11 @@ const Sidebar: React.FC = () => {
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
   const [_, setLoading] = useState(true);
   const { setIsSettingsOpen } = useSettingDrawer();
-  const [showSidebar, setShowSidebar] = useState(visibility.getShowSidebar());
+  const [showSidebar, setShowSidebar] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = visibility.subscribe((newShowSidebar) => {
-      setShowSidebar(newShowSidebar);
+    const unsubscribe = uiState.subscribe((activeUi) => {
+      setShowSidebar(activeUi ==='sidebar');
     });
     return unsubscribe;
   }, []);

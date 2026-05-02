@@ -4,7 +4,7 @@ import Drawer from '../components/Drawer';
 import Modal from '../components/Modal';
 import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext';
-import { visibility } from '../utils/visible';
+import { uiState } from '../utils/uiState';
 
 export const DrawerPage: React.FC = () => {
   const { isSettingsOpen, setIsSettingsOpen } = useSettingDrawer();
@@ -68,7 +68,7 @@ export const DrawerPage: React.FC = () => {
             {/* 切换模式 */}
             <div
               className="setting-item p-3 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-              onClick={() => visibility.toggleSidebar()}
+              onClick={() => uiState.toggleSidebar()}
             >
               <span className="text-gray-700">切换模式</span>
             </div>
@@ -80,7 +80,8 @@ export const DrawerPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>{/* ← 这里添加缺失的闭合标签 */}
+        </div>
+        {/* ← 这里添加缺失的闭合标签 */}
       </Drawer>
 
       {/* 个人资料 Modal */}

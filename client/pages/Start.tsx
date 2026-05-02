@@ -15,7 +15,7 @@ const StartPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900">
+    <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
       {/* 左侧 - Logo 和信息 */}
       <div className="flex-1 flex flex-col items-center justify-center p-8">
         <div className="text-center animate-in fade-in slide-in-from-left-4 duration-500">
@@ -56,7 +56,7 @@ const StartPage: React.FC = () => {
       </div>
 
       {/* 右侧 - 快速开始 + 最新功能 */}
-      <div className="w-96 p-8 flex flex-col gap-6 overflow-y-auto">
+      <div className="w-96 p-8 flex flex-col gap-6 overflow-y-auto relative z-10">
         {/* 快速开始 */}
         <div className="animate-in fade-in slide-in-from-right-4 duration-500 delay-100">
           <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -69,7 +69,7 @@ const StartPage: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => handleNavigate(item.id)}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-all group"
+                  className="w-full flex items-center gap-3 p-3 cursor-pointer rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-all group"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500/20 to-red-700/20 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
@@ -102,7 +102,7 @@ const StartPage: React.FC = () => {
               <button
                 key={feature.id}
                 onClick={() => handleNavigate(feature.id)}
-                className="w-full flex items-center gap-3 p-3 rounded-lg bg-neutral-800/30 hover:bg-neutral-800/50 transition-all group"
+                className="w-full flex cursor-pointer items-center gap-3 p-3 rounded-lg bg-neutral-800/30 hover:bg-neutral-800/50 transition-all group"
               >
                 <div className="w-10 h-10 rounded-lg bg-neutral-700/50 flex items-center justify-center text-xl">
                   {feature.icon}

@@ -23,10 +23,11 @@ use mods::typing::{
 // Windows音频模块
 use mods::win_audio_control::{set_system_volume_cmd,set_app_volume_cmd,set_app_mute_cmd,get_all_audio_sessions_cmd,get_system_volume_cmd};
 
-
-
 // Node子进程模块
 use mods::node_server::{get_server_status, start_server, stop_server, ServerState};
+
+// Open 模块
+use mods::open::open_path;
 
 mod database;
 use database::init_sidebar::init_db_state;
@@ -47,6 +48,8 @@ fn main() {
         .manage(db_state)
         .manage(typing_db_state)
         .invoke_handler(tauri::generate_handler![
+            // Open模块
+            open_path,
             // 硬件信息
             get_hardware_info,
             get_process,

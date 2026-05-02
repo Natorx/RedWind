@@ -15,6 +15,7 @@ import Crawler from '../pages/Crawler';
 import ServerControl from '../pages/Server';
 import Algorithms from '../pages/Algorithms';
 import WAudioController from '../pages/WAudioController';
+import SysCommands from '../pages/SysCommands';
 
 const contentMap: Record<string, JSX.Element> = {
   'func-store': <FuncConfig />,
@@ -32,6 +33,7 @@ const contentMap: Record<string, JSX.Element> = {
   'node-server': <ServerControl />,
   algorithms: <Algorithms />,
   'audio-control': <WAudioController />,
+  'sys-commands':<SysCommands/>
 };
 export default contentMap;
 

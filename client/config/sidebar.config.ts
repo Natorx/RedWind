@@ -92,6 +92,13 @@ export const sidebarItems: SidebarItem[] = [
     source: 'local' as const,
   },
   {
+    id: 'sys-commands',
+    label: '系统命令',
+    icon: '💻',
+    order: 13,
+    source: 'local' as const,
+  },
+  {
     id: 'web-scraper',
     label: '网页解构',
     icon: '🕸️',

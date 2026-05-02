@@ -8,7 +8,7 @@ interface ActiveItemContextType {
 const ActiveItemContext = createContext<ActiveItemContextType | undefined>(undefined);
 
 export const ActiveItemProvider = ({ children }: { children: ReactNode }) => {
-  const [activeItem, setActiveItem] = useState<string>('dashboard');
+  const [activeItem, setActiveItem] = useState<string>('start');
   
   return (
     <ActiveItemContext.Provider value={{ activeItem, setActiveItem }}>

@@ -108,6 +108,13 @@ export const sidebarItems: SidebarItem[] = [
     order: 30,
     source: 'local',
   },
+  {
+    id: 'start',
+    label: '开始',
+    icon: '🚀',
+    order: 33,
+    source: 'local',
+  },
 
   // ========== server ==========
   {

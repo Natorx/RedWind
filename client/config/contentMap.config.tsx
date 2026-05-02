@@ -16,8 +16,10 @@ import ServerControl from '../pages/Server';
 import Algorithms from '../pages/Algorithms';
 import WAudioController from '../pages/WAudioController';
 import SysCommands from '../pages/SysCommands';
+import StartPage from '../pages/Start';
 
 const contentMap: Record<string, JSX.Element> = {
+  'start':<StartPage/>,
   'module-config': <FuncConfig />,
   dashboard: <Dashboard />,
   'api-debug': <RequestTool />,
@@ -33,7 +35,7 @@ const contentMap: Record<string, JSX.Element> = {
   'node-server': <ServerControl />,
   algorithms: <Algorithms />,
   'audio-control': <WAudioController />,
-  'sys-commands':<SysCommands/>
+  'sys-commands':<SysCommands/>,
 };
 export default contentMap;
 

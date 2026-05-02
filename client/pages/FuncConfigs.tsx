@@ -234,71 +234,78 @@ const SidebarModuleManager: React.FC = () => {
           {allAvailableItems.map((item) => {
             const imported = isItemImported(item.id);
 
-            return (
-              <div
-                key={item.id}
-                className={`bg-white rounded-lg border p-4 flex items-center justify-between transition-all ${
-                  imported
-                    ? 'border-green-200 bg-green-50/50'
-                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg mr-3 text-xl">
-                    {item.icon || '📦'}
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-800">
-                      {item.label}
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-gray-500">{item.id}</span>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded ${labelSourceConfig[item.source]?.className || labelSourceConfig.others.className}`}
-                      >
-                        {labelSourceConfig[item.source]?.label || item.source}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+return (
+  <div
+    key={item.id}
+    className={`relative overflow-hidden bg-white rounded-lg border p-4 flex items-center justify-between transition-all ${
+      imported
+        ? 'border-green-200 bg-green-50/50'
+        : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+    }`}
+  >
+    {/* 背景装饰图标 */}
+    <div className="absolute -right-4 -bottom-4 opacity-5 transform rotate-12 pointer-events-none">
+      <span className="text-9xl">{item.icon || '📦'}</span>
+    </div>
 
-                <button
-                  onClick={() =>
-                    !imported &&
-                    handleImport(item).then(() => {
-                      loadLocalItems();
-                    })
-                  }
-                  disabled={imported}
-                  className={`px-3 py-1.5 text-sm rounded transition-all ${
-                    imported
-                      ? 'bg-green-100 text-green-700 cursor-default'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                  }`}
-                >
-                  {imported ? (
-                    <span className="flex items-center gap-1">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      已导入
-                    </span>
-                  ) : (
-                    '导入'
-                  )}
-                </button>
-              </div>
-            );
+    <div className="relative z-10 flex items-center flex-1">
+      {/* 去掉图标背景色，只保留图标 */}
+      <div className="w-10 h-10 flex items-center justify-center mr-3 text-xl">
+        {item.icon || '📦'}
+      </div>
+      <div>
+        <div className="font-medium text-gray-800">{item.label}</div>
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-xs text-gray-500">{item.id}</span>
+          <span
+            className={`text-xs px-2 py-0.5 rounded ${
+              labelSourceConfig[item.source]?.className ||
+              labelSourceConfig.others.className
+            }`}
+          >
+            {labelSourceConfig[item.source]?.label || item.source}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <button
+      onClick={() =>
+        !imported &&
+        handleImport(item).then(() => {
+          loadLocalItems();
+        })
+      }
+      disabled={imported}
+      className={`relative z-10 px-3 py-1.5 text-sm rounded transition-all ${
+        imported
+          ? 'bg-green-100 text-green-700 cursor-default'
+          : 'bg-blue-500 text-white hover:bg-blue-600'
+      }`}
+    >
+      {imported ? (
+        <span className="flex items-center gap-1">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          已导入
+        </span>
+      ) : (
+        '导入'
+      )}
+    </button>
+  </div>
+);
           })}
         </div>
       </div>

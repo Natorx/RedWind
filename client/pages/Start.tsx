@@ -22,6 +22,28 @@ const StartPage: React.FC = () => {
 
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
+      {/* 边缘特效 - 持续动画 */}
+      <div className={`
+        absolute inset-0 pointer-events-none z-20
+        ${showIntro ? 'opacity-100' : 'opacity-0'}
+        transition-opacity duration-500
+      `}>
+        {/* 上边缘扫描线 */}
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-top"></div>
+        {/* 右边缘扫描线 */}
+        <div className="absolute top-0 right-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-right"></div>
+        {/* 下边缘扫描线 */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-bottom"></div>
+        {/* 左边缘扫描线 */}
+        <div className="absolute top-0 left-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-left"></div>
+        
+        {/* 四个角的闪光特效 */}
+        <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-red-500/80 rounded-tl-lg animate-pulse-glow"></div>
+        <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-red-500/80 rounded-tr-lg animate-pulse-glow"></div>
+        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-red-500/80 rounded-bl-lg animate-pulse-glow"></div>
+        <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-red-500/80 rounded-br-lg animate-pulse-glow"></div>
+      </div>
+
       {/* 左侧 - Logo 和信息 */}
       <div
         className={`
@@ -36,7 +58,7 @@ const StartPage: React.FC = () => {
             className="mb-6 inline-block cursor-pointer group"
             onClick={handleLogoClick}
           >
-            <div className="w-28 h-28 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 p-0.5 shadow-lg animate-in zoom-in duration-300 group-hover:scale-105 transition-transform">
+            <div className={`w-28 h-28 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 p-0.5 shadow-lg transition-all duration-300 group-hover:scale-105 ${showIntro ? 'animate-logo-pulse' : 'animate-in zoom-in'}`}>
               <div className="w-full h-full rounded-2xl bg-neutral-900 flex items-center justify-center overflow-hidden">
                 <img
                   src={iconSrc}
@@ -73,14 +95,14 @@ const StartPage: React.FC = () => {
       {/* 浮动的介绍文字 - 无背景，淡入效果 */}
       <div
         className={`
-    absolute top-1/2 transform -translate-y-70%
-    transition-all duration-700 ease-out pointer-events-none
-    ${
-      showIntro
-        ? 'opacity-100 translate-x-0'
-        : 'opacity-0 -translate-x-8 pointer-events-none'
-    }
-  `}
+          absolute top-1/2 transform -translate-y-1/2
+          transition-all duration-700 ease-out pointer-events-none
+          ${
+            showIntro
+              ? 'opacity-100 translate-x-0'
+              : 'opacity-0 -translate-x-8 pointer-events-none'
+          }
+        `}
         style={{ left: '42%' }}
       >
         <div className="text-center space-y-3">
@@ -169,6 +191,113 @@ const StartPage: React.FC = () => {
           更多功能敬请期待~
         </div>
       </div>
+
+      {/* 添加动画样式 */}
+      <style>{`
+        @keyframes scan-top {
+          0% {
+            transform: translateX(-100%);
+            opacity: 0;
+          }
+          50% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes scan-right {
+          0% {
+            transform: translateY(-100%);
+            opacity: 0;
+          }
+          50% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes scan-bottom {
+          0% {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          50% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(-100%);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes scan-left {
+          0% {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          50% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-100%);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes pulse-glow {
+          0%, 100% {
+            opacity: 0.3;
+            box-shadow: 0 0 0px rgba(239, 68, 68, 0);
+          }
+          50% {
+            opacity: 1;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+          }
+        }
+        
+        @keyframes logo-pulse {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+        
+        .animate-scan-top {
+          animation: scan-top 1.25s ease-in-out infinite;
+        }
+        
+        .animate-scan-right {
+          animation: scan-right 1.25s ease-in-out infinite;
+        }
+        
+        .animate-scan-bottom {
+          animation: scan-bottom 1.25s ease-in-out infinite;
+        }
+        
+        .animate-scan-left {
+          animation: scan-left 1.25s ease-in-out infinite;
+        }
+        
+        .animate-pulse-glow {
+          animation: pulse-glow 1.25s ease-in-out infinite;
+        }
+        
+        .animate-logo-pulse {
+          animation: logo-pulse 1s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

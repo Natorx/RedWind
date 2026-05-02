@@ -95,13 +95,6 @@ export const sidebarItems: SidebarItem[] = [
     source: 'local',
   },
   {
-    id: 'hardware',
-    label: '硬件配置读取',
-    icon: '🖥️',
-    order: 19,
-    source: 'local',
-  },
-  {
     id: 'node-server',
     label: 'Node子进程',
     icon: '🟢',

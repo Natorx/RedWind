@@ -1,23 +1,15 @@
 // circle.tsx
 import React, { useState, useEffect } from 'react';
 import { useActiveItem } from '../context/activeItemContext';
-import { invoke } from '@tauri-apps/api/core';
 import iconSrc from '../assets/icon.png';
 import { useSettingDrawer } from '../context/drawerSettingContext';
 import { uiState } from '../utils/uiState';
-
-interface SidebarItem {
-  id: string;
-  label: string;
-  icon: string;
-  order: number;
-  source: 'local' | 'server' | 'others';
-}
+import { useModuleStore } from '../stores/moduleItemsStore';
 
 const Circle: React.FC = () => {
+  const { sidebarItems, loadItems } = useModuleStore();
   const [showCircle, setShowCircle] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
   const { activeItem, setActiveItem } = useActiveItem();
   const { setIsSettingsOpen } = useSettingDrawer();
 
@@ -33,14 +25,6 @@ const Circle: React.FC = () => {
 
   // 加载侧边栏项
   useEffect(() => {
-    const loadItems = async () => {
-      try {
-        const items = await invoke<SidebarItem[]>('get_sidebar_items');
-        setSidebarItems(items);
-      } catch (error) {
-        console.error('加载配置失败:', error);
-      }
-    };
     loadItems();
   }, []);
 

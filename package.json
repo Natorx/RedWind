@@ -13,8 +13,8 @@
     "preview": "vite preview",
     "dev_client": "tauri dev",
     "dev_server": "cd server && nest start --watch",
-    "dev_page":"cd client && pnpm dev",
-    "dev_linux":"cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
+    "dev_page": "cd client && pnpm dev",
+    "dev_linux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
     "start_server": "cd server && nest start",
     "build_server": "cd server && nest build"
   },
@@ -41,7 +41,8 @@
     "react-dom": "^19.1.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "unocss": "^66.6.7"
+    "unocss": "^66.6.7",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

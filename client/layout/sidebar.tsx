@@ -2,31 +2,15 @@
 import { useActiveItem } from '../context/activeItemContext.tsx';
 import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
-import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
 import iconSrc from '../assets/icon.png';
 import { sourceConfig } from '../config/sidebar_style.ts';
 import { uiState } from '../utils/uiState.ts';
-
-interface SidebarItem {
-  id: string;
-  label: string;
-  icon: string;
-  order: number;
-  source:
-    | 'server'
-    | 'local'
-    | 'coming_soon'
-    | 'incomplete'
-    | 'external'
-    | 'basic'
-    | 'others';
-}
+import { useModuleStore } from '../stores/moduleItemsStore.ts';
 
 const Sidebar: React.FC = () => {
+  const { sidebarItems, loadItems } = useModuleStore();
   const { activeItem, setActiveItem } = useActiveItem();
-  const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
-  const [_, setLoading] = useState(true);
   const { setIsSettingsOpen } = useSettingDrawer();
   const [showSidebar, setShowSidebar] = useState(false);
 
@@ -37,20 +21,9 @@ const Sidebar: React.FC = () => {
     return unsubscribe;
   }, []);
 
-  // 加载本地配置
-  const loadLocalItems = async () => {
-    try {
-      const sidebarItems = await invoke<SidebarItem[]>('get_sidebar_items');
-      setSidebarItems(sidebarItems);
-    } catch (error) {
-      console.error('加载本地配置失败:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    loadLocalItems();
+    loadItems();
   }, []);
 
   if (!showSidebar) return null;

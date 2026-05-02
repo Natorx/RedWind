@@ -4,47 +4,16 @@
 
 use tauri::Manager;
 mod mods;
-// 硬件信息模块
-use mods::hardinfo::{get_hardware_info, get_process, kill_process, AppState};
+mod database;
 use std::sync::Mutex;
 use sysinfo::System;
-// 文件转换模块
-use mods::conversion::convert_file;
-// 侧栏模块
-use mods::sidebar::{
-    add_sidebar_item, delete_sidebar_item, get_sidebar_items, update_sidebar_item,
-    update_sidebar_items_order, DbState,
-};
-// 英语练习模块
-use mods::typing::{
-    batch_update_meanings, delete_custom_word_set, delete_word_meaning, get_all_meanings,
-    get_custom_word_set, get_custom_word_sets, get_word_meaning, save_custom_word_set,
-    update_custom_word_set, update_word_meaning,
-};
-// Windows音频模块
-use mods::win_audio_control::{
-    get_all_audio_sessions_cmd, get_system_volume_cmd, set_app_mute_cmd, set_app_volume_cmd,
-    set_system_volume_cmd,
-};
-
-// Node子进程模块
-use mods::node_server::{get_server_status, start_server, stop_server, ServerState};
-
-// Open 模块
-use mods::open::open_path;
-
-// About app config
-use mods::rd_config::{get_active_ui, set_active_ui, ConfigManager};
-
-mod database;
-use database::init_sidebar::init_db_state;
-use database::init_typing::init_typing_db_state;
-
+use mods::sidebar::DbState;
+// network scanner
 use crate::mods::net_scanner::ScanState;
 
 fn main() {
-    let db_state = init_db_state();
-    let typing_db_state = init_typing_db_state();
+    let db_state = database::init_sidebar::init_db_state();
+    let typing_db_state = database::init_typing::init_typing_db_state();
     let scan_state = ScanState::new();
 
     tauri::Builder::default()
@@ -52,57 +21,56 @@ fn main() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let config_manager = ConfigManager::new(app.handle());
-            app.manage(config_manager); // 如果还是报错，用上面的写法
+            let config_manager = mods::rd_config::ConfigManager::new(app.handle());
+            app.manage(config_manager);
             Ok(())
         })
-        .manage(AppState {
+        .manage(mods::hardinfo::AppState {
             sys: Mutex::new(System::new_all()),
         })
         .manage(scan_state)
-        .manage(ServerState::default())
+        .manage(mods::node_server::ServerState::default())
         .manage(db_state)
         .manage(typing_db_state)
         .invoke_handler(tauri::generate_handler![
             // Open模块
-            open_path,
+            mods::open::open_path,
             // 硬件信息
-            get_hardware_info,
-            get_process,
-            kill_process,
+            mods::hardinfo::get_hardware_info,
+            mods::hardinfo::get_process,
+            mods::hardinfo::kill_process,
             // 文件转换
-            convert_file,
+            mods::conversion::convert_file,
             // 侧边栏相关
-            get_sidebar_items,
-            update_sidebar_item,
-            add_sidebar_item,
-            delete_sidebar_item,
-            update_sidebar_items_order,
+            mods::sidebar::get_sidebar_items,
+            mods::sidebar::update_sidebar_item,
+            mods::sidebar::add_sidebar_item,
+            mods::sidebar::delete_sidebar_item,
+            mods::sidebar::update_sidebar_items_order,
             // 自定义词汇集相关
-            get_custom_word_set,
-            get_custom_word_sets,
-            save_custom_word_set,
-            delete_custom_word_set,
-            update_custom_word_set,
-            // 字典相关（新增）
-            get_word_meaning,
-            get_all_meanings,
-            update_word_meaning,
-            batch_update_meanings,
-            delete_word_meaning,
+            mods::typing::get_custom_word_set,
+            mods::typing::get_custom_word_sets,
+            mods::typing::save_custom_word_set,
+            mods::typing::delete_custom_word_set,
+            mods::typing::update_custom_word_set,
+            mods::typing::get_word_meaning,
+            mods::typing::get_all_meanings,
+            mods::typing::update_word_meaning,
+            mods::typing::batch_update_meanings,
+            mods::typing::delete_word_meaning,
             // Node子进程
-            get_server_status,
-            start_server,
-            stop_server,
+            mods::node_server::get_server_status,
+            mods::node_server::start_server,
+            mods::node_server::stop_server,
             // Windows Audio
-            get_all_audio_sessions_cmd,
-            get_system_volume_cmd,
-            set_system_volume_cmd,
-            set_app_volume_cmd,
-            set_app_mute_cmd,
+            mods::win_audio_control::get_all_audio_sessions_cmd,
+            mods::win_audio_control::get_system_volume_cmd,
+            mods::win_audio_control::set_system_volume_cmd,
+            mods::win_audio_control::set_app_volume_cmd,
+            mods::win_audio_control::set_app_mute_cmd,
             // Config
-            get_active_ui,
-            set_active_ui,
+            mods::rd_config::get_active_ui,
+            mods::rd_config::set_active_ui,
             // Network Scanner
             mods::net_scanner::scan_network,
             mods::net_scanner::get_scan_status,

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 
 // 排序算法类型
-type AlgorithmType = 'bubble' | 'selection' | 'insertion';
+type AlgorithmType = 'bubble' | 'selection' | 'insertion' | 'bogo';
 
 // 数据项类型
 interface DataItem {
@@ -23,6 +23,24 @@ const generateRandomData = (count: number = 20): DataItem[] => {
 
 // 延迟函数
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// 辅助函数：检查数组是否已排序
+const isSorted = (arr: DataItem[]): boolean => {
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i].value > arr[i + 1].value) return false;
+  }
+  return true;
+};
+
+// 辅助函数：随机打乱数组 (Fisher-Yates)
+const shuffleArray = (arr: DataItem[]): DataItem[] => {
+  const newArr = [...arr];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+};
 
 const Algorithms: React.FC = () => {
   const [data, setData] = useState<DataItem[]>(() => generateRandomData(20));
@@ -229,6 +247,56 @@ const Algorithms: React.FC = () => {
     return true;
   };
 
+  // 猴子排序可视化
+  const bogoSort = async (initialData: DataItem[], delayMs: number, signal: AbortSignal) => {
+    let arr = [...initialData];
+    let attempts = 0;
+    
+    // 先清除所有排序标记，因为猴子排序是全局随机
+    setData(prev => prev.map(item => ({ ...item, isSorted: false, isComparing: false, isSwapping: false })));
+    
+    // 检查是否已经幸运地有序
+    if (isSorted(arr)) {
+      setData(prev => prev.map(item => ({ ...item, isSorted: true })));
+      return true;
+    }
+    
+    while (!isSorted(arr)) {
+      if (signal.aborted) return false;
+      
+      attempts++;
+      
+      // 高亮所有元素表示正在尝试重排
+      setData(prev => {
+        const newData = clearHighlights(prev);
+        // 将所有元素标记为"交换中"或"比较中"，表示正在随机化
+        for (let i = 0; i < newData.length; i++) {
+          newData[i].isSwapping = true;
+        }
+        return newData;
+      });
+      await sleep(delayMs / 2);
+      
+      // 随机打乱数组
+      arr = shuffleArray(arr);
+      setData([...arr]);
+      await sleep(delayMs / 2);
+      
+      // 清除随机化高亮
+      setData(prev => clearHighlights(prev));
+      
+      // 可选的：每几次尝试检查一次，并短暂显示“attempts”
+      if (attempts % 5 === 0) {
+        // 短暂显示尝试次数，但不阻塞太久
+        await sleep(delayMs / 4);
+      }
+    }
+    
+    // 排序完成，全部标记为已排序
+    setData(prev => prev.map(item => ({ ...item, isSorted: true })));
+    return true;
+  };
+
   // 运行排序
   const runSort = useCallback(async () => {
     if (isSorting) return;
@@ -257,6 +325,9 @@ const Algorithms: React.FC = () => {
       case 'insertion':
         success = await insertionSort(currentData, speed, abortControllerRef.current.signal);
         break;
+      case 'bogo':
+        success = await bogoSort(currentData, speed, abortControllerRef.current.signal);
+        break;
     }
     
     if (!success) {
@@ -282,6 +353,7 @@ const Algorithms: React.FC = () => {
       case 'bubble': return '冒泡排序';
       case 'selection': return '选择排序';
       case 'insertion': return '插入排序';
+      case 'bogo': return '猴子排序 (Bogo Sort)';
       default: return '';
     }
   };
@@ -292,6 +364,7 @@ const Algorithms: React.FC = () => {
       case 'bubble': return 'O(n²)';
       case 'selection': return 'O(n²)';
       case 'insertion': return 'O(n²)';
+      case 'bogo': return 'O((n+1)!) 平均';
       default: return '';
     }
   };
@@ -351,24 +424,30 @@ const Algorithms: React.FC = () => {
               <option value="bubble">冒泡排序</option>
               <option value="selection">选择排序</option>
               <option value="insertion">插入排序</option>
+              <option value="bogo">猴子排序 (Bogo Sort)</option>
             </select>
           </div>
 
           {/* 速度调节 */}
           <div>
             <label style={{ marginRight: '8px', color: '#555' }}>
-              速度：{speed === 20 ? '快' : speed === 100 ? '中' : speed === 200 ? '慢' : '很慢'}
+              速度：{speed === 20 ? '快' : speed === 50 ? '中' : speed === 150 ? '慢' : '很慢'}
             </label>
             <input
               type="range"
-              min="20"
-              max="400"
-              step="50"
+              min="10"
+              max="300"
+              step="10"
               value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}
               disabled={isSorting}
               style={{ width: '150px' }}
             />
+            {selectedAlgorithm === 'bogo' && (
+              <span style={{ marginLeft: '8px', fontSize: '12px', color: '#ff5722' }}>
+                ⚠️ 猴子排序可能需要很长时间
+              </span>
+            )}
           </div>
 
           {/* 操作按钮 */}
@@ -442,6 +521,11 @@ const Algorithms: React.FC = () => {
           <span style={{ marginLeft: '16px', color: '#666' }}>
             当前延迟：{speed}ms
           </span>
+          {selectedAlgorithm === 'bogo' && (
+            <span style={{ marginLeft: '16px', color: '#f44336', fontSize: '12px' }}>
+              (平均复杂度 O((n+1)!)，谨慎使用)
+            </span>
+          )}
         </div>
       </div>
 
@@ -512,7 +596,7 @@ const Algorithms: React.FC = () => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ width: '20px', height: '20px', backgroundColor: '#FF5722', borderRadius: '4px' }}></div>
-          <span>交换中</span>
+          <span>交换/重排中</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ width: '20px', height: '20px', backgroundColor: '#4CAF50', borderRadius: '4px' }}></div>

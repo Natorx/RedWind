@@ -98,13 +98,13 @@ const SysCommands: React.FC = () => {
 
   // 保存命令 - 修复正则
   const handleSaveCommand = () => {
-    console.log('handleSaveCommand called, path:', path); // 调试日志
+    console.log('handleSaveCommand called, path:', path);
 
     // 匹配 save:路径 (路径可以是任何内容，包括中文、空格等)
     if (path.startsWith('save:')) {
-      const fullPath = path.substring(5).trim(); // 去掉 'save:' 前缀
+      const fullPath = path.substring(5).trim();
 
-      console.log('Extracted path:', fullPath); // 调试日志
+      console.log('Extracted path:', fullPath);
 
       if (fullPath) {
         // 从路径中提取名称（最后一级）
@@ -126,11 +126,11 @@ const SysCommands: React.FC = () => {
           createdAt: new Date().toISOString(),
         };
 
-        console.log('Adding new command:', newCommand); // 调试日志
+        console.log('Adding new command:', newCommand);
         addCommand(newCommand);
 
         setSuccessMsg(`✅ 已保存: ${name} → ${fullPath}`);
-        setPath(''); // 清空输入框
+        setPath('');
         setError('');
 
         setTimeout(() => setSuccessMsg(''), 3000);
@@ -262,29 +262,29 @@ const SysCommands: React.FC = () => {
               placeholder:text-neutral-500
               rounded-xl
               border
-              border-neutral-700
+              border-red-500/30
               outline-none
               transition-all
               duration-200
-              focus:border-neutral-500
+              focus:border-red-500
               focus:ring-2
-              focus:ring-neutral-600
+              focus:ring-red-500
               focus:ring-opacity-50
-              hover:border-neutral-600
+              hover:border-red-500/50
               text-sm
               font-mono
             "
           />
 
           {showCmdSuggestions && filteredCommands.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-neutral-800 rounded-lg border border-neutral-700 overflow-hidden z-50 shadow-xl animate-in slide-in-from-top-2 fade-in duration-200 max-h-96 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-neutral-900 rounded-lg border border-red-500/30 overflow-hidden z-50 shadow-xl animate-in slide-in-from-top-2 fade-in duration-200 max-h-96 overflow-y-auto custom-scrollbar">
               {filteredCommands.map((cmdItem, index) => (
                 <div
                   key={cmdItem.cmd}
                   className={`px-4 py-2 cursor-pointer transition-all duration-150 group ${
                     index === selectedIndex
                       ? 'bg-red-500/20 border-l-2 border-red-500'
-                      : 'hover:bg-neutral-700'
+                      : 'hover:bg-red-500/10'
                   }`}
                   onClick={() => selectCommand(cmdItem)}
                   onMouseEnter={() => setSelectedIndex(index)}
@@ -334,7 +334,7 @@ const SysCommands: React.FC = () => {
         </div>
 
         {error && (
-          <div className="w-30% bg-red-500/10 border border-red-500 rounded-md p-2 text-red-500 text-sm animate-in fade-in slide-in-from-right-2 duration-200">
+          <div className="w-30% bg-red-500/10 border border-red-500 rounded-md p-2 text-red-400 text-sm animate-in fade-in slide-in-from-right-2 duration-200">
             {error}
           </div>
         )}
@@ -348,7 +348,7 @@ const SysCommands: React.FC = () => {
             <div key={cmd.id} className="flex items-center gap-1">
               <button
                 onClick={() => handleQuickOpenSaved(cmd.name)}
-                className="text-xs px-2 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-green-400 transition-colors"
+                className="text-xs px-2 py-1 rounded bg-neutral-800 hover:bg-red-500/20 text-green-400 transition-colors border border-red-500/30"
               >
                 {cmd.name}
               </button>

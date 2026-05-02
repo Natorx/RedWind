@@ -52,18 +52,18 @@ const Drawer: React.FC<DrawerProps> = ({
 
   return (
     <>
-      {/* 遮罩层 */}
+      {/* 遮罩层 - 保持半透明黑色 */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-40 transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={handleBackdropClick}
         aria-hidden="true"
       />
 
-      {/* 抽屉主体 */}
+      {/* 抽屉主体 - 红黑风格 */}
       <div
-        className={`fixed top-0 h-full z-50 bg-white shadow-xl transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 h-full z-50 bg-gradient-to-b from-neutral-900 to-red-950 shadow-xl transition-transform duration-300 ease-in-out ${
           position === 'left' ? 'left-0' : 'right-0'
         } ${width} ${
           isOpen
@@ -75,20 +75,23 @@ const Drawer: React.FC<DrawerProps> = ({
         role="dialog"
         aria-modal="true"
       >
-        {/* 标题栏 */}
+        {/* 标题栏 - 红黑风格 */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between p-4 border-b border-red-500/30">
             {title && (
-              <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <span className="text-red-500">⚙️</span>
+                {title}
+              </h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-gray-300 rounded-md transition-colors border-none cursor-pointer"
+                className="p-1 hover:bg-red-500/20 rounded-md transition-all duration-200 border-none cursor-pointer group"
                 aria-label="关闭抽屉"
               >
                 <svg
-                  className="w-5 h-5 text-gray-500"
+                  className="w-5 h-5 text-neutral-400 group-hover:text-red-400 transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -105,8 +108,8 @@ const Drawer: React.FC<DrawerProps> = ({
           </div>
         )}
 
-        {/* 内容区域 */}
-        <div className="h-[calc(100%-4rem)] overflow-y-auto p-4">
+        {/* 内容区域 - 红黑风格滚动条 */}
+        <div className="h-[calc(100%-4rem)] overflow-y-auto p-4 custom-scrollbar">
           {children}
         </div>
       </div>

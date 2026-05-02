@@ -80,7 +80,7 @@ const WAudioController: React.FC = () => {
 
   return (
     <div style={{
-      background: '#ffffff',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #0f0f0f 100%)',
       minHeight: '100vh',
       padding: '32px 24px',
     }}>
@@ -91,21 +91,21 @@ const WAudioController: React.FC = () => {
         {/* 头部 */}
         <div style={{
           marginBottom: '32px',
-          borderBottom: '1px solid #e5e7eb',
+          borderBottom: '1px solid rgba(239, 68, 68, 0.3)',
           paddingBottom: '20px',
         }}>
           <h1 style={{
             fontSize: '1.75rem',
             fontWeight: '500',
-            color: '#111827',
+            color: '#ffffff',
             marginBottom: '8px',
             letterSpacing: '-0.01em',
           }}>
-            Windows 音频控制器
+            <span style={{ color: '#ef4444' }}>🎵</span> Windows 音频控制器
           </h1>
           <p style={{
             fontSize: '0.875rem',
-            color: '#6b7280',
+            color: '#9ca3af',
           }}>
             控制系统音量和每个应用的独立音频
           </p>
@@ -113,11 +113,12 @@ const WAudioController: React.FC = () => {
 
         {/* 系统音量 */}
         <div style={{
-          background: '#f9fafb',
+          background: 'rgba(30, 30, 35, 0.8)',
+          backdropFilter: 'blur(10px)',
           borderRadius: '16px',
           padding: '20px 24px',
           marginBottom: '32px',
-          border: '1px solid #f0f0f0',
+          border: '1px solid rgba(239, 68, 68, 0.2)',
         }}>
           <div style={{
             display: 'flex',
@@ -140,14 +141,14 @@ const WAudioController: React.FC = () => {
                 <h2 style={{
                   fontSize: '0.875rem',
                   fontWeight: '500',
-                  color: '#374151',
+                  color: '#d1d5db',
                   marginBottom: '2px',
                 }}>
                   系统主音量
                 </h2>
                 <p style={{
                   fontSize: '0.75rem',
-                  color: '#9ca3af',
+                  color: '#6b7280',
                 }}>
                   控制整个系统的输出音量
                 </p>
@@ -162,7 +163,7 @@ const WAudioController: React.FC = () => {
                 alignItems: 'center',
                 gap: '12px',
               }}>
-                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>0%</span>
+                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>0%</span>
                 <input
                   type="range"
                   min="0"
@@ -174,11 +175,17 @@ const WAudioController: React.FC = () => {
                     height: '4px',
                     borderRadius: '2px',
                     WebkitAppearance: 'none',
-                    background: '#e5e7eb',
+                    background: '#3f3f46',
                     cursor: 'pointer',
                   }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#ef4444';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#3f3f46';
+                  }}
                 />
-                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>100%</span>
+                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>100%</span>
               </div>
               <div style={{
                 marginTop: '8px',
@@ -187,7 +194,7 @@ const WAudioController: React.FC = () => {
                 <span style={{
                   fontSize: '0.875rem',
                   fontWeight: '500',
-                  color: '#111827',
+                  color: '#ef4444',
                 }}>
                   {Math.round(systemVolume * 100)}%
                 </span>
@@ -196,22 +203,22 @@ const WAudioController: React.FC = () => {
             <button
               onClick={fetchSystemVolume}
               style={{
-                background: 'transparent',
-                border: '1px solid #e5e7eb',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
                 borderRadius: '8px',
                 padding: '6px 12px',
                 fontSize: '0.875rem',
-                color: '#6b7280',
+                color: '#ef4444',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f3f4f6';
-                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.borderColor = '#e5e7eb';
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
               }}
             >
               🔄 刷新
@@ -232,14 +239,14 @@ const WAudioController: React.FC = () => {
             <h2 style={{
               fontSize: '1rem',
               fontWeight: '500',
-              color: '#111827',
+              color: '#ffffff',
               marginBottom: '4px',
             }}>
               应用音量合成器
             </h2>
             <p style={{
               fontSize: '0.75rem',
-              color: '#9ca3af',
+              color: '#6b7280',
             }}>
               {sessions.length} 个应用正在播放音频
             </p>
@@ -248,7 +255,7 @@ const WAudioController: React.FC = () => {
             onClick={fetchAudioSessions}
             disabled={loading}
             style={{
-              background: '#111827',
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -260,10 +267,10 @@ const WAudioController: React.FC = () => {
               transition: 'all 0.2s',
             }}
             onMouseEnter={(e) => {
-              if (!loading) e.currentTarget.style.background = '#374151';
+              if (!loading) e.currentTarget.style.transform = 'scale(1.02)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#111827';
+              if (!loading) e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             {loading ? '刷新中...' : '刷新列表'}
@@ -273,13 +280,13 @@ const WAudioController: React.FC = () => {
         {/* 错误提示 */}
         {error && (
           <div style={{
-            background: '#fef2f2',
-            border: '1px solid #fee2e2',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
             borderRadius: '12px',
             padding: '12px 16px',
             marginBottom: '20px',
             fontSize: '0.75rem',
-            color: '#dc2626',
+            color: '#ef4444',
           }}>
             ⚠️ {error}
           </div>
@@ -292,9 +299,9 @@ const WAudioController: React.FC = () => {
               <div style={{
                 textAlign: 'center',
                 padding: '48px 20px',
-                background: '#f9fafb',
+                background: 'rgba(30, 30, 35, 0.6)',
                 borderRadius: '16px',
-                border: '1px solid #f0f0f0',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
               }}>
                 <span style={{
                   fontSize: '2.5rem',
@@ -306,13 +313,13 @@ const WAudioController: React.FC = () => {
                 </span>
                 <p style={{
                   fontSize: '0.875rem',
-                  color: '#6b7280',
+                  color: '#9ca3af',
                 }}>
                   暂无音频会话
                 </p>
                 <p style={{
                   fontSize: '0.75rem',
-                  color: '#9ca3af',
+                  color: '#6b7280',
                   marginTop: '4px',
                 }}>
                   打开应用播放音频后会显示在这里
@@ -332,10 +339,18 @@ const WAudioController: React.FC = () => {
                       alignItems: 'center',
                       gap: '16px',
                       padding: '12px 16px',
-                      background: '#f9fafb',
+                      background: 'rgba(30, 30, 35, 0.6)',
                       borderRadius: '12px',
                       transition: 'all 0.2s',
-                      border: '1px solid #f0f0f0',
+                      border: '1px solid rgba(239, 68, 68, 0.15)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(40, 40, 48, 0.8)';
+                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(30, 30, 35, 0.6)';
+                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.15)';
                     }}
                   >
                     {/* 图标和名称 */}
@@ -355,13 +370,13 @@ const WAudioController: React.FC = () => {
                         <div style={{
                           fontSize: '0.813rem',
                           fontWeight: '500',
-                          color: '#111827',
+                          color: '#ffffff',
                         }}>
                           {session.display_name || session.process_name}
                         </div>
                         <div style={{
                           fontSize: '0.688rem',
-                          color: '#9ca3af',
+                          color: '#6b7280',
                         }}>
                           PID: {session.pid}
                         </div>
@@ -384,8 +399,14 @@ const WAudioController: React.FC = () => {
                           height: '3px',
                           borderRadius: '1.5px',
                           WebkitAppearance: 'none',
-                          background: '#e5e7eb',
+                          background: '#3f3f46',
                           cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#ef4444';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#3f3f46';
                         }}
                       />
                     </div>
@@ -401,7 +422,7 @@ const WAudioController: React.FC = () => {
                       <span style={{
                         fontSize: '0.75rem',
                         fontWeight: '500',
-                        color: '#111827',
+                        color: '#ef4444',
                         minWidth: '40px',
                         textAlign: 'center',
                       }}>
@@ -414,17 +435,17 @@ const WAudioController: React.FC = () => {
                           fontSize: '0.688rem',
                           fontWeight: '500',
                           cursor: 'pointer',
-                          background: session.is_muted ? '#ef4444' : '#f3f4f6',
-                          color: session.is_muted ? 'white' : '#374151',
+                          background: session.is_muted ? '#ef4444' : 'rgba(63, 63, 70, 0.8)',
+                          color: session.is_muted ? 'white' : '#d1d5db',
                           border: 'none',
                           borderRadius: '6px',
                           transition: 'all 0.2s',
                         }}
                         onMouseEnter={(e) => {
-                          if (!session.is_muted) e.currentTarget.style.background = '#e5e7eb';
+                          if (!session.is_muted) e.currentTarget.style.background = '#ef4444';
                         }}
                         onMouseLeave={(e) => {
-                          if (!session.is_muted) e.currentTarget.style.background = '#f3f4f6';
+                          if (!session.is_muted) e.currentTarget.style.background = 'rgba(63, 63, 70, 0.8)';
                         }}
                       >
                         {session.is_muted ? '解除静音' : '静音'}

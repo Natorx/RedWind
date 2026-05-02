@@ -67,10 +67,10 @@ const Circle: React.FC = () => {
         {allMenuItems.map((item) => (
           <button
             key={item.id}
-            className={`w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg ${
+            className={`w-10 h-10 bg-gray-800 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg ${
               activeItem === item.id 
-                ? 'ring-2 ring-blue-400 ring-offset-1 bg-gradient-to-br from-blue-50 to-indigo-50' 
-                : ''
+                ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-900 bg-gradient-to-br from-gray-700 to-gray-800' 
+                : 'hover:bg-gray-700'
             }`}
             onClick={() => handleItemClick(item.id)}
             title={item.label}
@@ -79,7 +79,7 @@ const Circle: React.FC = () => {
           </button>
         ))}
         <button
-            className={`w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg `}
+            className={`w-10 h-10 bg-gray-800 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg hover:bg-gray-700`}
             onClick={() => setIsSettingsOpen(true)}
           >
             <span className="text-xl">⚙️</span>
@@ -88,7 +88,7 @@ const Circle: React.FC = () => {
 
       {/* 小圆标按钮 - 旋转360度 */}
       <button
-        className={`fixed bottom-6 right-6 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center cursor-pointer border-none transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-xl z-50 ${
+        className={`fixed bottom-6 right-6 w-14 h-14 bg-gray-800 rounded-full shadow-lg flex items-center justify-center cursor-pointer border-none transition-all duration-500 ease-in-out hover:scale-105 hover:shadow-xl hover:bg-gray-700 z-50 ${
           isExpanded ? 'rotate-360' : ''
         }`}
         onClick={handleCircleClick}

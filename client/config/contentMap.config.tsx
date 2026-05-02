@@ -17,6 +17,7 @@ import Algorithms from '../pages/Algorithms';
 import WAudioController from '../pages/WAudioController';
 import SysCommands from '../pages/SysCommands';
 import StartPage from '../pages/Start';
+import NetworkScanner from '../pages/NetScanner';
 
 const contentMap: Record<string, JSX.Element> = {
   'start':<StartPage/>,
@@ -36,6 +37,7 @@ const contentMap: Record<string, JSX.Element> = {
   algorithms: <Algorithms />,
   'audio-control': <WAudioController />,
   'sys-commands':<SysCommands/>,
+  'network-scanner': <NetworkScanner/>
 };
 export default contentMap;
 

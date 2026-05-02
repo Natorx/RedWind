@@ -1,4 +1,6 @@
-// src/utils/uiState.ts
+/* src/utils/uiState.ts
+  Use Rust sqlite to save the UI state
+*/
 import { invoke } from '@tauri-apps/api/core';
 
 export type UiType = 'circle' | 'sidebar';

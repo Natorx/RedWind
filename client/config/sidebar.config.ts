@@ -101,6 +101,13 @@ export const sidebarItems: SidebarItem[] = [
     order: 30,
     source: 'local',
   },
+  {
+    id: 'network-scanner',
+    label: '局域网扫描',
+    icon: '📡',
+    order: 31,
+    source: 'local',
+  },
 
   // ========== server ==========
   {

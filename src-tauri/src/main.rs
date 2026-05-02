@@ -40,9 +40,12 @@ mod database;
 use database::init_sidebar::init_db_state;
 use database::init_typing::init_typing_db_state;
 
+use crate::mods::net_scanner::ScanState;
+
 fn main() {
     let db_state = init_db_state();
     let typing_db_state = init_typing_db_state();
+    let scan_state = ScanState::new();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -56,6 +59,7 @@ fn main() {
         .manage(AppState {
             sys: Mutex::new(System::new_all()),
         })
+        .manage(scan_state)
         .manage(ServerState::default())
         .manage(db_state)
         .manage(typing_db_state)
@@ -98,7 +102,11 @@ fn main() {
             set_app_mute_cmd,
             // Config
             get_active_ui,
-            set_active_ui
+            set_active_ui,
+            // Network Scanner
+            mods::net_scanner::scan_network,
+            mods::net_scanner::get_scan_status,
+            mods::net_scanner::get_scanned_devices,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

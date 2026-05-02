@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import * as QRCode from 'qrcode.react';
 
 interface QRCodeGeneratorProps {
@@ -22,7 +22,6 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   const [qrSize, setQrSize] = useState<number>(size);
   const [qrFgColor, setQrFgColor] = useState<string>(fgColor);
   const [qrBgColor, setQrBgColor] = useState<string>(bgColor);
-  const qrRef = useRef<HTMLDivElement>(null);
 
   // 下载二维码为PNG
   const downloadQRCode = () => {

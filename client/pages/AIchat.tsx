@@ -5,52 +5,35 @@
  * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
  */
 import React, { useState, useRef, useEffect } from 'react';
-
-interface Message {
-  id: string;
-  content: string;
-  role: 'user' | 'assistant';
-  timestamp: Date;
-}
+import { Message, useAIStore } from '../stores/aiStore';
+import { Settings, X, Save, Eye, EyeOff } from 'lucide-react';
 
 const AIChat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: '你好！我是DeepSeek助手，有什么可以帮您的？',
-      role: 'assistant',
-      timestamp: new Date()
-    }
-  ]);
+  const {
+    messages,
+    isLoading,
+    apiKey,
+    useStreaming,
+    systemPrompt,
+    systemPromptEnabled,
+    addMessage,
+    updateLastMessage,
+    setIsLoading,
+    clearChat,
+    setApiKey,
+    setUseStreaming,
+    setSystemPrompt,
+    setSystemPromptEnabled
+  } = useAIStore();
+
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [useStreaming, setUseStreaming] = useState(false); // 新增：流式输出开关
+  const [showSystemPromptModal, setShowSystemPromptModal] = useState(false);
+  const [tempSystemPrompt, setTempSystemPrompt] = useState(systemPrompt);
+  const [showPreview, setShowPreview] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // 从 localStorage 加载 API Key 和流式设置
-  useEffect(() => {
-    const savedKey = localStorage.getItem('deepseek_api_key');
-    if (savedKey) {
-      setApiKey(savedKey);
-    }
-    
-    const savedStreaming = localStorage.getItem('use_streaming');
-    if (savedStreaming) {
-      setUseStreaming(savedStreaming === 'true');
-    }
-  }, []);
-
-  // 保存 API Key
-  const saveApiKey = () => {
-    localStorage.setItem('deepseek_api_key', apiKey);
-    alert('API Key 已保存');
-  };
-
-  // 保存流式设置
-  const saveStreamingSetting = () => {
-    localStorage.setItem('use_streaming', useStreaming.toString());
-  };
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 滚动到底部
   const scrollToBottom = () => {
@@ -61,224 +44,198 @@ const AIChat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // 普通发送消息（非流式）
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-
-    if (!apiKey) {
-      alert('请先设置您的 DeepSeek API Key');
-      return;
-    }
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      role: 'user',
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            ...messages.map(msg => ({
-              role: msg.role,
-              content: msg.content
-            })),
-            {
-              role: 'user',
-              content: input
-            }
-          ],
-          stream: false
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`API 请求失败: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.choices[0].message.content,
-        role: 'assistant',
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      console.error('发送消息失败:', error);
-      
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `抱歉，请求失败: ${error instanceof Error ? error.message : '未知错误'}`,
-        role: 'assistant',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+  // 保存系统提示词
+  const handleSaveSystemPrompt = () => {
+    setSystemPrompt(tempSystemPrompt);
+    setShowSystemPromptModal(false);
   };
 
-  // 流式发送消息
-  const sendMessageStreaming = async () => {
-    if (!input.trim() || isLoading) return;
+// 普通发送消息（非流式）- 修复版
+const sendMessage = async () => {
+  if (!input.trim() || isLoading) return;
 
-    if (!apiKey) {
-      alert('请先设置您的 DeepSeek API Key');
-      return;
+  if (!apiKey) {
+    alert('请先设置您的 DeepSeek API Key');
+    return;
+  }
+
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    content: input,
+    role: 'user',
+    timestamp: new Date()
+  };
+
+  addMessage(userMessage);
+  setInput('');
+  setIsLoading(true);
+
+  // 调整文本框高度
+  if (textareaRef.current) {
+    textareaRef.current.style.height = 'auto';
+  }
+
+  try {
+    const messagesWithSystem = useAIStore.getState().getMessagesWithSystemPrompt();
+    
+    console.log('发送消息:', messagesWithSystem); // 调试日志
+    
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: messagesWithSystem,
+        stream: false
+      })
+    });
+
+    console.log('响应状态:', response.status); // 调试日志
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API错误响应:', errorText);
+      throw new Error(`API 请求失败: ${response.status} - ${errorText}`);
     }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      role: 'user',
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    // 先创建一个空的AI消息用于流式更新
-    const aiMessageId = (Date.now() + 1).toString();
-    const initialAiMessage: Message = {
-      id: aiMessageId,
-      content: '',
+    const data = await response.json();
+    console.log('API响应数据:', data); // 调试日志
+    
+    const aiMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: data.choices[0].message.content,
       role: 'assistant',
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, initialAiMessage]);
+    addMessage(aiMessage);
+  } catch (error) {
+    console.error('发送消息失败:', error);
+    
+    const errorMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: `抱歉，请求失败: ${error instanceof Error ? error.message : '未知错误'}`,
+      role: 'assistant',
+      timestamp: new Date()
+    };
+    
+    addMessage(errorMessage);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-    try {
-      const response = await fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            ...messages.map(msg => ({
-              role: msg.role,
-              content: msg.content
-            })),
-            {
-              role: 'user',
-              content: input
+// 流式发送消息 - 修复版
+const sendMessageStreaming = async () => {
+  if (!input.trim() || isLoading) return;
+
+  if (!apiKey) {
+    alert('请先设置您的 DeepSeek API Key');
+    return;
+  }
+
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    content: input,
+    role: 'user',
+    timestamp: new Date()
+  };
+
+  addMessage(userMessage);
+  setInput('');
+  setIsLoading(true);
+
+  // 调整文本框高度
+  if (textareaRef.current) {
+    textareaRef.current.style.height = 'auto';
+  }
+
+  // 先创建一个空的AI消息用于流式更新
+  const aiMessageId = (Date.now() + 1).toString();
+  const emptyAiMessage: Message = {
+    id: aiMessageId,
+    content: '',
+    role: 'assistant',
+    timestamp: new Date()
+  };
+  
+  // 添加空消息到消息列表
+  addMessage(emptyAiMessage);
+
+  try {
+    const messagesWithSystem = useAIStore.getState().getMessagesWithSystemPrompt();
+    
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: messagesWithSystem,
+        stream: true
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API 请求失败: ${response.status} - ${errorText}`);
+    }
+
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let fullContent = '';
+
+    if (!reader) {
+      throw new Error('无法读取响应流');
+    }
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.trim() === '') continue;
+        
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices[0]?.delta?.content;
+            
+            if (content) {
+              fullContent += content;
+              // 使用 updateLastMessage 更新最后一条消息
+              updateLastMessage(fullContent);
             }
-          ],
-          stream: true
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`API 请求失败: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let fullContent = '';
-
-      if (!reader) {
-        throw new Error('无法读取响应流');
-      }
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.trim() === '') continue;
-          
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') break;
-
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices[0]?.delta?.content;
-              
-              if (content) {
-                fullContent += content;
-                
-                // 更新最后一条消息的内容（流式效果）
-                setMessages(prev => {
-                  const lastMessage = prev[prev.length - 1];
-                  if (lastMessage.id === aiMessageId) {
-                    return [
-                      ...prev.slice(0, -1),
-                      {
-                        ...lastMessage,
-                        content: fullContent
-                      }
-                    ];
-                  }
-                  return prev;
-                });
-              }
-            } catch (e) {
-              console.warn('解析流数据失败:', e);
-            }
+          } catch (e) {
+            console.warn('解析流数据失败:', e, line);
           }
         }
       }
-
-      // 流式传输完成后，确保消息内容完整
-      setMessages(prev => {
-        const lastMessage = prev[prev.length - 1];
-        if (lastMessage.id === aiMessageId) {
-          return [
-            ...prev.slice(0, -1),
-            {
-              ...lastMessage,
-              content: fullContent || '（无响应内容）'
-            }
-          ];
-        }
-        return prev;
-      });
-
-    } catch (error) {
-      console.error('流式发送消息失败:', error);
-      
-      // 更新错误消息
-      setMessages(prev => {
-        const lastMessage = prev[prev.length - 1];
-        if (lastMessage.id === aiMessageId) {
-          return [
-            ...prev.slice(0, -1),
-            {
-              ...lastMessage,
-              content: `抱歉，流式请求失败: ${error instanceof Error ? error.message : '未知错误'}`
-            }
-          ];
-        }
-        return prev;
-      });
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    // 确保最终内容完整
+    if (fullContent === '') {
+      updateLastMessage('（无响应内容）');
+    }
+
+  } catch (error) {
+    console.error('流式发送消息失败:', error);
+    updateLastMessage(`抱歉，流式请求失败: ${error instanceof Error ? error.message : '未知错误'}`);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // 根据设置选择发送方式
   const handleSendMessage = () => {
@@ -286,20 +243,6 @@ const AIChat: React.FC = () => {
       sendMessageStreaming();
     } else {
       sendMessage();
-    }
-  };
-
-  // 清空对话
-  const clearChat = () => {
-    if (window.confirm('确定要清空对话吗？')) {
-      setMessages([
-        {
-          id: '1',
-          content: '你好！我是DeepSeek助手，有什么可以帮您的？',
-          role: 'assistant',
-          timestamp: new Date()
-        }
-      ]);
     }
   };
 
@@ -313,12 +256,17 @@ const AIChat: React.FC = () => {
 
   // 切换流式输出
   const toggleStreaming = () => {
-    const newValue = !useStreaming;
-    setUseStreaming(newValue);
-    localStorage.setItem('use_streaming', newValue.toString());
+    setUseStreaming(!useStreaming);
   };
 
-return (
+  // 自动调整文本框高度
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+  };
+
+  return (
     <div className="flex flex-col h-full bg-gradient-to-br from-red-950 to-neutral-900">
       {/* 标题栏 */}
       <div className="flex items-center justify-between p-4 bg-neutral-900/80 backdrop-blur-sm border-b border-red-500/20">
@@ -331,6 +279,14 @@ return (
           </h1>
         </div>
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setShowSystemPromptModal(true)}
+            className="px-3 py-1 text-sm text-neutral-300 bg-neutral-700 rounded-md hover:bg-neutral-600 transition-all border border-red-500/30 flex items-center gap-1"
+            title="设置聊天习惯"
+          >
+            <Settings className="w-3 h-3" />
+            习惯设置
+          </button>
           <button
             onClick={toggleStreaming}
             className={`px-3 py-1 text-sm rounded-md transition-all ${
@@ -353,7 +309,7 @@ return (
 
       {/* API Key 设置 */}
       <div className="p-4 bg-red-500/5 border-b border-red-500/20">
-        <div className="flex items-center space-x-2 mb-2">
+        <div className="flex items-center space-x-2">
           <input
             type="password"
             value={apiKey}
@@ -362,42 +318,30 @@ return (
             className="flex-1 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500"
           />
           <button
-            onClick={saveApiKey}
+            onClick={() => localStorage.setItem('deepseek_api_key', apiKey)}
             className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-md hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
           >
             保存
           </button>
         </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="streaming-toggle"
-              checked={useStreaming}
-              onChange={toggleStreaming}
-              className="w-4 h-4 text-red-600 rounded focus:ring-red-500 bg-neutral-700 border-red-500/30"
-            />
-            <label htmlFor="streaming-toggle" className="text-sm text-neutral-300">
-              启用流式输出（打字机效果）
-            </label>
+        {systemPromptEnabled && systemPrompt && (
+          <div className="mt-2 text-xs text-neutral-500 flex items-center gap-2">
+            <span>💡 正在使用自定义习惯设置</span>
+            <button
+              onClick={() => setShowSystemPromptModal(true)}
+              className="text-red-400 hover:text-red-300"
+            >
+              查看/编辑
+            </button>
           </div>
-          
-          <button
-            onClick={saveStreamingSetting}
-            className="px-3 py-1 text-sm text-neutral-300 bg-neutral-700 rounded-md hover:bg-neutral-600 transition-all border border-red-500/30"
-          >
-            保存设置
-          </button>
-        </div>
-        
-        <p className="mt-2 text-sm text-neutral-500">
-          API Key 仅保存在本地浏览器中，不会发送到任何其他服务器
-        </p>
+        )}
       </div>
 
-      {/* 消息区域 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+      {/* 消息区域 - 使用 overflow-y-auto 自动滚动 */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"
+      >
         {messages.map((message) => (
           <div
             key={message.id}
@@ -412,12 +356,12 @@ return (
             >
               <div className="whitespace-pre-wrap">
                 {message.content}
-                {message.role === 'assistant' && message.content === '' && (
+                {message.role === 'assistant' && message.content === '' && isLoading && (
                   <span className="text-neutral-500">正在输入...</span>
                 )}
               </div>
               <div className={`text-xs mt-1 ${message.role === 'user' ? 'text-red-300' : 'text-neutral-500'}`}>
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 {message.role === 'assistant' && useStreaming && (
                   <span className="ml-2 text-green-400">• 流式</span>
                 )}
@@ -441,17 +385,19 @@ return (
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 输入区域 */}
+      {/* 输入区域 - 固定底部 */}
       <div className="p-4 bg-neutral-900/80 backdrop-blur-sm border-t border-red-500/20">
         <div className="flex space-x-2">
           <textarea
+            ref={textareaRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
             placeholder="输入您的问题..."
-            className="flex-1 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500 resize-none"
-            rows={3}
+            className="flex-1 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500 resize-none overflow-y-auto"
+            rows={1}
             disabled={isLoading}
+            style={{ minHeight: '44px', maxHeight: '200px' }}
           />
           <div className="flex flex-col space-y-2">
             <button
@@ -478,6 +424,115 @@ return (
         </div>
       </div>
 
+      {/* 系统提示词设置模态框 */}
+      {showSystemPromptModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-neutral-900 rounded-2xl max-w-2xl w-full border border-red-500/20 overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-red-500/20">
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-red-400" />
+                <h2 className="text-xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+                  聊天习惯设置
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowSystemPromptModal(false)}
+                className="text-neutral-400 hover:text-red-400 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* 开关 */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-neutral-200 font-medium block mb-1">
+                    启用自定义习惯
+                  </label>
+                  <p className="text-xs text-neutral-500">
+                    开启后，每次对话都会携带您设置的系统提示词
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSystemPromptEnabled(!systemPromptEnabled);
+                    setTempSystemPrompt(!systemPromptEnabled ? tempSystemPrompt : systemPrompt);
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    systemPromptEnabled ? 'bg-red-600' : 'bg-neutral-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      systemPromptEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* 提示词编辑 */}
+              {systemPromptEnabled && (
+                <>
+                  <div>
+                    <label className="text-neutral-200 font-medium block mb-2">
+                      系统提示词
+                    </label>
+                    <textarea
+                      value={tempSystemPrompt}
+                      onChange={(e) => setTempSystemPrompt(e.target.value)}
+                      placeholder="例如：你是一个专业的AI助手，请用友好、专业的语气回答问题。"
+                      className="w-full h-32 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500 resize-none"
+                    />
+                    <p className="text-xs text-neutral-500 mt-1">
+                      这段提示词会在每次对话前发送给 AI，用于设定 AI 的角色和行为
+                    </p>
+                  </div>
+
+                                  {/* 预览按钮 */}
+                  <button
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPreview ? '隐藏预览' : '预览效果'}
+                  </button>
+
+                  {/* 预览区域 */}
+                  {showPreview && (
+                    <div className="bg-neutral-800/50 rounded-lg p-3 border border-red-500/20">
+                      <p className="text-xs text-neutral-400 mb-2">预览：</p>
+                      <div className="bg-neutral-800 rounded p-2">
+                        <div className="text-xs text-red-400 mb-1">System:</div>
+                        <p className="text-sm text-neutral-300 whitespace-pre-wrap">
+                          {tempSystemPrompt || '（未设置提示词）'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="flex gap-3 p-6 border-t border-red-500/20">
+              <button
+                onClick={handleSaveSystemPrompt}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25 flex items-center justify-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                保存设置
+              </button>
+              <button
+                onClick={() => setShowSystemPromptModal(false)}
+                className="flex-1 px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-all border border-red-500/30"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         /* 自定义滚动条 */
         .custom-scrollbar::-webkit-scrollbar {
@@ -496,6 +551,15 @@ return (
         
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #dc2626;
+        }
+        
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        
+        .animate-bounce {
+          animation: bounce 0.6s ease-in-out infinite;
         }
       `}</style>
     </div>

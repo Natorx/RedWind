@@ -265,17 +265,6 @@ const TypingPractice: React.FC = () => {
     }
   };
 
-  // 重置游戏
-  const resetGame = () => {
-    resetGameState();
-    if (currentWordSet) {
-      setTimeout(() => {
-        initializeWordSet(currentSetId);
-        inputRef.current?.focus();
-      }, 0);
-    }
-  };
-
   // 处理输入变化
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -486,64 +475,154 @@ const TypingPractice: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* 消息提示 */}
-        {message && (
-          <div
-            className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
-              message.type === 'success'
-                ? 'bg-green-500/90 backdrop-blur-sm border border-green-400/30'
-                : 'bg-red-500/90 backdrop-blur-sm border border-red-400/30'
-            } text-white animate-fade-in`}
-          >
-            {message.text}
+    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900">
+      {/* 消息提示 */}
+      {message && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
+            message.type === 'success'
+              ? 'bg-green-500/90 backdrop-blur-sm border border-green-400/30'
+              : 'bg-red-500/90 backdrop-blur-sm border border-red-400/30'
+          } text-white animate-fade-in`}
+        >
+          {message.text}
+        </div>
+      )}
+
+      <div className="flex h-screen">
+{/* 左侧主要内容区域 */}
+<div className="flex-1 flex flex-col p-8 overflow-y-auto">
+  {/* 紧凑的内容区域 */}
+  <div className="max-w-5xl mx-auto w-full">
+    {/* 当前单词区域 - 水平卡片式布局 */}
+    <div className="bg-neutral-900/40 rounded-lg p-6 mb-5">
+      <div className="flex items-end justify-between gap-6">
+        {/* 左侧：当前单词 */}
+        <div className="flex-1">
+          <div className="text-neutral-500 text-xs mb-2 tracking-wider">当前单词</div>
+          <div className="text-6xl font-bold tracking-wide text-neutral-100 break-all">
+            {renderWordWithHighlight()}
+          </div>
+        </div>
+
+        {/* 分隔线 */}
+        <div className="w-px h-16 bg-red-500/30"></div>
+
+        {/* 右侧：中文释义 */}
+        {currentMeaning && (
+          <div className="flex-1">
+            <div className="text-neutral-500 text-xs mb-2 tracking-wider">中文释义</div>
+            <div className="text-xl text-cyan-400 font-medium leading-relaxed">
+              {currentMeaning}
+            </div>
           </div>
         )}
+      </div>
+    </div>
 
-        {/* 词汇集选择器 */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <label className="text-sm font-semibold text-neutral-300">
-              选择词汇集
-            </label>
+    {/* 输入框区域 */}
+    <div className="mb-4">
+      <div className="text-neutral-500 text-xs mb-2 ml-1">输入框</div>
+      <input
+        ref={inputRef}
+        type="text"
+        value={userInput}
+        onChange={handleInputChange}
+        disabled={
+          completedWords.length === (currentWordSet?.words.length || 0)
+        }
+        placeholder={
+          completedWords.length === 0
+            ? `输入 ${currentWord} (${currentWord?.length || 0} 个字符)`
+            : '输入上面的单词...'
+        }
+        className="w-full px-5 py-3.5 bg-neutral-900/40 border border-red-500/30 rounded-lg text-neutral-100 text-base font-mono focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/20 transition-all placeholder-neutral-600"
+        autoComplete="off"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck="false"
+      />
+    </div>
+
+    {/* 进度条区域 */}
+    <div className="bg-neutral-900/40 rounded-lg p-4">
+      <div className="flex justify-between items-center text-xs text-neutral-400 mb-2">
+        <span className="tracking-wider">练习进度</span>
+        <span className="font-mono">
+          {completedWords.length} / {currentWordSet?.words.length || 0}
+        </span>
+      </div>
+      <div className="w-full bg-neutral-800 rounded-full h-2 overflow-hidden">
+        <div
+          className="bg-gradient-to-r from-red-500 to-red-600 h-full rounded-full transition-all duration-500 ease-out"
+          style={{
+            width: `${(completedWords.length / (currentWordSet?.words.length || 1)) * 100}%`,
+          }}
+        />
+      </div>
+      {/* 进度百分比显示 */}
+      <div className="text-right text-xs text-neutral-600 mt-1">
+        {Math.round((completedWords.length / (currentWordSet?.words.length || 1)) * 100)}%
+      </div>
+    </div>
+
+    {/* 完成提示 */}
+    {completedWords.length === (currentWordSet?.words.length || 0) && (
+      <div className="mt-5 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full">
+          <span className="text-green-400">✓</span>
+          <span className="text-green-400 font-medium">恭喜！你完成了所有单词！</span>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
+        {/* 右侧词汇集选择器 - 占 25% */}
+        <div className="w-80 bg-neutral-900/40 backdrop-blur-sm border-l border-red-500/20 p-6 overflow-y-auto">
+          <div className="mb-6">
+            <h3 className="text-neutral-300 font-semibold text-base mb-3">词汇集</h3>
             <button
               onClick={() => setShowCustomModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/25 text-sm"
+              className="w-full py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-medium"
             >
-              + 自定义词汇集
+              + 新建词汇集
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+          <div className="space-y-3">
             {wordSets.map((set) => (
               <div key={set.id} className="relative">
                 <button
                   onClick={() => switchWordSet(set.id)}
-                  className={`w-full p-3 rounded-lg border-2 transition-all ${
+                  className={`w-full p-3 rounded-lg border transition-all text-left ${
                     currentSetId === set.id
-                      ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/25'
-                      : 'border-red-500/30 hover:border-red-500/50 bg-neutral-900/50 backdrop-blur-sm'
+                      ? 'border-red-500 bg-red-500/10'
+                      : 'border-red-500/20 hover:border-red-500/40 bg-transparent'
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <div className="text-left">
+                    <div>
                       <div
-                        className={`font-semibold ${currentSetId === set.id ? 'text-red-400' : 'text-neutral-200'}`}
+                        className={`font-medium ${currentSetId === set.id ? 'text-red-400' : 'text-neutral-300'}`}
                       >
                         {set.name}
                       </div>
-                      <div className="text-xs text-neutral-500">
+                      <div className="text-xs text-neutral-500 mt-0.5">
                         {set.words.length} 个单词
                       </div>
                     </div>
                     {set.isOfficial ? (
-                      <span className="text-xs bg-neutral-700 text-neutral-400 px-2 py-1 rounded">
+                      <span className="text-xs text-neutral-500 px-2 py-0.5">
                         官方
                       </span>
                     ) : (
                       <button
-                        onClick={exportCurrentWordSet}
-                        className="text-xs bg-neutral-700 text-neutral-300 px-2 py-1 rounded hover:bg-neutral-600 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          exportCurrentWordSet();
+                        }}
+                        className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors px-2 py-0.5"
                       >
                         导出
                       </button>
@@ -558,7 +637,7 @@ const TypingPractice: React.FC = () => {
                         deleteCustomWordSet(set.id);
                       }
                     }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                    className="absolute -top-2 -right-2 bg-red-500/80 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
                   >
                     ×
                   </button>
@@ -567,235 +646,102 @@ const TypingPractice: React.FC = () => {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* 进度条 */}
-        <div className="mt-8 mb-2">
-          <div className="flex justify-between text-sm text-neutral-400 mb-2">
-            <span>进度</span>
-            <span>
-              {completedWords.length} / {currentWordSet?.words.length || 0}{' '}
-              个单词
-            </span>
-          </div>
-          <div className="w-full bg-neutral-700 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-red-600 to-red-700 h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${(completedWords.length / (currentWordSet?.words.length || 1)) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
+      {/* 自定义词汇集模态框 */}
+      {showCustomModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-neutral-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-red-500/20">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent mb-4">
+                创建自定义词汇集
+              </h2>
 
-        {/* 主要游戏区域 */}
-        <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl p-8 mb-8 shadow-lg border border-red-500/20">
-          {/* 当前单词显示 */}
-          <div className="text-center mb-8 flex">
-            <div className="w-3/5">
-              <div className="text-neutral-400 text-sm mb-2">
-                <span>当前单词</span>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                  词汇集名称
+                </label>
+                <input
+                  type="text"
+                  value={newSetName}
+                  onChange={(e) => setNewSetName(e.target.value)}
+                  placeholder="例如：雅思词汇"
+                  className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
+                />
               </div>
-              <div className="text-6xl font-bold tracking-wider mb-4 text-neutral-100">
-                {renderWordWithHighlight()}
-              </div>
-            </div>
-            {/* 中文释义 */}
-            <div className="w-2/5">
-              {currentMeaning && (
-                <div className="mt-2 mb-2">
-                  <div className="text-neutral-400 text-sm mb-1">中文释义</div>
-                  <div className="text-xl text-cyan-400 font-semibold">
-                    {currentMeaning}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* 输入框 */}
-          <div className="mb-6">
-            <input
-              ref={inputRef}
-              type="text"
-              value={userInput}
-              onChange={handleInputChange}
-              disabled={
-                completedWords.length === (currentWordSet?.words.length || 0)
-              }
-              placeholder={
-                completedWords.length === 0
-                  ? `${currentWord?.length || 0} 个字符`
-                  : '输入上面的单词...'
-              }
-              className="w-full px-6 py-4 bg-neutral-800 border-2 border-red-500/30 rounded-xl text-neutral-100 text-xl font-mono focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all placeholder-neutral-500"
-              autoComplete="off"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck="false"
-            />
-          </div>
-
-          {/* 提示信息 */}
-          <div className="text-center text-neutral-400 text-sm">
-            {completedWords.length === (currentWordSet?.words.length || 0) ? (
-              <div className="text-green-400 font-semibold">
-                🎉 恭喜！你完成了所有单词！ 🎉
-              </div>
-            ) : (
-              <div></div>
-            )}
-          </div>
-        </div>
-
-        {/* 历史记录 */}
-        <div className="bg-neutral-900/80 backdrop-blur-sm rounded-xl p-4 border border-red-500/20">
-          <h3 className="text-neutral-200 font-semibold mb-3">
-            最近输入的单词
-          </h3>
-          <div className="max-h-64 overflow-y-auto custom-scrollbar">
-            {history.length === 0 ? (
-              <div className="text-neutral-500 text-center py-8">
-                还没有输入单词，开始打字吧！
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {history
-                  .slice()
-                  .reverse()
-                  .map((item, index) => (
-                    <div
-                      key={index}
-                      className="p-3 rounded-lg flex justify-between items-center bg-green-500/10 border border-green-500/20"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <span className="text-green-400">✓</span>
-                        <div>
-                          <div className="text-neutral-200 font-mono">
-                            {item.word}
-                          </div>
-                          <div className="text-xs text-neutral-500">
-                            {getWordMeaningFromDb(item.word)}
-                          </div>
-                        </div>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                  单词和释义列表
+                </label>
+                <div className="space-y-3">
+                  {wordMeaningPairs.map((pair, index) => (
+                    <div key={index} className="flex gap-3 items-start">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={pair.word}
+                          onChange={(e) => updateWord(index, e.target.value)}
+                          placeholder="英文单词"
+                          className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
+                        />
                       </div>
-                      <span className="text-neutral-500 text-sm">
-                        {new Date(item.time).toLocaleTimeString()}
-                      </span>
+                      <div className="flex-[2]">
+                        <input
+                          type="text"
+                          value={pair.meaning}
+                          onChange={(e) => updateMeaning(index, e.target.value)}
+                          placeholder="中文释义"
+                          className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
+                        />
+                      </div>
+                      {wordMeaningPairs.length > 1 && (
+                        <button
+                          onClick={() => removeWordMeaningPair(index)}
+                          className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors border border-red-500/30"
+                        >
+                          删除
+                        </button>
+                      )}
                     </div>
                   ))}
+                </div>
+                <button
+                  onClick={addWordMeaningPair}
+                  className="mt-3 px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm border border-red-500/30"
+                >
+                  + 添加单词
+                </button>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* 重置按钮 */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={resetGame}
-            className="px-6 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors border border-red-500/30"
-          >
-            重置进度
-          </button>
-        </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleAddCustomSet}
+                  className="flex-1 px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
+                >
+                  保存
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCustomModal(false);
+                    setNewSetName('');
+                    setWordMeaningPairs([{ word: '', meaning: '' }]);
+                  }}
+                  className="flex-1 px-6 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors border border-red-500/30"
+                >
+                  取消
+                </button>
+              </div>
 
-        {/* 自定义词汇集模态框 - 新版支持输入单词和释义 */}
-        {showCustomModal && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-neutral-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-red-500/20">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent mb-4">
-                  创建自定义词汇集
-                </h2>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                    词汇集名称
-                  </label>
-                  <input
-                    type="text"
-                    value={newSetName}
-                    onChange={(e) => setNewSetName(e.target.value)}
-                    placeholder="例如：雅思词汇"
-                    className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                    单词和释义列表
-                  </label>
-                  <div className="space-y-3">
-                    {wordMeaningPairs.map((pair, index) => (
-                      <div key={index} className="flex gap-3 items-start">
-                        <div className="flex-1">
-                          <input
-                            type="text"
-                            value={pair.word}
-                            onChange={(e) => updateWord(index, e.target.value)}
-                            placeholder="英文单词"
-                            className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
-                          />
-                        </div>
-                        <div className="flex-[2]">
-                          <input
-                            type="text"
-                            value={pair.meaning}
-                            onChange={(e) =>
-                              updateMeaning(index, e.target.value)
-                            }
-                            placeholder="中文释义"
-                            className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
-                          />
-                        </div>
-                        {wordMeaningPairs.length > 1 && (
-                          <button
-                            onClick={() => removeWordMeaningPair(index)}
-                            className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors border border-red-500/30"
-                          >
-                            删除
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    onClick={addWordMeaningPair}
-                    className="mt-3 px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm border border-red-500/30"
-                  >
-                    + 添加单词
-                  </button>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleAddCustomSet}
-                    className="flex-1 px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
-                  >
-                    保存
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowCustomModal(false);
-                      setNewSetName('');
-                      setWordMeaningPairs([{ word: '', meaning: '' }]);
-                    }}
-                    className="flex-1 px-6 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors border border-red-500/30"
-                  >
-                    取消
-                  </button>
-                </div>
-
-                <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                  <p className="text-sm text-neutral-400">
-                    💡
-                    提示：每个单词都会保存到字典中，以后创建其他词汇集时可以直接使用。
-                  </p>
-                </div>
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-sm text-neutral-400">
+                  💡 提示：每个单词都会保存到字典中，以后创建其他词汇集时可以直接使用。
+                </p>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes fade-in {
@@ -810,25 +756,6 @@ const TypingPractice: React.FC = () => {
         }
         .animate-fade-in {
           animation: fade-in 0.3s ease-out;
-        }
-        
-        /* 自定义滚动条 */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #3f3f46;
-          border-radius: 3px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #ef4444;
-          border-radius: 3px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #dc2626;
         }
       `}</style>
     </div>

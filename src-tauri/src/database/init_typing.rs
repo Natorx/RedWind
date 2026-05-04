@@ -11,8 +11,7 @@ pub fn init_typing_db_state() -> TypingDbState {
             // 使用内存数据库作为后备
             let conn = Connection::open_in_memory().unwrap();
             let _ = typing::init_typing_table(&conn);
-            let _ = typing::init_dictionary_table(&conn);
-            let _ = typing::init_default_dictionary(&conn);
+            let _ = typing::init_default_word_sets(&conn);
             TypingDbState::new(conn)
         }
     }

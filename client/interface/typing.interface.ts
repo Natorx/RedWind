@@ -2,24 +2,18 @@
 export interface WordSet {
   id: number;
   name: string;
-  words: string[];
   isOfficial: boolean;
   createdAt: string;
+  words?: string[];  // 单词列表（兼容旧代码）
+  items?: WordItem[]; // 完整的单词项（包含释义）
 }
 
-// 带中文释义的单词类型
-export interface WordWithMeaning {
+export interface WordItem {
+  id: number;
+  word_set_id: number;
   word: string;
   meaning: string;
-}
-
-// 后端返回的原始数据结构
-export interface RawWordSet {
-  id: number;
-  name: string;
-  words: string;
-  is_official: boolean;
-  created_at: string;
+  order_index: number;
 }
 
 export interface TypingStats {
@@ -36,4 +30,13 @@ export interface HistoryItem {
   word: string;
   correct: boolean;
   time: number;
+}
+
+// 保留以兼容旧代码，但不再使用
+export interface RawWordSet {
+  id: number;
+  name: string;
+  words: string;
+  is_official: boolean;
+  created_at: string;
 }

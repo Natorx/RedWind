@@ -4,16 +4,14 @@
 
 use tauri::Manager;
 mod mods;
-mod database;
 use std::sync::Mutex;
 use sysinfo::System;
-use mods::sidebar::DbState;
 // network scanner
 use crate::mods::net_scanner::ScanState;
 
 fn main() {
-    let db_state = database::init_sidebar::init_db_state();
-    let typing_db_state = database::init_typing::init_typing_db_state();
+    let db_state = mods::sidebar::init_db_state();
+    let typing_db_state = mods::typing::init_typing_db_state();
     let scan_state = ScanState::new();
 
     tauri::Builder::default()

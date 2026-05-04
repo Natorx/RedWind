@@ -7,7 +7,7 @@ mod mods;
 use std::sync::Mutex;
 use sysinfo::System;
 // network scanner
-use crate::mods::net_scanner::ScanState;
+use mods::net_scanner::ScanState;
 
 fn main() {
     let db_state = mods::sidebar::init_db_state();
@@ -46,18 +46,12 @@ fn main() {
             mods::sidebar::delete_sidebar_item,
             mods::sidebar::update_sidebar_items_order,
             // 自定义词汇集相关 - 更新为新函数
-            mods::typing::get_all_word_sets,      // 替代 get_custom_word_sets 和 get_all_meanings
-            mods::typing::get_word_set,           // 新增：获取单个词汇集
-            mods::typing::save_custom_word_set,   // 保留，但参数已改变
-            mods::typing::delete_custom_word_set, // 保留
-            mods::typing::update_custom_word_set, // 保留，但参数已改变
-            mods::typing::get_word_meaning,       // 保留，参数增加了 word_set_id
-            // 以下函数已移除或不再需要
-            // mods::typing::get_custom_word_sets,  // 已替代
-            // mods::typing::get_all_meanings,      // 已替代
-            // mods::typing::update_word_meaning,   // 不再需要
-            // mods::typing::batch_update_meanings, // 不再需要
-            // mods::typing::delete_word_meaning,   // 不再需要
+            mods::typing::get_all_word_sets,
+            mods::typing::get_word_set,
+            mods::typing::save_custom_word_set,
+            mods::typing::delete_custom_word_set,
+            mods::typing::update_custom_word_set,
+            mods::typing::get_word_meaning,
             // Node子进程
             mods::node_server::get_server_status,
             mods::node_server::start_server,
@@ -75,6 +69,10 @@ fn main() {
             mods::net_scanner::scan_network,
             mods::net_scanner::get_scan_status,
             mods::net_scanner::get_scanned_devices,
+            // printer
+            mods::printer::print_text,
+            mods::printer::test_connection,
+            mods::printer::health_check,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,449 +1,297 @@
-/**src/components/Printer.tsx
+/** src/components/DrillGround.tsx
  * @Author: Fofow
  * @Date: 2026/4/2
- * @Description: 
- * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
+ * @Update: 2026/5/4
+ * @Description: Printer - 调用打印机
+ * @Copyright: Copyright (©) 2026 Fofow. All rights reserved.
  */
-import React, { useState } from 'react';
+
+import { invoke } from "@tauri-apps/api/core";
+import { useState, useEffect } from "react";
 
 interface PrintResult {
-  type: 'success' | 'error' | null;
+  success: boolean;
   message: string;
-  details?: string;
+  preview?: string;
+  error?: string;
+}
+
+interface TestConnectionResult {
+  success: boolean;
+  message: string;
+  ip: string;
+  port: number;
+}
+
+interface HealthCheckResult {
+  status: string;
+  service: string;
+  timestamp: string;
 }
 
 const Printer: React.FC = () => {
-  const [formData, setFormData] = useState({
-    ip: '192.168.101.8',
-    port: '9100',
-    text: '时间：${currentTime}\n-------------------'
-  });
+  // 状态管理
+  const [text, setText] = useState('');
+  const [ip, setIp] = useState('192.168.101.8');
+  const [port, setPort] = useState(9100);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<PrintResult>({
-    type: null,
-    message: '',
-    details: ''
-  });
-  const [connectionTest, setConnectionTest] = useState<{
-    testing: boolean;
-    result: boolean | null;
-    message: string;
-  }>({
-    testing: false,
-    result: null,
-    message: ''
-  });
+  const [result, setResult] = useState<PrintResult | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<string>('');
+  const [healthStatus, setHealthStatus] = useState<HealthCheckResult | null>(null);
 
-  const API_BASE_URL = 'http://localhost:3000/api';
+  // 组件加载时检查服务健康状态
+  useEffect(() => {
+    checkHealth();
+  }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const replaceTimePlaceholder = (text: string): string => {
-    const currentTime = new Date().toLocaleString('zh-CN');
-    return text.replace(/\${currentTime}/g, currentTime);
-  };
-
-  const testConnection = async () => {
-    setConnectionTest({
-      testing: true,
-      result: null,
-      message: '正在测试连接...'
-    });
-
+  // 健康检查
+  const checkHealth = async () => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/printer/test?ip=${encodeURIComponent(formData.ip)}&port=${formData.port}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setConnectionTest({
-          testing: false,
-          result: true,
-          message: `✅ 连接成功！`
-        });
-      } else {
-        setConnectionTest({
-          testing: false,
-          result: false,
-          message: `❌ 连接失败：${data.message || '无法连接'}`
-        });
-      }
-    } catch (error: any) {
-      setConnectionTest({
-        testing: false,
-        result: false,
-        message: `❌ 连接失败：${error.message || '网络错误'}`
-      });
+      const res = await invoke<HealthCheckResult>('health_check');
+      setHealthStatus(res);
+      console.log('服务健康状态:', res);
+    } catch (error) {
+      console.error('健康检查失败:', error);
     }
   };
 
+  // 处理打印
   const handlePrint = async () => {
-    setResult({ type: null, message: '', details: '' });
-    setLoading(true);
-
-    const printText = replaceTimePlaceholder(formData.text);
-
-    if (!printText.trim()) {
-      setResult({
-        type: 'error',
-        message: '打印内容不能为空',
-        details: '请在文本框中输入要打印的内容'
-      });
-      setLoading(false);
+    // 验证输入
+    if (!text.trim()) {
+      alert('请输入要打印的文本内容');
       return;
     }
 
+    setLoading(true);
+    setResult(null);
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/printer/print`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: printText,
-          ip: formData.ip,
-          port: parseInt(formData.port) || 9100,
-        }),
+      const res = await invoke<PrintResult>('print_text', {
+        options: { 
+          text: text.trim(), 
+          ip: ip.trim(), 
+          port: Number(port) 
+        }
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setResult({
-          type: 'success',
-          message: data.message || '打印任务已成功发送',
-          details: ''
-        });
-        
-        setConnectionTest({
-          testing: false,
-          result: null,
-          message: ''
-        });
+      
+      setResult(res);
+      
+      if (res.success) {
+        // 打印成功
+        console.log('打印成功:', res.message);
+        // 可以在这里添加打印成功的音效或通知
       } else {
-        setResult({
-          type: 'error',
-          message: data.message || '打印失败',
-          details: data.error || '请检查打印机连接'
-        });
+        // 打印失败
+        console.error('打印失败:', res.message);
+        alert(`打印失败: ${res.message}\n${res.error || ''}`);
       }
-    } catch (error: any) {
-      console.error('打印请求失败:', error);
+    } catch (error) {
+      console.error('打印错误:', error);
       setResult({
-        type: 'error',
-        message: '网络连接错误',
-        details: error.message || '请确保后端服务已启动'
+        success: false,
+        message: '系统调用失败',
+        error: String(error)
       });
+      alert('系统错误，请检查后端服务是否正常运行');
     } finally {
       setLoading(false);
     }
   };
 
-  const clearResult = () => {
-    setResult({ type: null, message: '', details: '' });
+  // 测试连接
+  const handleTest = async () => {
+    setLoading(true);
+    setConnectionStatus('');
+    
+    try {
+      const res = await invoke<TestConnectionResult>('test_connection', {
+        options: { 
+          ip: ip.trim(), 
+          port: Number(port) 
+        }
+      });
+      
+      setConnectionStatus(res.message);
+      alert(res.message);
+      
+      // 可以添加详细的日志
+      console.log('连接测试结果:', {
+        ip: res.ip,
+        port: res.port,
+        success: res.success,
+        message: res.message
+      });
+    } catch (error) {
+      console.error('测试错误:', error);
+      const errorMsg = `测试失败: ${error}`;
+      setConnectionStatus(errorMsg);
+      alert(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const fillTestText = () => {
-    setFormData(prev => ({
-      ...prev,
-      text: `===== 测试打印 =====
-时间：${'${currentTime}'}
-打印机型号：热敏/票据打印机
-这是中文测试内容
-包含换行和特殊字符！
-------------------
-感谢使用打印服务
-==================`
-    }));
+  // 清空表单
+  const handleClear = () => {
+    setText('');
+    setResult(null);
+    setConnectionStatus('');
   };
 
-  const clearForm = () => {
-    setFormData({
-      ip: '192.168.101.8',
-      port: '9100',
-      text: ''
-    });
-    clearResult();
-    setConnectionTest({
-      testing: false,
-      result: null,
-      message: ''
-    });
+  // 设置默认打印机配置
+  const setDefaultPrinter = () => {
+    setIp('192.168.101.8');
+    setPort(9100);
+    alert('已恢复默认打印机配置');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* 紧凑头部 */}
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-red-500/30">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🖨️</span>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">打印机控制台</h1>
-              <p className="text-xs text-neutral-400">TCP/IP 直连 | GB18030 编码</p>
+      <div className="max-w-600px mx-auto px-4">
+        {/* 健康状态显示 */}
+        {healthStatus && (
+          <div className={`p-3 rounded-lg mb-5 ${
+            healthStatus.status === 'ok' 
+              ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
+              : 'bg-red-500/10 border border-red-500/20 text-red-400'
+          }`}>
+            <div className="text-sm">
+              <strong>服务状态:</strong> {healthStatus.status === 'ok' ? '✅ 正常' : '❌ 异常'} <br />
+              <strong>服务名称:</strong> {healthStatus.service} <br />
+              <strong>最后检查:</strong> {new Date(healthStatus.timestamp).toLocaleString()}
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-neutral-500">后端服务</p>
-            <p className="text-xs font-mono text-red-400">{API_BASE_URL}</p>
+        )}
+        
+        {/* 打印机配置 */}
+        <div className="mb-5">
+          <h3 className="text-red-300 mb-3">📡 打印机配置</h3>
+          
+          <div className="mb-4">
+            <label className="block mb-1 text-neutral-400 text-sm">
+              <strong>IP地址:</strong>
+            </label>
+            <input 
+              type="text"
+              value={ip} 
+              onChange={(e) => setIp(e.target.value)} 
+              placeholder="例如: 192.168.101.8"
+              className="w-full px-3 py-2 rounded border border-red-500/30 bg-neutral-800 text-neutral-200 outline-none focus:ring-1 focus:ring-red-500"
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="block mb-1 text-neutral-400 text-sm">
+              <strong>端口号:</strong>
+            </label>
+            <input 
+              type="number" 
+              value={port} 
+              onChange={(e) => setPort(parseInt(e.target.value) || 9100)} 
+              placeholder="例如: 9100"
+              className="w-full px-3 py-2 rounded border border-red-500/30 bg-neutral-800 text-neutral-200 outline-none focus:ring-1 focus:ring-red-500"
+            />
           </div>
         </div>
-
-        {/* 左右两栏布局 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* 左侧：配置和打印区域 */}
-          <div className="space-y-4">
-            {/* 打印机配置卡片 */}
-            <div className="bg-neutral-900/80 rounded-lg shadow-lg border border-red-500/20 overflow-hidden backdrop-blur-sm">
-              <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">⚙️</span>
-                  <h2 className="text-sm font-semibold text-neutral-200">连接配置</h2>
-                </div>
-              </div>
-              <div className="p-3 space-y-2.5">
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-neutral-400 mb-0.5">IP 地址</label>
-                    <input
-                      type="text"
-                      name="ip"
-                      value={formData.ip}
-                      onChange={handleInputChange}
-                      className="w-full px-2 py-1 text-xs bg-neutral-800 border border-red-500/30 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-neutral-200"
-                      placeholder="192.168.101.8"
-                    />
-                  </div>
-                  <div className="w-24">
-                    <label className="block text-xs font-medium text-neutral-400 mb-0.5">端口</label>
-                    <input
-                      type="number"
-                      name="port"
-                      value={formData.port}
-                      onChange={handleInputChange}
-                      className="w-full px-2 py-1 text-xs bg-neutral-800 border border-red-500/30 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-neutral-200"
-                      placeholder="9100"
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    <button
-                      onClick={testConnection}
-                      disabled={connectionTest.testing}
-                      className="px-3 py-1 text-xs font-medium border border-red-500/30 rounded-md hover:bg-red-500/20 text-neutral-300 disabled:opacity-50 transition"
-                    >
-                      {connectionTest.testing ? '测试中' : '测试'}
-                    </button>
-                  </div>
-                </div>
-                {connectionTest.message && (
-                  <div className={`text-xs p-1.5 rounded ${
-                    connectionTest.result === true ? 'text-green-400 bg-green-500/10 border border-green-500/20' :
-                    connectionTest.result === false ? 'text-red-400 bg-red-500/10 border border-red-500/20' : 'text-blue-400 bg-blue-500/10 border border-blue-500/20'
-                  }`}>
-                    {connectionTest.message}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* 打印内容卡片 */}
-            <div className="bg-neutral-900/80 rounded-lg shadow-lg border border-red-500/20 overflow-hidden backdrop-blur-sm">
-              <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20 flex justify-between items-center">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">📝</span>
-                  <h2 className="text-sm font-semibold text-neutral-200">打印内容</h2>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={fillTestText} className="text-xs text-red-400 hover:text-red-300">填充示例</button>
-                  <button onClick={clearForm} className="text-xs text-neutral-500 hover:text-neutral-400">清空</button>
-                </div>
-              </div>
-              <div className="p-3">
-                <textarea
-                  name="text"
-                  value={formData.text}
-                  onChange={handleInputChange}
-                  rows={5}
-                  className="w-full px-2 py-1.5 text-xs bg-neutral-800 border border-red-500/30 rounded font-mono focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-neutral-200"
-                  placeholder="输入要打印的内容..."
-                />
-                <div className="flex justify-between items-center mt-1.5">
-                  <p className="text-[10px] text-neutral-500">💡 使用 {'${currentTime}'} 插入时间</p>
-                  <p className="text-[10px] text-neutral-500">{formData.text.length} 字</p>
-                </div>
-              </div>
-            </div>
-
-            {/* 操作按钮 */}
-            <button
-              onClick={handlePrint}
-              disabled={loading}
-              className={`w-full py-2 rounded-md font-medium text-sm transition ${
-                loading
-                  ? 'bg-neutral-700 cursor-not-allowed text-neutral-500'
-                  : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg shadow-red-500/25'
-              }`}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  发送中...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">🖨️ 开始打印</span>
-              )}
-            </button>
-
-            {/* 打印结果 */}
-            {result.type && (
-              <div className={`p-3 rounded-md ${
-                result.type === 'success' ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'
-              }`}>
-                <div className="flex items-start gap-2">
-                  <span className="text-sm">{result.type === 'success' ? '✅' : '❌'}</span>
-                  <div className="flex-1">
-                    <p className={`text-xs font-medium ${result.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                      {result.message}
-                    </p>
-                    {result.details && (
-                      <p className="text-[11px] mt-1 text-neutral-400">{result.details}</p>
-                    )}
-                  </div>
-                  <button onClick={clearResult} className="text-xs text-neutral-500 hover:text-neutral-400">✕</button>
-                </div>
-              </div>
+        
+        {/* 打印内容 */}
+        <div className="mb-5">
+          <h3 className="text-red-300 mb-3">📝 打印内容</h3>
+          <textarea 
+            value={text} 
+            onChange={(e) => setText(e.target.value)} 
+            rows={6} 
+            placeholder="请输入要打印的文本内容..."
+            className="w-full px-3 py-2 rounded border border-red-500/30 bg-neutral-800 text-neutral-200 font-mono resize-y outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <div className="text-xs text-neutral-500 mt-2">
+            字符数: {text.length} | 预计打印长度: {Math.ceil(text.length / 32)} 行
+          </div>
+        </div>
+        
+        {/* 操作按钮 */}
+        <div className="flex gap-3 flex-wrap mb-5">
+          <button 
+            onClick={handleTest} 
+            disabled={loading}
+            className={`px-5 py-2 rounded text-white transition-all ${
+              loading 
+                ? 'bg-neutral-700 cursor-not-allowed opacity-60' 
+                : 'bg-red-600 hover:bg-red-700 cursor-pointer'
+            }`}
+          >
+            {loading ? '⏳ 测试中...' : '🔌 测试连接'}
+          </button>
+          
+          <button 
+            onClick={handlePrint} 
+            disabled={loading || !text.trim()}
+            className={`px-5 py-2 rounded text-white transition-all ${
+              (loading || !text.trim()) 
+                ? 'bg-neutral-700 cursor-not-allowed opacity-60' 
+                : 'bg-red-600 hover:bg-red-700 cursor-pointer'
+            }`}
+          >
+            {loading ? '⏳ 打印中...' : '🖨️ 打印'}
+          </button>
+          
+          <button 
+            onClick={handleClear}
+            className="px-5 py-2 rounded bg-neutral-600 hover:bg-neutral-700 text-white transition-all cursor-pointer"
+          >
+            🗑️ 清空
+          </button>
+          
+          <button 
+            onClick={setDefaultPrinter}
+            className="px-5 py-2 rounded bg-neutral-600 hover:bg-neutral-700 text-white transition-all cursor-pointer"
+          >
+            🔄 恢复默认
+          </button>
+        </div>
+        
+        {/* 连接状态显示 */}
+        {connectionStatus && (
+          <div className={`mb-5 p-3 rounded-lg ${
+            connectionStatus.includes('正常') 
+              ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
+              : 'bg-red-500/10 border border-red-500/20 text-red-400'
+          }`}>
+            <strong>连接状态:</strong> {connectionStatus}
+          </div>
+        )}
+        
+        {/* 打印结果 */}
+        {result && (
+          <div className={`mt-5 p-4 rounded-lg border ${
+            result.success 
+              ? 'bg-green-500/10 border-green-500/20 text-green-400' 
+              : 'bg-red-500/10 border-red-500/20 text-red-400'
+          }`}>
+            <h3 className={`mb-2 ${result.success ? 'text-green-400' : 'text-red-400'}`}>
+              {result.success ? '✅ 打印结果' : '❌ 错误信息'}
+            </h3>
+            <div className="text-neutral-300"><strong>消息:</strong> {result.message}</div>
+            {result.preview && (
+              <div className="text-neutral-300 mt-1"><strong>预览:</strong> {result.preview}</div>
+            )}
+            {result.error && (
+              <div className="text-neutral-300 mt-1"><strong>错误详情:</strong> {result.error}</div>
             )}
           </div>
-
-          {/* 右侧：提示和状态区域 */}
-          <div className="space-y-4">
-            {/* 当前状态卡片 */}
-            <div className="bg-neutral-900/80 rounded-lg shadow-lg border border-red-500/20 overflow-hidden backdrop-blur-sm">
-              <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">📊</span>
-                  <h2 className="text-sm font-semibold text-neutral-200">当前状态</h2>
-                </div>
-              </div>
-              <div className="p-3 space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-neutral-400">目标打印机：</span>
-                  <span className="font-mono text-neutral-300">{formData.ip}:{formData.port}</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-neutral-400">连接状态：</span>
-                  <span className={connectionTest.result === true ? 'text-green-400' : connectionTest.result === false ? 'text-red-400' : 'text-neutral-500'}>
-                    {connectionTest.result === true ? '● 在线' : connectionTest.result === false ? '● 离线' : '○ 未测试'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-neutral-400">编码格式：</span>
-                  <span className="text-neutral-300">GB18030</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-neutral-400">打印内容长度：</span>
-                  <span className="text-neutral-300">{formData.text.length} 字符</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 使用提示卡片 */}
-            <div className="bg-red-500/5 rounded-lg border border-red-500/20 overflow-hidden">
-              <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">💡</span>
-                  <h2 className="text-sm font-semibold text-red-400">使用提示</h2>
-                </div>
-              </div>
-              <div className="p-3">
-                <ul className="space-y-1.5">
-                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
-                    <span className="text-red-400">•</span>
-                    <span>确保打印机已开机并连接到网络</span>
-                  </li>
-                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
-                    <span className="text-red-400">•</span>
-                    <span>确认 IP 地址和端口号（默认 9100）正确</span>
-                  </li>
-                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
-                    <span className="text-red-400">•</span>
-                    <span>先点击「测试」按钮确认连通性</span>
-                  </li>
-                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
-                    <span className="text-red-400">•</span>
-                    <span>支持 GB18030 编码，可正常打印中文</span>
-                  </li>
-                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
-                    <span className="text-red-400">•</span>
-                    <span>使用 {'${currentTime}'} 自动替换为当前时间</span>
-                  </li>
-                  <li className="text-xs text-neutral-300 flex items-start gap-1.5">
-                    <span className="text-red-400">•</span>
-                    <span>确保后端服务已启动（端口 3000）</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* 快捷操作卡片 */}
-            <div className="bg-neutral-900/80 rounded-lg shadow-lg border border-red-500/20 overflow-hidden backdrop-blur-sm">
-              <div className="bg-red-500/10 px-3 py-2 border-b border-red-500/20">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">⚡</span>
-                  <h2 className="text-sm font-semibold text-neutral-200">快捷操作</h2>
-                </div>
-              </div>
-              <div className="p-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setFormData(prev => ({ ...prev, text: prev.text + '\n' }))}
-                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-neutral-300 transition"
-                  >
-                    添加换行
-                  </button>
-                  <button
-                    onClick={() => setFormData(prev => ({ ...prev, text: prev.text + '${currentTime}' }))}
-                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-neutral-300 transition"
-                  >
-                    插入时间
-                  </button>
-                  <button
-                    onClick={() => {
-                      const currentText = formData.text;
-                      setFormData(prev => ({ ...prev, text: currentText + '\n------------------\n' }));
-                    }}
-                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-neutral-300 transition"
-                  >
-                    添加分隔线
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (window.confirm('确认清空所有内容？')) {
-                        clearForm();
-                      }
-                    }}
-                    className="text-xs px-2 py-1.5 border border-red-500/30 rounded-md hover:bg-red-500/20 text-red-400 transition"
-                  >
-                    全部重置
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        )}
+        
+        {/* 使用说明 */}
+        <div className="mt-5 p-4 rounded-lg bg-neutral-800/50 border border-red-500/20">
+          <h4 className="text-red-300 mb-2">📖 使用说明</h4>
+          <ul className="text-neutral-400 text-sm pl-5 space-y-1">
+            <li>支持中文、英文、数字等字符打印</li>
+            <li>打印机需支持 GB18030 编码</li>
+            <li>默认端口为 9100（ESC/POS 协议）</li>
+            <li>建议先点击"测试连接"确认打印机可达</li>
+            <li>打印内容过长时建议分段打印</li>
+          </ul>
         </div>
       </div>
     </div>

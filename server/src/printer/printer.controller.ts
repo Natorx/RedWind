@@ -1,6 +1,5 @@
 import { PrinterService } from './printer.service';
 import { Controller, Post, Body, Get, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import { VideoInfo } from 'interface/crawler.interface';
 
 export class PrintDto {
   text: string;

@@ -6,7 +6,7 @@ use tauri::Manager;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AppConfig {
-    pub active_ui: String, // "circle" 或 "sidebar"
+    pub active_ui: String, // circle or sidebar
 }
 
 impl Default for AppConfig {

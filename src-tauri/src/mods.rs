@@ -1,9 +1,10 @@
-pub mod conversion;
-pub mod hardinfo;
+pub mod win_audio_control;
 pub mod net_scanner;
 pub mod node_server;
-pub mod open;
+pub mod conversion;
 pub mod rd_config;
+pub mod hardinfo;
+pub mod printer;
 pub mod sidebar;
 pub mod typing;
-pub mod win_audio_control;
+pub mod open;

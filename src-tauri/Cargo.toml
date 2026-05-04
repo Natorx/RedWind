@@ -3,7 +3,7 @@ authors = ["fofow"]
 description = "Red wind tool library"
 edition = "2021"
 name = "red-wind"
-version = "0.3.8"
+version = "0.3.9"
 [[bin]]
 name = "wind-project"
 path = "src/main.rs"
@@ -36,3 +36,4 @@ windows = { version = "0.62.2", features = [
 opener = "0.8.3"
 tokio = { version = "1", features = ["full"] }
 regex = "1.10"
+encoding = "0.2"

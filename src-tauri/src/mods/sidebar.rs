@@ -53,7 +53,6 @@ pub fn init_db() -> Result<DbState, Box<dyn std::error::Error>> {
     })
 }
 
-
 #[tauri::command]
 pub fn get_sidebar_items(db_state: State<DbState>) -> Result<Vec<SidebarItem>, String> {
     let conn = db_state.conn.lock().map_err(|e| e.to_string())?;

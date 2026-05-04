@@ -1,7 +1,7 @@
 {
   "name": "red-wind-project",
   "private": true,
-  "version": "0.3.8",
+  "version": "0.3.9",
   "author": "Fofow",
   "workspaces": [
     "client",
@@ -16,7 +16,8 @@
     "dev_page": "cd client && pnpm dev",
     "dev_linux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
     "start_server": "cd server && nest start",
-    "build_server": "cd server && nest build"
+    "build_server": "cd server && nest build",
+    "fmt":"cd src-tauri && cargo fmt"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

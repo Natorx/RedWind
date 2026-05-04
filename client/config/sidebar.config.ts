@@ -95,18 +95,18 @@ export const sidebarItems: SidebarItem[] = [
     source: 'local',
   },
   {
-    id: 'node-server',
-    label: 'Node子进程',
-    icon: '🟢',
-    order: 30,
-    source: 'local',
-  },
-  {
     id: 'network-scanner',
     label: '局域网扫描',
     icon: '📡',
     order: 31,
-    source: 'local',
+    source: 'coming_soon',
+  },
+  {
+    id: 'drill-ground',
+    label: '演练场',
+    icon: '⛳',
+    order: 32,
+    source: 'coming_soon',
   },
 
   // ========== server ==========
@@ -115,14 +115,14 @@ export const sidebarItems: SidebarItem[] = [
     label: '本地打印',
     icon: '🖨️',
     order: 5,
-    source: 'server',
+    source: 'local',
   },
   {
     id: 'web-scraper',
     label: '网页解构',
     icon: '🕷️',
     order: 14,
-    source: 'server',
+    source: 'incomplete',
   },
 
   // ========== external ==========

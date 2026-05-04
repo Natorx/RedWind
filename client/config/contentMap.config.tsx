@@ -18,6 +18,7 @@ import SysCommands from '../pages/SysCommands';
 import StartPage from '../pages/Start';
 import NetworkScanner from '../pages/NetScanner';
 import DrillGround from '../pages/DrillGround';
+import P2PChat from '../pages/P2PChat';
 
 const contentMap: Record<string, JSX.Element> = {
   'start':<StartPage/>,
@@ -37,7 +38,8 @@ const contentMap: Record<string, JSX.Element> = {
   'audio-control': <WAudioController />,
   'sys-commands':<SysCommands/>,
   'network-scanner': <NetworkScanner/>,
-  'drill-ground':<DrillGround/>
+  'drill-ground':<DrillGround/>,
+  'p2p-chat':<P2PChat/>
 };
 export default contentMap;
 

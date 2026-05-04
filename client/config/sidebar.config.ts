@@ -108,6 +108,13 @@ export const sidebarItems: SidebarItem[] = [
     order: 32,
     source: 'coming_soon',
   },
+  {
+    id: 'p2p-chat',
+    label: '聊天室',
+    icon: '⛳',
+    order: 33,
+    source: 'incomplete',
+  },
 
   // ========== server ==========
   {

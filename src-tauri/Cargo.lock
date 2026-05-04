@@ -4551,6 +4551,7 @@ dependencies = [
  "encoding_rs",
  "futures",
  "image",
+ "lazy_static",
  "libp2p",
  "opener",
  "regex",

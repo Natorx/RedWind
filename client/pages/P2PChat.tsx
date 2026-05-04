@@ -27,79 +27,61 @@ const P2PChat: React.FC = () => {
   }, [messages]);
 
   // 监听 P2P 事件
-  useEffect(() => {
+// src/components/P2PChat.tsx
+
+useEffect(() => {
     // 监听启动成功
     const unlistenReady = listen('p2p_ready', (event: any) => {
-      setPeerId(event.payload);
-      setStatus(`启动成功，你的ID: ${event.payload.slice(0, 8)}...`);
-      setIsRunning(true);
+        setPeerId(event.payload);
+        setStatus(`启动成功，你的ID: ${event.payload.slice(0, 8)}...`);
+        setIsRunning(true);
     });
 
-    // 监听发现节点 - 去重
+    // 监听发现节点
     const unlistenPeer = listen('p2p_peer', (event: any) => {
-      const peer = event.payload;
-      setConnectedPeers(prev => {
-        if (prev.includes(peer)) {
-          console.log('重复节点，忽略:', peer.slice(0, 8));
-          return prev;
-        }
-        return [...prev, peer];
-      });
-      setMessages(prev => [...prev, {
-        from: 'system',
-        content: `发现新节点: ${peer.slice(0, 8)}...`
-      }]);
+        const peer = event.payload;
+        setConnectedPeers(prev => {
+            if (prev.includes(peer)) return prev;
+            return [...prev, peer];
+        });
+        setMessages(prev => [...prev, {
+            from: 'system',
+            content: `发现新节点: ${peer.slice(0, 8)}...`
+        }]);
     });
 
-    // 监听节点离线
-    const unlistenPeerGone = listen('p2p_peer_gone', (event: any) => {
-      const peer = event.payload;
-      setConnectedPeers(prev => prev.filter(p => p !== peer));
-      setMessages(prev => [...prev, {
-        from: 'system',
-        content: `节点离线: ${peer.slice(0, 8)}...`
-      }]);
-    });
-
-    // 监听收到消息
+    // 监听收到消息 - 关键修复
     const unlistenMsg = listen('p2p_msg', (event: any) => {
-      const msg: ChatMessage = event.payload;
-      setMessages(prev => [...prev, {
-        from: msg.from === peerId ? '我' : msg.from.slice(0, 8),
-        content: msg.content
-      }]);
+        const msg: ChatMessage = event.payload;
+        console.log('[FRONTEND] Received message:', msg);  // 调试日志
+        setMessages(prev => [...prev, {
+            from: msg.from === '我' ? '我' : msg.from.slice(0, 8),
+            content: msg.content
+        }]);
     });
 
     // 监听连接建立
     const unlistenConnected = listen('p2p_connected', (event: any) => {
-      const peer = event.payload;
-      setConnectedPeers(prev => {
-        if (prev.includes(peer)) return prev;
-        return [...prev, peer];
-      });
-      setMessages(prev => [...prev, {
-        from: 'system',
-        content: `✅ 已连接到: ${peer.slice(0, 8)}...`
-      }]);
+        const peer = event.payload;
+        setConnectedPeers(prev => {
+            if (prev.includes(peer)) return prev;
+            return [...prev, peer];
+        });
+        setMessages(prev => [...prev, {
+            from: 'system',
+            content: `✅ 已连接到: ${peer.slice(0, 8)}...`
+        }]);
     });
 
-    // 监听监听地址
-    const unlistenListen = listen('p2p_listen', (event: any) => {
-      console.log('监听地址:', event.payload);
-    });
-
-    // 检查状态
     checkStatus();
 
     return () => {
-      unlistenReady.then(fn => fn());
-      unlistenPeer.then(fn => fn());
-      unlistenPeerGone.then(fn => fn());
-      unlistenMsg.then(fn => fn());
-      unlistenConnected.then(fn => fn());
-      unlistenListen.then(fn => fn());
+        unlistenReady.then(fn => fn());
+        unlistenPeer.then(fn => fn());
+        unlistenMsg.then(fn => fn());  // 确保清理
+        unlistenConnected.then(fn => fn());
     };
-  }, [peerId]);
+}, []);  // ← 改成空数组，不要依赖 peerId
 
   const checkStatus = async () => {
     try {

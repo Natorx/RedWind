@@ -3,7 +3,7 @@ authors = ["fofow"]
 description = "Red wind tool library"
 edition = "2021"
 name = "red-wind"
-version = "0.3.10"
+version = "0.3.11"
 [[bin]]
 name = "wind-project"
 path = "src/main.rs"
@@ -47,7 +47,8 @@ libp2p = {version = "0.56.0", features = [
     "quic",
     "identify",
     "ping",
-    # 重要的依赖 Bug:26.5.4
+    # 重要的依�?Bug:26.5.4
     "macros"
 ] }
 futures = "0.3.32"
+lazy_static = "1.4"

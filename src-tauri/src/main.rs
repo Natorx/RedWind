@@ -13,7 +13,7 @@ fn main() {
     let db_state = mods::sidebar::init_db_state();
     let typing_db_state = mods::typing::init_typing_db_state();
     let scan_state = ScanState::new();
-let p2p_state = mods::p2p_chat::P2PState::new();
+    let p2p_state = mods::p2p_chat::P2PState::new();
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
@@ -29,8 +29,8 @@ let p2p_state = mods::p2p_chat::P2PState::new();
         .manage(scan_state)
         .manage(mods::node_server::ServerState::default())
         .manage(db_state)
-        .manage(typing_db_state)
         .manage(p2p_state)
+        .manage(typing_db_state)
         .invoke_handler(tauri::generate_handler![
             // Open模块
             mods::open::open_path,

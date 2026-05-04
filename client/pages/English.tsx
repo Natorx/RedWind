@@ -576,7 +576,7 @@ const TypingPractice: React.FC = () => {
                         官方
                       </span>
                     ) : (
-                      <button
+                      <span
                         onClick={(e) => {
                           e.stopPropagation();
                           exportCurrentWordSet();
@@ -584,7 +584,7 @@ const TypingPractice: React.FC = () => {
                         className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors px-2 py-0.5"
                       >
                         导出
-                      </button>
+                      </span>
                     )}
                   </div>
                 </button>

@@ -27,7 +27,7 @@ export const sidebarItems: SidebarItem[] = [
     label: '英语打字练习',
     icon: '⌨️',
     order: 2,
-    source: 'incomplete',
+    source: 'local',
   },
 
   // ========== local ==========

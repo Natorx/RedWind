@@ -102,6 +102,7 @@ const SidebarModuleManager: React.FC = () => {
                       {/* 模块信息 */}
                       <div className="flex-1">
                         <input
+                          readOnly
                           type="text"
                           value={item.label}
                           className="font-medium text-neutral-200 bg-transparent border border-transparent hover:border-red-500/30 focus:border-red-500 rounded px-2 py-1 outline-none transition-colors"
@@ -113,7 +114,8 @@ const SidebarModuleManager: React.FC = () => {
                           <span
                             className={`text-xs px-2 py-0.5 rounded ${labelSourceConfig[item.source]?.className || labelSourceConfig.others.className}`}
                           >
-                            {labelSourceConfig[item.source]?.label || item.source}
+                            {labelSourceConfig[item.source]?.label ||
+                              item.source}
                           </span>
                           <span className="text-xs text-neutral-500">
                             顺序: {item.order}
@@ -172,7 +174,9 @@ const SidebarModuleManager: React.FC = () => {
                         {item.label}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-neutral-400">{item.id}</span>
+                        <span className="text-xs text-neutral-400">
+                          {item.id}
+                        </span>
                         <span
                           className={`text-xs px-2 py-0.5 rounded ${
                             labelSourceConfig[item.source]?.className ||

@@ -17,7 +17,8 @@
     "dev_linux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
     "start_server": "cd server && pnpm dev",
     "fmt": "cd src-tauri && cargo fmt",
-    "updater": "cmd /c commands\\version_update.bat"
+    "updater": "cmd /c commands\\version_update.bat",
+    "get_build":"cmd /c commands\\extract_release.bat"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

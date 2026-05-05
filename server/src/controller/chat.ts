@@ -123,7 +123,7 @@ export default async function chatController(fastify: FastifyInstance) {
   });
 
   // 关闭 Socket.IO 连接（当 Fastify 关闭时）
-  fastify.addHook("onClose", (instance, done) => {
+  fastify.addHook("onClose", (_, done) => {
     io.close();
     done();
   });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { server_chat_addr } from '../config/api.config';
 
 // 消息类型定义
 interface ChatMessage {
@@ -38,7 +39,7 @@ const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 连接 Socket.io
   const connectSocket = () => {
-    const socketInstance = io('http://localhost:3006', {
+    const socketInstance = io(server_chat_addr, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
     });

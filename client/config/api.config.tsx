@@ -1,0 +1,1 @@
+export const server_chat_addr = 'http://192.168.101.14:3006'

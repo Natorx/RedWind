@@ -10,7 +10,7 @@ const server = fastify({
 
 // Middleware: Router
 server.register(router);
-server.listen({ port: FASTIFY_PORT });
+server.listen({ host:'0.0.0.0', port: FASTIFY_PORT });
 
 console.log(
   `🚀  Fastify server running on port http://localhost:${FASTIFY_PORT}`,

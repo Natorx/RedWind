@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import indexController from './controller/home.ts';
-import chatController from './controller/chat.ts';
+import indexController from './controller/home.js';
+import chatController from './controller/chat.js';
 
 export default async function router(fastify: FastifyInstance) {
   fastify.register(indexController, { prefix: '/' });

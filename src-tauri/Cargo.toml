@@ -3,7 +3,7 @@ authors = ["fofow"]
 description = "Red wind tool library"
 edition = "2021"
 name = "red-wind"
-version = "0.3.14"
+version = "0.3.15"
 [[bin]]
 name = "wind-project"
 path = "src/main.rs"

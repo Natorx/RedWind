@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import router from "./router.ts";
+import router from "./router.js";
 
 const FASTIFY_PORT = Number(process.env.FASTIFY_PORT) || 3006;
 

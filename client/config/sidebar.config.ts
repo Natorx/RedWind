@@ -14,11 +14,11 @@ type SidebarItem = {
 };
 
 export const sidebarItems: SidebarItem[] = [
-  // ========== incomplete ==========
+  // ========== 常用工具 (local, order: 1-9) ==========
   {
     id: 'dashboard',
     label: '仪表盘',
-    icon: '📈',
+    icon: '📊',
     order: 1,
     source: 'incomplete',
   },
@@ -29,8 +29,6 @@ export const sidebarItems: SidebarItem[] = [
     order: 2,
     source: 'local',
   },
-
-  // ========== local ==========
   {
     id: 'audio-control',
     label: '音频控制',
@@ -39,37 +37,51 @@ export const sidebarItems: SidebarItem[] = [
     source: 'local',
   },
   {
-    id: 'api-debug',
-    label: 'API接口调试',
-    icon: '🛠️',
+    id: 'recorder',
+    label: '录音机',
+    icon: '🎙️',
     order: 4,
     source: 'local',
   },
   {
-    id: 'algorithms',
-    label: '算法',
-    icon: '🧮',
-    order: 6,
+    id: 'printer',
+    label: '本地打印',
+    icon: '🖨️',
+    order: 5,
     source: 'local',
   },
   {
     id: 'process-manager',
     label: '系统信息',
     icon: '💻',
+    order: 6,
+    source: 'local',
+  },
+  {
+    id: 'sys-commands',
+    label: '系统命令',
+    icon: '⚡',
     order: 7,
+    source: 'local',
+  },
+  {
+    id: 'api-debug',
+    label: 'API接口调试',
+    icon: '🛠️',
+    order: 8,
+    source: 'local',
+  },
+  {
+    id: 'algorithms',
+    label: '算法',
+    icon: '🧮',
+    order: 9,
     source: 'local',
   },
   {
     id: 'conversion',
     label: '文件格式转换',
     icon: '🔄',
-    order: 9,
-    source: 'local',
-  },
-  {
-    id: 'recorder',
-    label: '录音机',
-    icon: '🎙️',
     order: 10,
     source: 'local',
   },
@@ -83,119 +95,109 @@ export const sidebarItems: SidebarItem[] = [
   {
     id: 'charts',
     label: '图表',
-    icon: '📉',
+    icon: '📊',
     order: 12,
     source: 'local',
   },
+
+  // ========== 外部服务 (external, order: 13) ==========
   {
-    id: 'sys-commands',
-    label: '系统命令',
-    icon: '⚡',
+    id: 'chatbox',
+    label: 'Chatbox Mini',
+    icon: '💬',
     order: 13,
-    source: 'local',
+    source: 'external',
   },
-  {
-    id: 'network-scanner',
-    label: '局域网扫描',
-    icon: '📡',
-    order: 31,
-    source: 'coming_soon',
-  },
-  {
-    id: 'drill-ground',
-    label: '演练场',
-    icon: '⛳',
-    order: 32,
-    source: 'coming_soon',
-  },
-  {
-    id: 'p2p-chat',
-    label: '聊天室',
-    icon: '⛳',
-    order: 33,
-    source: 'incomplete',
-  },
+
+  // ========== 服务器功能 (server, order: 14-16) ==========
   {
     id: 'server-chat',
     label: '服务聊天室',
-    icon: '⛳',
-    order: 34,
+    icon: '💬',
+    order: 14,
     source: 'server',
-  },
-
-  // ========== server ==========
-  {
-    id: 'printer',
-    label: '本地打印',
-    icon: '🖨️',
-    order: 5,
-    source: 'local',
   },
   {
     id: 'web-scraper',
     label: '网页解构',
-    icon: '🕷️',
-    order: 14,
+    icon: '🕸️',
+    order: 15,
     source: 'incomplete',
   },
-
-  // ========== external ==========
   {
-    id: 'chatbox',
-    label: 'Chatbox Mini',
-    icon: '🤖',
-    order: 8,
-    source: 'external',
+    id: 'drill-ground',
+    label: '演练场',
+    icon: '🏟️',
+    order: 16,
+    source: 'coming_soon',
   },
 
-  // ========== coming_soon ==========
+  // ========== 网络功能 (coming_soon & incomplete, order: 17-22) ==========
   {
-    id: 'docs',
-    label: '层级结构文档',
-    icon: '📚',
+    id: 'network-scanner',
+    label: '局域网扫描',
+    icon: '📡',
+    order: 17,
+    source: 'coming_soon',
+  },
+  {
+    id: 'p2p-chat',
+    label: 'P2P聊天室',
+    icon: '💬',
     order: 18,
-    source: 'coming_soon',
-  },
-  {
-    id: 'music-player',
-    label: '音乐播放器',
-    icon: '🎧',
-    order: 21,
-    source: 'coming_soon',
-  },
-  {
-    id: 'email',
-    label: '基础邮件收发',
-    icon: '✉️',
-    order: 23,
-    source: 'coming_soon',
+    source: 'incomplete',
   },
   {
     id: 'file-sharing',
     label: '文件共享',
-    icon: '📎',
-    order: 26,
-    source: 'coming_soon',
-  },
-  {
-    id: 'multi-device-login',
-    label: '多设备登录',
-    icon: '🔐',
-    order: 27,
-    source: 'coming_soon',
-  },
-  {
-    id: 'plugins',
-    label: '插件扩展',
-    icon: '🧩',
-    order: 28,
+    icon: '📁',
+    order: 19,
     source: 'coming_soon',
   },
   {
     id: 'remote-desktop',
     label: '桌面远程控制',
     icon: '🖥️',
-    order: 29,
+    order: 20,
+    source: 'coming_soon',
+  },
+  {
+    id: 'multi-device-login',
+    label: '多设备登录',
+    icon: '🔐',
+    order: 21,
+    source: 'coming_soon',
+  },
+
+  // ========== 多媒体 (coming_soon, order: 22-24) ==========
+  {
+    id: 'music-player',
+    label: '音乐播放器',
+    icon: '🎧',
+    order: 22,
+    source: 'coming_soon',
+  },
+
+  // ========== 文档与扩展 (coming_soon, order: 23-26) ==========
+  {
+    id: 'docs',
+    label: '层级结构文档',
+    icon: '📚',
+    order: 23,
+    source: 'coming_soon',
+  },
+  {
+    id: 'email',
+    label: '基础邮件收发',
+    icon: '📧',
+    order: 24,
+    source: 'coming_soon',
+  },
+  {
+    id: 'plugins',
+    label: '插件扩展',
+    icon: '🧩',
+    order: 25,
     source: 'coming_soon',
   },
 ];

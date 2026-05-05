@@ -1,7 +1,7 @@
 {
   "name": "red-wind-project",
   "private": true,
-  "version": "0.3.12",
+  "version": "0.3.13",
   "author": "Fofow",
   "workspaces": [
     "client",
@@ -17,7 +17,7 @@
     "dev_linux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
     "start_server": "cd server && pnpm dev",
     "fmt": "cd src-tauri && cargo fmt",
-    "router": "cmd /c commands\\router_creater.bat"
+    "updater": "cmd /c commands\\version_update.bat"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

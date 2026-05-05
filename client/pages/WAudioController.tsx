@@ -94,15 +94,6 @@ const WAudioController: React.FC = () => {
           borderBottom: '1px solid rgba(239, 68, 68, 0.3)',
           paddingBottom: '20px',
         }}>
-          <h1 style={{
-            fontSize: '1.75rem',
-            fontWeight: '500',
-            color: '#ffffff',
-            marginBottom: '8px',
-            letterSpacing: '-0.01em',
-          }}>
-            <span style={{ color: '#ef4444' }}>🎵</span> Windows 音频控制器
-          </h1>
           <p style={{
             fontSize: '0.875rem',
             color: '#9ca3af',

@@ -1,7 +1,7 @@
 {
   "name": "red-wind-project",
   "private": true,
-  "version": "0.3.13",
+  "version": "0.3.14",
   "author": "Fofow",
   "workspaces": [
     "client",
@@ -12,10 +12,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "dev_client": "tauri dev",
-    "dev_server": "cd server && nest start --watch",
+    "dev_server": "cd server && pnpm dev",
     "dev_page": "cd client && pnpm dev",
     "dev_linux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
-    "start_server": "cd server && pnpm dev",
     "fmt": "cd src-tauri && cargo fmt",
     "updater": "cmd /c commands\\version_update.bat",
     "get_build":"cmd /c commands\\extract_release.bat"

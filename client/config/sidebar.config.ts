@@ -115,6 +115,13 @@ export const sidebarItems: SidebarItem[] = [
     order: 33,
     source: 'incomplete',
   },
+  {
+    id: 'server-chat',
+    label: '服务聊天室',
+    icon: '⛳',
+    order: 34,
+    source: 'server',
+  },
 
   // ========== server ==========
   {

@@ -4,7 +4,8 @@
   "version": "0.3.11",
   "author": "Fofow",
   "workspaces": [
-    "client"
+    "client",
+    "server"
   ],
   "scripts": {
     "dev": "vite",
@@ -14,9 +15,8 @@
     "dev_server": "cd server && nest start --watch",
     "dev_page": "cd client && pnpm dev",
     "dev_linux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
-    "start_server": "cd server && nest start",
-    "build_server": "cd server && nest build",
-    "fmt":"cd src-tauri && cargo fmt"
+    "start_server": "cd server && pnpm dev",
+    "fmt": "cd src-tauri && cargo fmt"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -30,6 +30,7 @@
     "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "socket.io-client": "^4.8.3",
     "unocss": "^66.6.7",
     "zustand": "^5.0.12"
   },

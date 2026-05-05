@@ -47,7 +47,7 @@ libp2p = {version = "0.56.0", features = [
     "quic",
     "identify",
     "ping",
-    # 重要的依�?Bug:26.5.4
+    # 重要的依赖：Bug:26.5.4
     "macros"
 ] }
 futures = "0.3.32"

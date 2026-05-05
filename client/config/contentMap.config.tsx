@@ -19,6 +19,7 @@ import StartPage from '../pages/Start';
 import NetworkScanner from '../pages/NetScanner';
 import DrillGround from '../pages/DrillGround';
 import P2PChat from '../pages/P2PChat';
+import ServerChat from '../pages/ServerChat';
 
 const contentMap: Record<string, JSX.Element> = {
   'start':<StartPage/>,
@@ -39,7 +40,8 @@ const contentMap: Record<string, JSX.Element> = {
   'sys-commands':<SysCommands/>,
   'network-scanner': <NetworkScanner/>,
   'drill-ground':<DrillGround/>,
-  'p2p-chat':<P2PChat/>
+  'p2p-chat':<P2PChat/>,
+  'server-chat':<ServerChat/>
 };
 export default contentMap;
 

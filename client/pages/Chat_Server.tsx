@@ -3,7 +3,6 @@ import { io, Socket } from 'socket.io-client';
 import { server_chat_addr } from '../config/api.config';
 import useAppStore from '../stores/appStore';
 
-// 消息类型定义
 interface ChatMessage {
   username: string;
   message: string;
@@ -15,6 +14,75 @@ interface UserTyping {
   isTyping: boolean;
 }
 
+const ToastMessage: React.FC<{ message: string; visible: boolean }> = ({ message, visible }) => {
+  return (
+    <div
+      className={`fixed top-4 right-4 z-50 transition-all duration-300 ${
+        visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'
+      }`}
+    >
+      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg shadow-2xl border border-red-400/50 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">📢</span>
+          <p className="text-sm">{message}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SystemDrawer: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  messages: { text: string; timestamp: number }[];
+  formatTime: (timestamp: number) => string;
+}> = ({ isOpen, onClose, messages, formatTime }) => {
+  return (
+    <>
+      <div
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={onClose}
+      />
+      <div
+        className={`fixed top-0 right-0 h-full w-80 bg-gradient-to-b from-neutral-900 to-red-950 shadow-2xl z-50 transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="p-4 border-b border-red-500/30 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <span className="text-red-500">📋</span>
+            系统信息
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-red-500/20 rounded-md transition-all"
+          >
+            <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-4 space-y-2 overflow-y-auto h-full pb-20">
+          {messages.length === 0 ? (
+            <p className="text-neutral-500 text-sm text-center mt-8">暂无系统消息</p>
+          ) : (
+            messages.map((item, idx) => (
+              <div key={idx} className="bg-neutral-800/50 border border-red-500/20 rounded-lg p-3 text-sm text-neutral-300">
+                <div className="flex justify-between items-start">
+                  <span>{item.text}</span>
+                  <span className="text-xs text-neutral-500 ml-2 whitespace-nowrap">{formatTime(item.timestamp)}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
 const ServerChat: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const username = useAppStore((state) => state.username);
@@ -22,19 +90,32 @@ const ServerChat: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [__, setOnlineUsers] = useState<string[]>([]);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
-  const [_, setError] = useState('');
+  const [error, setError] = useState('');
   const [showIntro, setShowIntro] = useState(true);
+
+  const [systemMessages, setSystemMessages] = useState<{ text: string; timestamp: number }[]>([]);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVisible, setToastVisible] = useState(false);
+  const [isSystemDrawerOpen, setIsSystemDrawerOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 3秒后隐藏边缘特效
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setToastVisible(true);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
+      setToastVisible(false);
+    }, 3000);
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => setShowIntro(false), 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  // 连接 Socket
   useEffect(() => {
     if (!username) return;
 
@@ -55,11 +136,26 @@ const ServerChat: React.FC = () => {
     });
 
     socketInstance.on('message', (message: ChatMessage) => {
-      setMessages((prev) => [...prev, message]);
+      if (message.username === '系统') {
+        setSystemMessages((prev) => [...prev, { text: message.message, timestamp: message.timestamp }]);
+        showToast(message.message);
+      } else {
+        setMessages((prev) => [...prev, message]);
+      }
     });
 
     socketInstance.on('history', (history: ChatMessage[]) => {
-      setMessages(history);
+      const sysMessages: { text: string; timestamp: number }[] = [];
+      const chatMessages: ChatMessage[] = [];
+      history.forEach((msg) => {
+        if (msg.username === '系统') {
+          sysMessages.push({ text: msg.message, timestamp: msg.timestamp });
+        } else {
+          chatMessages.push(msg);
+        }
+      });
+      setSystemMessages(sysMessages);
+      setMessages(chatMessages);
     });
 
     socketInstance.on('userList', (users: string[]) => {
@@ -80,6 +176,7 @@ const ServerChat: React.FC = () => {
 
     socketInstance.on('error', (errorMsg: string) => {
       setError(errorMsg);
+      showToast(errorMsg);
       setTimeout(() => setError(''), 3000);
     });
 
@@ -90,7 +187,6 @@ const ServerChat: React.FC = () => {
     };
   }, [username]);
 
-  // 发送消息
   const handleSendMessage = (e: FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim() || !socket) return;
@@ -104,22 +200,15 @@ const ServerChat: React.FC = () => {
     socket.emit('typing', false);
   };
 
-  // 处理输入
   const handleTyping = () => {
     if (!socket) return;
-
     socket.emit('typing', true);
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit('typing', false);
     }, 1000);
   };
 
-  // 清理连接
   useEffect(() => {
     return () => {
       if (socket) {
@@ -138,52 +227,55 @@ const ServerChat: React.FC = () => {
 
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
-      {/* 边缘特效 */}
-      <div className={`
-        absolute inset-0 pointer-events-none z-20
-        ${showIntro ? 'opacity-100' : 'opacity-0'}
-        transition-opacity duration-500
-      `}>
+      <div className={`absolute inset-0 pointer-events-none z-20 ${showIntro ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-top"></div>
         <div className="absolute top-0 right-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-right"></div>
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-bottom"></div>
         <div className="absolute top-0 left-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-left"></div>
-
         <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-red-500/80 rounded-tl-lg animate-pulse-glow"></div>
         <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-red-500/80 rounded-tr-lg animate-pulse-glow"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-red-500/80 rounded-bl-lg animate-pulse-glow"></div>
         <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-red-500/80 rounded-br-lg animate-pulse-glow"></div>
       </div>
 
-      {/* 主聊天区域（全宽） */}
+      <ToastMessage message={toastMessage} visible={toastVisible} />
+      <SystemDrawer
+        isOpen={isSystemDrawerOpen}
+        onClose={() => setIsSystemDrawerOpen(false)}
+        messages={systemMessages}
+        formatTime={formatTime}
+      />
+
       <div className="flex-1 flex flex-col relative z-10">
-        {/* 顶部栏：用户头像+用户名标签（左侧）+ 断开连接按钮（右侧） */}
         <div className="bg-neutral-900/50 backdrop-blur-sm border-b border-red-500/30 px-4 py-2 flex items-center justify-between">
-          {/* 左侧：用户头像 + 用户名 */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-xs font-bold shadow-md">
               {username ? username.charAt(0).toUpperCase() : '?'}
             </div>
-            <span className="text-sm font-semibold text-neutral-200">
-              {username || '未设置'}
-            </span>
+            <span className="text-sm font-semibold text-neutral-200">{username || '未设置'}</span>
           </div>
-
-          {/* 右侧：断开连接按钮 */}
-          <button
-            onClick={() => {
-              if (socket) {
-                socket.disconnect();
-                setSocket(null);
-              }
-            }}
-            className="px-3 py-1 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-md transition-all border border-red-500/50 hover:border-red-500"
-          >
-            断开连接
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsSystemDrawerOpen(true)}
+              className="px-2 py-1 text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md transition-all border border-neutral-700 hover:border-red-500/50 flex items-center gap-1"
+            >
+              📋
+              <span className="hidden sm:inline">系统</span>
+            </button>
+            <button
+              onClick={() => {
+                if (socket) {
+                  socket.disconnect();
+                  setSocket(null);
+                }
+              }}
+              className="px-3 py-1 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-md transition-all border border-red-500/50 hover:border-red-500"
+            >
+              断开连接
+            </button>
+          </div>
         </div>
 
-        {/* 消息列表 */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.map((msg, index) => (
             <div
@@ -195,27 +287,20 @@ const ServerChat: React.FC = () => {
                 className={`max-w-md px-4 py-2 rounded-lg shadow-lg ${
                   msg.username === username
                     ? 'bg-gradient-to-r from-red-500 to-red-700 text-white'
-                    : msg.username === '系统'
-                      ? 'bg-neutral-800 text-neutral-400 border border-neutral-700'
-                      : 'bg-neutral-800/80 text-neutral-200 border border-neutral-700'
+                    : 'bg-neutral-800/80 text-neutral-200 border border-neutral-700'
                 }`}
               >
-                {msg.username !== username && msg.username !== '系统' && (
-                  <div className="text-xs font-bold text-red-400 mb-1">
-                    {msg.username}
-                  </div>
+                {msg.username !== username && (
+                  <div className="text-xs font-bold text-red-400 mb-1">{msg.username}</div>
                 )}
                 <div className="break-words text-sm">{msg.message}</div>
-                <div className={`text-xs mt-1 ${
-                  msg.username === username ? 'text-red-200' : 'text-neutral-500'
-                }`}>
+                <div className={`text-xs mt-1 ${msg.username === username ? 'text-red-200' : 'text-neutral-500'}`}>
                   {formatTime(msg.timestamp)}
                 </div>
               </div>
             </div>
           ))}
 
-          {/* 正在输入提示 */}
           {Array.from(typingUsers).filter(u => u !== username).length > 0 && (
             <div className="text-sm text-red-400 italic animate-pulse ml-2">
               {Array.from(typingUsers).filter(u => u !== username).join(', ')} 正在输入...
@@ -225,7 +310,6 @@ const ServerChat: React.FC = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* 输入区域 */}
         <div className="bg-neutral-900/50 backdrop-blur-sm border-t border-red-500/30 p-4">
           <form onSubmit={handleSendMessage} className="flex gap-2">
             <input
@@ -247,9 +331,7 @@ const ServerChat: React.FC = () => {
               发送
             </button>
           </form>
-          <div className="mt-2 text-xs text-neutral-600 text-right">
-            按 Enter 发送，最多 500 字符
-          </div>
+          <div className="mt-2 text-xs text-neutral-600 text-right">按 Enter 发送，最多 500 字符</div>
         </div>
       </div>
 

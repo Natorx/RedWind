@@ -7,12 +7,14 @@ import iconSrc from '../assets/icon.png';
 import { sourceConfig } from '../config/sidebar_style.ts';
 import { uiState } from '../utils/uiState.ts';
 import { useModuleStore } from '../stores/moduleItemsStore.ts';
+import useAppStore from '../stores/appStore.ts';
 
 const Sidebar: React.FC = () => {
   const { sidebarItems, loadItems } = useModuleStore();
   const { activeItem, setActiveItem } = useActiveItem();
   const { setIsSettingsOpen } = useSettingDrawer();
   const [showSidebar, setShowSidebar] = useState(false);
+  const [username, _] = useState(useAppStore((state) => state.username))
 
   useEffect(() => {
     const unsubscribe = uiState.subscribe((activeUi) => {
@@ -102,7 +104,7 @@ const Sidebar: React.FC = () => {
               />
             </div>
             <div className="user-details">
-              <p className="user-name font-semibold text-sm text-neutral-200">Natorx</p>
+              <p className="user-name font-semibold text-sm text-neutral-200">{ username }</p>
               <p className="user-status text-xs text-neutral-500">在线</p>
             </div>
             <button

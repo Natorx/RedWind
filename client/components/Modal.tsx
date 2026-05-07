@@ -31,7 +31,6 @@ const Modal: React.FC<ModalProps> = ({
         handleClose();
       }
     };
-
     document.addEventListener('keydown', handleEscKey);
     return () => document.removeEventListener('keydown', handleEscKey);
   }, [isOpen]);
@@ -39,23 +38,18 @@ const Modal: React.FC<ModalProps> = ({
   // 处理动画状态
   useEffect(() => {
     if (isOpen) {
-      // 先挂载组件
       setIsMounted(true);
-      // 微延迟后开始动画
       setTimeout(() => {
         setIsAnimating(true);
       }, 10);
     } else {
-      // 先结束动画
       setIsAnimating(false);
-      // 等待动画完成后再卸载
       setTimeout(() => {
         setIsMounted(false);
       }, 300);
     }
   }, [isOpen]);
 
-  // 平滑关闭
   const handleClose = () => {
     setIsAnimating(false);
     setTimeout(() => {
@@ -63,40 +57,30 @@ const Modal: React.FC<ModalProps> = ({
     }, 300);
   };
 
-  // 根据动画类型获取对应的类名
   const getAnimationClasses = () => {
     const baseClasses = "transition-all duration-300 ease-out";
-    
     switch (animationType) {
       case 'fade':
         return `${baseClasses} ${isAnimating ? 'opacity-100' : 'opacity-0'}`;
-      
       case 'slide-up':
         return `${baseClasses} ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`;
-      
       case 'slide-down':
         return `${baseClasses} ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`;
-      
       case 'scale':
         return `${baseClasses} ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`;
-      
       case 'bounce':
         return `${baseClasses} ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`;
-      
       case 'flip':
         return `${baseClasses} ${isAnimating ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-12'}`;
-      
       default:
         return `${baseClasses} ${isAnimating ? 'opacity-100' : 'opacity-0'}`;
     }
   };
 
-  // 遮罩层动画类
-  const backdropClasses = `absolute inset-0 bg-black/50 transition-all duration-300 ease-out ${
+  const backdropClasses = `absolute inset-0 bg-black/70 transition-all duration-300 ease-out ${
     backdropBlur ? 'backdrop-blur-sm' : ''
   } ${isAnimating ? 'opacity-100' : 'opacity-0'}`;
 
-  // 尺寸类
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -112,31 +96,31 @@ const Modal: React.FC<ModalProps> = ({
       onClick={handleClose}
     >
       {/* 遮罩层 */}
-      <div
-        className={backdropClasses}
-        aria-hidden="true"
-      />
+      <div className={backdropClasses} aria-hidden="true" />
 
-      {/* 弹窗内容 */}
+      {/* 弹窗内容 - 红黑风格 */}
       <div
-        className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizeClasses} max-h-[90vh] overflow-y-auto ${getAnimationClasses()}`}
+        className={`relative bg-gradient-to-b from-neutral-900 to-red-950 border border-red-500/30 rounded-2xl shadow-2xl w-full ${sizeClasses} max-h-[90vh] overflow-y-auto ${getAnimationClasses()}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 标题栏 */}
+        {/* 标题栏 - 红黑风格 */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="flex items-center justify-between p-6 border-b border-red-500/30">
             {title && (
-              <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+              <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                <span className="text-red-500">⚙️</span>
+                {title}
+              </h3>
             )}
 
             {showCloseButton && (
               <button
                 onClick={handleClose}
-                className="ml-auto p-2 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="ml-auto p-2 hover:bg-red-500/20 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-neutral-900"
                 aria-label="关闭弹窗"
               >
                 <svg
-                  className="w-5 h-5 text-gray-500 transition-colors duration-200 hover:text-gray-700"
+                  className="w-5 h-5 text-neutral-400 transition-colors duration-200 hover:text-red-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -154,7 +138,7 @@ const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* 内容区域 */}
-        <div className="p-6">{children}</div>
+        <div className="p-6 text-neutral-300">{children}</div>
       </div>
     </div>
   );

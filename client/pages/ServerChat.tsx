@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { server_chat_addr } from '../config/api.config';
+import useAppStore from '../stores/appStore';
 
 // 消息类型定义
 interface ChatMessage {
@@ -16,21 +17,16 @@ interface UserTyping {
 
 const ServerChat: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [username, setUsername] = useState('');
-  const [isJoined, setIsJoined] = useState(false);
+  const username = useAppStore((state) => state.username); // 直接从 store 获取
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState('');
+  const [_, setError] = useState('');
   const [showIntro, setShowIntro] = useState(true);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // ========== 已删除：自动滚动到底部功能 ==========
-  // 用户可以通过手动滚动查看历史消息，新消息不会再强制拉到顶部
 
   // 3秒后隐藏边缘特效
   useEffect(() => {
@@ -38,8 +34,10 @@ const ServerChat: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // 连接 Socket.io
-  const connectSocket = () => {
+  // 连接 Socket（不再需要用户手动输入用户名，直接使用 store 中的 username）
+  useEffect(() => {
+    if (!username) return; // 如果没有 username，则等待（可根据业务决定是否兜底）
+
     const socketInstance = io(server_chat_addr, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
@@ -48,12 +46,13 @@ const ServerChat: React.FC = () => {
     socketInstance.on('connect', () => {
       console.log('Socket connected');
       setError('');
+      // 连接成功后自动加入聊天室
+      socketInstance.emit('join', username);
     });
 
     socketInstance.on('connect_error', (err) => {
       console.error('Connection error:', err);
       setError('无法连接到聊天服务器');
-      setIsConnecting(false);
     });
 
     socketInstance.on('message', (message: ChatMessage) => {
@@ -86,23 +85,11 @@ const ServerChat: React.FC = () => {
     });
 
     setSocket(socketInstance);
-    return socketInstance;
-  };
 
-  // 加入聊天室
-  const handleJoin = (e: FormEvent) => {
-    e.preventDefault();
-    if (!username.trim()) return;
-
-    setIsConnecting(true);
-    const newSocket = connectSocket();
-    
-    newSocket.once('connect', () => {
-      newSocket.emit('join', username.trim());
-      setIsJoined(true);
-      setIsConnecting(false);
-    });
-  };
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, [username]); // 依赖 username，当 username 变化时重新连接
 
   // 发送消息
   const handleSendMessage = (e: FormEvent) => {
@@ -111,7 +98,7 @@ const ServerChat: React.FC = () => {
 
     socket.emit('sendMessage', inputMessage.trim());
     setInputMessage('');
-    
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
@@ -123,27 +110,14 @@ const ServerChat: React.FC = () => {
     if (!socket) return;
 
     socket.emit('typing', true);
-    
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-    
+
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit('typing', false);
     }, 1000);
-  };
-
-  // 退出聊天
-  const handleLeave = () => {
-    if (socket) {
-      socket.disconnect();
-      setSocket(null);
-    }
-    setIsJoined(false);
-    setUsername('');
-    setMessages([]);
-    setOnlineUsers([]);
-    setTypingUsers(new Set());
   };
 
   // 清理连接
@@ -156,7 +130,7 @@ const ServerChat: React.FC = () => {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [socket]);
+  }, []); // 仅组件卸载时清理
 
   // 格式化时间
   const formatTime = (timestamp: number) => {
@@ -164,99 +138,7 @@ const ServerChat: React.FC = () => {
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
   };
 
-  // 未加入聊天室的状态
-  if (!isJoined) {
-    return (
-      <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
-        {/* 边缘特效 */}
-        <div className={`
-          absolute inset-0 pointer-events-none z-20
-          ${showIntro ? 'opacity-100' : 'opacity-0'}
-          transition-opacity duration-500
-        `}>
-          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-top"></div>
-          <div className="absolute top-0 right-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-right"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-bottom"></div>
-          <div className="absolute top-0 left-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-left"></div>
-          
-          <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-red-500/80 rounded-tl-lg animate-pulse-glow"></div>
-          <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-red-500/80 rounded-tr-lg animate-pulse-glow"></div>
-          <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-red-500/80 rounded-bl-lg animate-pulse-glow"></div>
-          <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-red-500/80 rounded-br-lg animate-pulse-glow"></div>
-        </div>
-
-        {/* 加入聊天室表单 */}
-        <div className="flex-1 flex items-center justify-center relative z-10">
-          <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 w-96 border border-red-500/30">
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4 animate-pulse">💬</div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
-                聊天室
-              </h1>
-              <p className="text-neutral-400 mt-2 text-sm">输入用户名开始聊天</p>
-              <div className="w-20 h-0.5 bg-gradient-to-r from-red-500 to-red-700 rounded-full mx-auto mt-4"></div>
-            </div>
-            
-            <form onSubmit={handleJoin}>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="请输入用户名"
-                maxLength={20}
-                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-white placeholder-neutral-500 transition-all"
-                disabled={isConnecting}
-              />
-              {error && (
-                <div className="mt-2 text-red-500 text-sm text-center animate-pulse">{error}</div>
-              )}
-              <button
-                type="submit"
-                disabled={!username.trim() || isConnecting}
-                className="w-full mt-6 bg-gradient-to-r from-red-500 to-red-700 text-white py-3 rounded-lg hover:from-red-600 hover:to-red-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg hover:shadow-red-500/25"
-              >
-                {isConnecting ? '连接中...' : '进入聊天室'}
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <style>{`
-          @keyframes scan-top {
-            0% { transform: translateX(-100%); opacity: 0; }
-            50% { transform: translateX(0); opacity: 1; }
-            100% { transform: translateX(100%); opacity: 0; }
-          }
-          @keyframes scan-right {
-            0% { transform: translateY(-100%); opacity: 0; }
-            50% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(100%); opacity: 0; }
-          }
-          @keyframes scan-bottom {
-            0% { transform: translateX(100%); opacity: 0; }
-            50% { transform: translateX(0); opacity: 1; }
-            100% { transform: translateX(-100%); opacity: 0; }
-          }
-          @keyframes scan-left {
-            0% { transform: translateY(100%); opacity: 0; }
-            50% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100%); opacity: 0; }
-          }
-          @keyframes pulse-glow {
-            0%, 100% { opacity: 0.3; box-shadow: 0 0 0px rgba(239, 68, 68, 0); }
-            50% { opacity: 1; box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
-          }
-          .animate-scan-top { animation: scan-top 1.25s ease-in-out infinite; }
-          .animate-scan-right { animation: scan-right 1.25s ease-in-out infinite; }
-          .animate-scan-bottom { animation: scan-bottom 1.25s ease-in-out infinite; }
-          .animate-scan-left { animation: scan-left 1.25s ease-in-out infinite; }
-          .animate-pulse-glow { animation: pulse-glow 1.25s ease-in-out infinite; }
-        `}</style>
-      </div>
-    );
-  }
-
-  // 聊天界面
+  // 直接显示聊天界面（不再需要未加入状态）
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
       {/* 边缘特效 */}
@@ -269,7 +151,7 @@ const ServerChat: React.FC = () => {
         <div className="absolute top-0 right-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-right"></div>
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-bottom"></div>
         <div className="absolute top-0 left-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-left"></div>
-        
+
         <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-red-500/80 rounded-tl-lg animate-pulse-glow"></div>
         <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-red-500/80 rounded-tr-lg animate-pulse-glow"></div>
         <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-red-500/80 rounded-bl-lg animate-pulse-glow"></div>
@@ -304,24 +186,29 @@ const ServerChat: React.FC = () => {
         </div>
         <div className="p-4 border-t border-red-500/30">
           <button
-            onClick={handleLeave}
+            onClick={() => {
+              if (socket) {
+                socket.disconnect();
+                setSocket(null);
+              }
+              // 也可在此清除 store 中的 username 或进行其他操作
+            }}
             className="w-full px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all text-sm border border-red-500/50 hover:border-red-500"
           >
-            退出聊天室
+            断开连接
           </button>
         </div>
       </div>
 
       {/* 主聊天区域 */}
       <div className="flex-1 flex flex-col relative z-10">
-        {/* 聊天头部 — 已优化：系统提示不再占用额外一行 */}
         <div className="bg-neutral-900/50 backdrop-blur-sm border-b border-red-500/30 px-6 py-3">
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
               公共聊天室
             </h1>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 leading-normal">
-              已加入
+              已自动加入
             </span>
           </div>
         </div>
@@ -357,14 +244,14 @@ const ServerChat: React.FC = () => {
               </div>
             </div>
           ))}
-          
+
           {/* 正在输入提示 */}
           {Array.from(typingUsers).filter(u => u !== username).length > 0 && (
             <div className="text-sm text-red-400 italic animate-pulse ml-2">
               {Array.from(typingUsers).filter(u => u !== username).join(', ')} 正在输入...
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
 

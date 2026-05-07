@@ -17,10 +17,10 @@ interface UserTyping {
 
 const ServerChat: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const username = useAppStore((state) => state.username); // 直接从 store 获取
+  const username = useAppStore((state) => state.username);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const [__, setOnlineUsers] = useState<string[]>([]);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [_, setError] = useState('');
   const [showIntro, setShowIntro] = useState(true);
@@ -34,9 +34,9 @@ const ServerChat: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // 连接 Socket（不再需要用户手动输入用户名，直接使用 store 中的 username）
+  // 连接 Socket
   useEffect(() => {
-    if (!username) return; // 如果没有 username，则等待（可根据业务决定是否兜底）
+    if (!username) return;
 
     const socketInstance = io(server_chat_addr, {
       path: '/socket.io',
@@ -46,7 +46,6 @@ const ServerChat: React.FC = () => {
     socketInstance.on('connect', () => {
       console.log('Socket connected');
       setError('');
-      // 连接成功后自动加入聊天室
       socketInstance.emit('join', username);
     });
 
@@ -89,7 +88,7 @@ const ServerChat: React.FC = () => {
     return () => {
       socketInstance.disconnect();
     };
-  }, [username]); // 依赖 username，当 username 变化时重新连接
+  }, [username]);
 
   // 发送消息
   const handleSendMessage = (e: FormEvent) => {
@@ -130,15 +129,13 @@ const ServerChat: React.FC = () => {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, []); // 仅组件卸载时清理
+  }, []);
 
-  // 格式化时间
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
   };
 
-  // 直接显示聊天界面（不再需要未加入状态）
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
       {/* 边缘特效 */}
@@ -158,59 +155,32 @@ const ServerChat: React.FC = () => {
         <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-red-500/80 rounded-br-lg animate-pulse-glow"></div>
       </div>
 
-      {/* 侧边栏 - 在线用户列表 */}
-      <div className="w-64 bg-neutral-900/80 backdrop-blur-sm border-r border-red-500/30 flex flex-col relative z-10">
-        <div className="p-4 border-b border-red-500/30">
-          <div className="flex items-center justify-between">
-            <h2 className="font-bold text-transparent bg-gradient-to-r from-red-500 to-red-700 bg-clip-text">
-              在线用户
-            </h2>
-            <span className="text-xs text-red-400">{onlineUsers.length} 人</span>
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {onlineUsers.map((user, index) => (
-            <div key={index} className="flex items-center py-2 px-2 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-all group">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-xs font-bold shadow-lg">
-                {user.charAt(0).toUpperCase()}
-              </div>
-              <span className="ml-3 text-neutral-300 text-sm flex-1">
-                {user}
-                {user === username && <span className="text-red-500 text-xs ml-1">(我)</span>}
-              </span>
-              {typingUsers.has(user) && user !== username && (
-                <span className="text-xs text-red-400 animate-pulse">输入中...</span>
-              )}
+      {/* 主聊天区域（全宽） */}
+      <div className="flex-1 flex flex-col relative z-10">
+        {/* 顶部栏：用户头像+用户名标签（左侧）+ 断开连接按钮（右侧） */}
+        <div className="bg-neutral-900/50 backdrop-blur-sm border-b border-red-500/30 px-4 py-2 flex items-center justify-between">
+          {/* 左侧：用户头像 + 用户名 */}
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-xs font-bold shadow-md">
+              {username ? username.charAt(0).toUpperCase() : '?'}
             </div>
-          ))}
-        </div>
-        <div className="p-4 border-t border-red-500/30">
+            <span className="text-sm font-semibold text-neutral-200">
+              {username || '未设置'}
+            </span>
+          </div>
+
+          {/* 右侧：断开连接按钮 */}
           <button
             onClick={() => {
               if (socket) {
                 socket.disconnect();
                 setSocket(null);
               }
-              // 也可在此清除 store 中的 username 或进行其他操作
             }}
-            className="w-full px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all text-sm border border-red-500/50 hover:border-red-500"
+            className="px-3 py-1 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-md transition-all border border-red-500/50 hover:border-red-500"
           >
             断开连接
           </button>
-        </div>
-      </div>
-
-      {/* 主聊天区域 */}
-      <div className="flex-1 flex flex-col relative z-10">
-        <div className="bg-neutral-900/50 backdrop-blur-sm border-b border-red-500/30 px-6 py-3">
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
-              公共聊天室
-            </h1>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 leading-normal">
-              已自动加入
-            </span>
-          </div>
         </div>
 
         {/* 消息列表 */}

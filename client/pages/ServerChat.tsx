@@ -29,14 +29,8 @@ const ServerChat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 自动滚动到底部
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // ========== 已删除：自动滚动到底部功能 ==========
+  // 用户可以通过手动滚动查看历史消息，新消息不会再强制拉到顶部
 
   // 3秒后隐藏边缘特效
   useEffect(() => {
@@ -320,12 +314,16 @@ const ServerChat: React.FC = () => {
 
       {/* 主聊天区域 */}
       <div className="flex-1 flex flex-col relative z-10">
-        {/* 聊天头部 */}
-        <div className="bg-neutral-900/50 backdrop-blur-sm border-b border-red-500/30 px-6 py-4">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
-            公共聊天室
-          </h1>
-          <p className="text-xs text-neutral-500 mt-1">已加入，开始聊天吧</p>
+        {/* 聊天头部 — 已优化：系统提示不再占用额外一行 */}
+        <div className="bg-neutral-900/50 backdrop-blur-sm border-b border-red-500/30 px-6 py-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+              公共聊天室
+            </h1>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 leading-normal">
+              已加入
+            </span>
+          </div>
         </div>
 
         {/* 消息列表 */}

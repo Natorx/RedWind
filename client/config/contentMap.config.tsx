@@ -1,11 +1,11 @@
 import { JSX } from 'react';
 
-import AIChat from '../pages/AIchat';
+import AIChat from '../pages/Chat_AI';
 import RequestTool from '../pages/RequestTool';
 import Dashboard from '../pages/Dashboard';
 import Printer from '../pages/Printer';
 import SysInfo from '../pages/SysInfo';
-import TypingPractice from '../pages/English';
+import TypingPractice from '../pages/Typing';
 import Recorder from '../pages/Recorder';
 import QRCodeGenerator from '../pages/QRCodeGenerator';
 import Charts from '../pages/Charts';
@@ -18,8 +18,8 @@ import SysCommands from '../pages/SysCommands';
 import StartPage from '../pages/Start';
 import NetworkScanner from '../pages/NetScanner';
 import DrillGround from '../pages/DrillGround';
-import P2PChat from '../pages/P2PChat';
-import ServerChat from '../pages/ServerChat';
+import P2PChat from '../pages/Chat_RsP2P';
+import ServerChat from '../pages/Chat_Server';
 
 const contentMap: Record<string, JSX.Element> = {
   'start':<StartPage/>,

@@ -9,3 +9,4 @@ pub mod sidebar;
 pub mod typing;
 pub mod open;
 pub mod p2p_chat;
+pub mod docs;

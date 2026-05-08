@@ -78,7 +78,9 @@ fn main() {
             mods::p2p_chat::p2p_status,
             mods::p2p_chat::send_p2p,
             mods::p2p_chat::stop_p2p,
-            mods::p2p_chat::start_p2p
+            mods::p2p_chat::start_p2p,
+            // Docs
+            mods::docs::read_document
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

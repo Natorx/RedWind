@@ -200,6 +200,13 @@ export const sidebarItems: SidebarItem[] = [
     order: 25,
     source: 'coming_soon',
   },
+  {
+    id: 'doc-reader',
+    label: '文档阅读器',
+    icon: '🧩',
+    order: 26,
+    source: 'coming_soon',
+  },
 ];
 
 export default sidebarItems;

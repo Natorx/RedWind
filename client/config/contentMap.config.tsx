@@ -20,6 +20,7 @@ import NetworkScanner from '../pages/NetScanner';
 import DrillGround from '../pages/DrillGround';
 import P2PChat from '../pages/Chat_RsP2P';
 import ServerChat from '../pages/Chat_Server';
+import DocReader from '../pages/DocReader';
 
 const contentMap: Record<string, JSX.Element> = {
   'start':<StartPage/>,
@@ -41,7 +42,8 @@ const contentMap: Record<string, JSX.Element> = {
   'network-scanner': <NetworkScanner/>,
   'drill-ground':<DrillGround/>,
   'p2p-chat':<P2PChat/>,
-  'server-chat':<ServerChat/>
+  'server-chat':<ServerChat/>,
+  'doc-reader':<DocReader/>
 };
 export default contentMap;
 

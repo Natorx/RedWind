@@ -17,7 +17,7 @@
     "dev_linux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
     "fmt": "cd src-tauri && cargo fmt",
     "updater": "cmd /c commands\\version_update.bat",
-    "get_build":"cmd /c commands\\extract_release.bat"
+    "get_build": "cmd /c commands\\extract_release.bat"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -31,6 +31,8 @@
     "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "socket.io-client": "^4.8.3",
     "unocss": "^66.6.7",
     "zustand": "^5.0.12"

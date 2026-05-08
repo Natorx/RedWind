@@ -90,7 +90,7 @@ const ServerChat: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [__, setOnlineUsers] = useState<string[]>([]);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
-  const [error, setError] = useState('');
+  const [___, setError] = useState('');
   const [showIntro, setShowIntro] = useState(true);
 
   const [systemMessages, setSystemMessages] = useState<{ text: string; timestamp: number }[]>([]);

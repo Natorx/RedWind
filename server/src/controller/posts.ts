@@ -38,7 +38,7 @@ export default async function postController(fastify: FastifyInstance) {
 
   // 更新帖子
   fastify.put<{ Params: { id: string }; Body: Partial<Post> }>(
-    '/update/:id',
+    '/edit/:id',
     async (request, reply) => {
       const { id } = request.params;
       const updateData = request.body;

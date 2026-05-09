@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { req_to_server } from '../apis/requests';
 
-// 帖子类型定义
 interface Post {
   id?: number;
   title: string;
@@ -10,97 +9,66 @@ interface Post {
 }
 
 const Community: React.FC = () => {
-  // 帖子列表
   const [posts, setPosts] = useState<Post[]>([]);
-  // 表单状态（新增 / 编辑）
   const [form, setForm] = useState<Post>({ title: '', content: '' });
-  // 编辑模式时记录被编辑的帖子 id
   const [editingId, setEditingId] = useState<number | null>(null);
-  // 加载状态
   const [loading, setLoading] = useState(false);
-  // 错误/成功消息
   const [message, setMessage] = useState('');
 
-  // 获取所有帖子
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const res = await req_to_server.get<Post[]>('/post/');
       setPosts(res.data);
-    } catch (err) {
-      console.error('获取帖子失败:', err);
-      setMessage('获取帖子失败');
-    } finally {
-      setLoading(false);
-    }
+    } catch { setMessage('获取帖子失败'); }
+    finally { setLoading(false); }
   };
 
-  // 初始加载
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  useEffect(() => { fetchPosts(); }, []);
 
-  // 输入处理
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // 新增或者更新帖子
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) {
-      setMessage('标题不能为空');
-      return;
-    }
+    if (!form.title.trim()) { setMessage('标题不能为空'); return; }
     try {
       if (editingId !== null) {
-        // 更新
         await req_to_server.put(`/post/edit/${editingId}`, form);
         setMessage('帖子更新成功');
       } else {
-        // 新增
         await req_to_server.post('/post/setPosts', form);
         setMessage('帖子添加成功');
       }
-      // 重置表单
       setForm({ title: '', content: '' });
       setEditingId(null);
       fetchPosts();
-    } catch (err) {
-      console.error('提交失败:', err);
-      setMessage('操作失败');
-    }
+    } catch { setMessage('操作失败'); }
   };
 
-  // 进入编辑模式
   const handleEdit = (post: Post) => {
     setForm({ title: post.title, content: post.content });
     setEditingId(post.id!);
   };
 
-  // 取消编辑
   const handleCancelEdit = () => {
     setForm({ title: '', content: '' });
     setEditingId(null);
   };
 
-  // 删除帖子
   const handleDelete = async (id: number) => {
     if (!window.confirm('确定删除该帖子吗？')) return;
     try {
       await req_to_server.delete(`/post/remove/${id}`);
       setMessage('删除成功');
       fetchPosts();
-    } catch (err) {
-      console.error('删除失败:', err);
-      setMessage('删除失败');
-    }
+    } catch { setMessage('删除失败'); }
   };
 
-  // 显示的消息自动消失
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => setMessage(''), 3000);
@@ -109,103 +77,106 @@ const Community: React.FC = () => {
   }, [message]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 text-neutral-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-red-400">社区帖子管理</h1>
-
-        {/* 提示消息 */}
+    <div className="min-h-screen flex justify-between flex-col bg-gradient-to-br from-red-950 to-neutral-900 text-neutral-100 relative">
+      {/* 主内容区 */}
+      <div className="w-full mx-auto p-6">
         {message && (
-          <div className="mb-4 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-sm">
+          <div className="mb-3 px-3 py-1.5 bg-red-500/20 border border-red-500/30 rounded text-sm text-center">
             {message}
           </div>
         )}
 
-        {/* 表单 */}
+        <div className="space-y-4">
+          {loading && <p className="text-center text-neutral-500 text-sm">加载中...</p>}
+          {!loading && posts.length === 0 && (
+            <p className="text-center text-neutral-500 text-sm">暂无帖子，发布第一条吧</p>
+          )}
+          {posts.map((post) => (
+            <div
+              key={post.id}
+              className="group relative bg-neutral-900/50 border border-red-500/10 rounded-xl p-5 hover:border-red-400/40 transition-all duration-300 shadow-sm hover:shadow-red-500/10"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="text-lg font-semibold text-red-200 tracking-wide max-w-[75%]">
+                  {post.title}
+                </h3>
+                {post.createdAt && (
+                  <span className="text-[11px] text-neutral-500 whitespace-nowrap">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              <p className="text-neutral-300 leading-relaxed text-sm break-words">
+                {post.content}
+              </p>
+              <div className="absolute right-3 bottom-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <button
+                  onClick={() => handleEdit(post)}
+                  className="p-1.5 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 hover:text-blue-200 transition-colors"
+                  title="编辑"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L13 15H11v-2l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handleDelete(post.id!)}
+                  className="p-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-200 transition-colors"
+                  title="删除"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 固定高度 120px 的底部输入栏，内部可滚动，绝不超出 */}
+      <div
+        className="bottom-0 left-0 right-0 z-50 bg-neutral-900/90 backdrop-blur-md border-t border-red-500/20 shadow-2xl h-[120px] overflow-y-auto px-4 py-3"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0.5rem)' }}
+      >
         <form
           onSubmit={handleSubmit}
-          className="bg-neutral-900/60 border border-red-500/20 rounded-xl p-6 mb-8"
+          className="max-w-4xl mx-auto h-full flex flex-col gap-2"
         >
-          <h2 className="text-xl font-semibold mb-4">
-            {editingId ? '编辑帖子' : '新增帖子'}
-          </h2>
-          <div className="mb-4">
-            <label className="block text-sm text-neutral-400 mb-1">标题</label>
+          <input
+            type="text"
+            name="title"
+            value={form.title}
+            onChange={handleInputChange}
+            placeholder="输入帖子标题"
+            className="w-full px-3 py-1.5 text-sm bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors shrink-0"
+          />
+          <div className="flex gap-2 items-center shrink-0">
             <input
               type="text"
-              name="title"
-              value={form.title}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 transition-colors"
-              placeholder="请输入标题"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm text-neutral-400 mb-1">内容</label>
-            <textarea
               name="content"
               value={form.content}
               onChange={handleInputChange}
-              rows={4}
-              className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 transition-colors resize-none"
-              placeholder="请输入内容"
+              placeholder="写点什么…"
+              className="flex-1 min-w-0 px-3 py-1.5 text-sm bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
             />
-          </div>
-          <div className="flex gap-3">
             <button
               type="submit"
-              className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg"
+              className="px-4 py-1.5 text-sm bg-gradient-to-r from-red-500 to-red-700 rounded hover:from-red-600 hover:to-red-800 transition-all shadow whitespace-nowrap shrink-0"
             >
-              {editingId ? '保存修改' : '添加'}
+              {editingId ? '保存' : '发布'}
             </button>
             {editingId && (
               <button
                 type="button"
                 onClick={handleCancelEdit}
-                className="px-6 py-2 bg-neutral-800 border border-red-500/30 rounded-lg hover:bg-neutral-700 transition-colors"
+                className="px-3 py-1.5 text-sm bg-neutral-800 border border-red-500/20 rounded hover:bg-neutral-700 transition-colors whitespace-nowrap shrink-0"
               >
                 取消
               </button>
             )}
           </div>
         </form>
-
-        {/* 帖子列表 */}
-        <div className="space-y-4">
-          {loading && <p className="text-center text-neutral-500">加载中...</p>}
-          {!loading && posts.length === 0 && (
-            <p className="text-center text-neutral-500">暂无帖子，请添加</p>
-          )}
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-neutral-900/60 border border-red-500/20 rounded-xl p-6 hover:border-red-500/40 transition-all"
-            >
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-semibold text-red-300">{post.title}</h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(post)}
-                    className="px-3 py-1 text-sm bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
-                  >
-                    编辑
-                  </button>
-                  <button
-                    onClick={() => handleDelete(post.id!)}
-                    className="px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-                  >
-                    删除
-                  </button>
-                </div>
-              </div>
-              <p className="text-neutral-300 leading-relaxed">{post.content}</p>
-              {post.createdAt && (
-                <p className="mt-2 text-xs text-neutral-500">
-                  创建时间: {new Date(post.createdAt).toLocaleString()}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

@@ -6,13 +6,10 @@ use tauri::Manager;
 mod mods;
 use std::sync::Mutex;
 use sysinfo::System;
-// network scanner
-use mods::net_scanner::ScanState;
 
 fn main() {
     let db_state = mods::sidebar::init_db_state();
     let typing_db_state = mods::typing::init_typing_db_state();
-    let scan_state = ScanState::new();
     let p2p_state = mods::p2p_chat::P2PState::new();
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -26,7 +23,6 @@ fn main() {
         .manage(mods::hardinfo::AppState {
             sys: Mutex::new(System::new_all()),
         })
-        .manage(scan_state)
         .manage(mods::node_server::ServerState::default())
         .manage(db_state)
         .manage(p2p_state)
@@ -66,10 +62,6 @@ fn main() {
             // Config
             mods::rd_config::get_active_ui,
             mods::rd_config::set_active_ui,
-            // Network Scanner
-            mods::net_scanner::scan_network,
-            mods::net_scanner::get_scan_status,
-            mods::net_scanner::get_scanned_devices,
             // printer
             mods::printer::print_text,
             mods::printer::test_connection,

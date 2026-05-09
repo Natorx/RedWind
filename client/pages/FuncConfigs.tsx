@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import sidebarItems from '../config/sidebar.config';
-import { labelSourceConfig } from '../config/sidebar_style';
+import { labelSourceConfig } from '../styles/sidebar_style';
 import { useModuleStore } from '../stores/moduleItemsStore';
 
 interface SidebarItem {

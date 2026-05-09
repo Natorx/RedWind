@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import iconSrc from '../assets/icon.png';
-import { startPage_latestFeatures } from '../config/startItem.config';
 import { useActiveItem } from '../context/activeItemContext';
 import { useModuleStore } from '../stores/moduleItemsStore';
+import { startPage_latestFeatures } from '../config/sidebar.config';
 
 const StartPage: React.FC = () => {
   const { sidebarItems } = useModuleStore();

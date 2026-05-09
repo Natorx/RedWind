@@ -13,6 +13,13 @@ type SidebarItem = {
     | 'others'
 };
 
+export const startPage_latestFeatures = [
+  { id: 'sys-commands', label: '系统命令', icon: '⚡', date: '2025-05-02' },
+  { id: 'audio-control', label: '音频控制', icon: '🎵', date: '2025-05-01' },
+  { id: 'algorithms', label: '算法', icon: '🧮', date: '2025-05-01' },
+];
+
+
 export const sidebarItems: SidebarItem[] = [
   // ========== 常用工具 (local, order: 1-9) ==========
   {
@@ -116,13 +123,6 @@ export const sidebarItems: SidebarItem[] = [
     icon: '💬',
     order: 14,
     source: 'server',
-  },
-  {
-    id: 'web-scraper',
-    label: '网页解构',
-    icon: '🕸️',
-    order: 15,
-    source: 'incomplete',
   },
   {
     id: 'drill-ground',

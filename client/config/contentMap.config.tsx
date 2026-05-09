@@ -11,7 +11,6 @@ import QRCodeGenerator from '../pages/QRCodeGenerator';
 import Charts from '../pages/Charts';
 import FileFormatConverter from '../pages/Conversion';
 import FuncConfig from '../pages/FuncConfigs';
-import Crawler from '../pages/Crawler';
 import Algorithms from '../pages/Algorithms';
 import WAudioController from '../pages/WAudioController';
 import SysCommands from '../pages/SysCommands';
@@ -34,7 +33,6 @@ const contentMap: Record<string, JSX.Element> = {
   recorder: <Recorder />,
   qrcode: <QRCodeGenerator />,
   charts: <Charts />,
-  'web-scraper': <Crawler />,
   algorithms: <Algorithms />,
   'audio-control': <WAudioController />,
   'sys-commands':<SysCommands/>,

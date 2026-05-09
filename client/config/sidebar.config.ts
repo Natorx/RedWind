@@ -180,13 +180,6 @@ export const sidebarItems: SidebarItem[] = [
     source: 'coming_soon',
   },
   {
-    id: 'email',
-    label: '基础邮件收发',
-    icon: '📧',
-    order: 24,
-    source: 'coming_soon',
-  },
-  {
     id: 'plugins',
     label: '插件扩展',
     icon: '🧩',
@@ -199,6 +192,13 @@ export const sidebarItems: SidebarItem[] = [
     icon: '🧩',
     order: 26,
     source: 'coming_soon',
+  },
+    {
+    id: 'community',
+    label: '社区',
+    icon: '🏠',
+    order: 27,
+    source: 'incomplete',
   },
 ];
 

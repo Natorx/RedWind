@@ -5,7 +5,7 @@
  * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
  */
 import React, { useState } from 'react';
-import { request } from '../utils/requests';
+import { request } from '../apis/requests';
 
 interface ParamItem {
   key: string;

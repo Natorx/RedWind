@@ -19,9 +19,10 @@ import DrillGround from '../pages/DrillGround';
 import P2PChat from '../pages/Chat_RsP2P';
 import ServerChat from '../pages/Chat_Server';
 import DocReader from '../pages/DocReader';
+import Community from '../pages/Communnity';
 
 const contentMap: Record<string, JSX.Element> = {
-  'start':<StartPage/>,
+  start: <StartPage />,
   'module-config': <FuncConfig />,
   dashboard: <Dashboard />,
   'api-debug': <RequestTool />,
@@ -35,11 +36,12 @@ const contentMap: Record<string, JSX.Element> = {
   charts: <Charts />,
   algorithms: <Algorithms />,
   'audio-control': <WAudioController />,
-  'sys-commands':<SysCommands/>,
-  'drill-ground':<DrillGround/>,
-  'p2p-chat':<P2PChat/>,
-  'server-chat':<ServerChat/>,
-  'doc-reader':<DocReader/>
+  'sys-commands': <SysCommands />,
+  'drill-ground': <DrillGround />,
+  'p2p-chat': <P2PChat />,
+  'server-chat': <ServerChat />,
+  'doc-reader': <DocReader />,
+  community: <Community />,
 };
 export default contentMap;
 

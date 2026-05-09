@@ -18,6 +18,8 @@
 
 #### Bugs
 1. 修复CPU占用是0%的问题（CPU占用需要时间间隔来查看使用率）
+2. utils中UIState切换成最新方案
+3. 修复无法调用pgsql来做业务（AI信息有误），反正Mysql和PG都只能生成表，业务写不了，原因未知
 
 ### 📝In Progress
 #### Level3

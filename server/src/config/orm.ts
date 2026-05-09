@@ -7,7 +7,7 @@ export const TypeORMConfig = new DataSource({
   host: "localhost",
   port: 5432,
   username: "postgres",
-  password: process.env.PG_PASSWORD,
+  password: process.env.PG_PASSWORD || "nn20142026",
   database: "wind_db",
   synchronize: true, // 开发时自动建表，生产环境需修改 migrations
   entities: [Post],

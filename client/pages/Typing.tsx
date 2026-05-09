@@ -9,6 +9,7 @@ import {
 } from '../interface/typing.interface';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
+import Modal from '../components/Modal';
 
 const TypingPractice: React.FC = () => {
   // 状态管理
@@ -441,7 +442,7 @@ const TypingPractice: React.FC = () => {
           {/* 紧凑的内容区域 */}
           <div className="max-w-5xl mx-auto w-full">
             {/* 当前单词区域 - 水平卡片式布局 */}
-            <div className="bg-neutral-900/40 rounded-lg p-6 mb-5">
+            <div className="bg-neutral-900/40 p-6">
               <div className="flex items-end justify-between gap-6">
                 {/* 左侧：当前单词 */}
                 <div className="flex-1">
@@ -470,34 +471,29 @@ const TypingPractice: React.FC = () => {
               </div>
             </div>
 
-            {/* 输入框区域 */}
-            <div className="mb-4">
-              <div className="text-neutral-500 text-xs mb-2 ml-1">输入框</div>
-              <input
-                ref={inputRef}
-                type="text"
-                value={userInput}
-                onChange={handleInputChange}
-                disabled={
-                  completedWords.length === (currentWordSet?.words?.length || 0)
-                }
-                placeholder={
-                  completedWords.length === 0
-                    ? `输入 ${currentWord} (${currentWord?.length || 0} 个字符)`
-                    : '输入上面的单词...'
-                }
-                className="w-full px-5 py-3.5 bg-neutral-900/40 border border-red-500/30 rounded-lg text-neutral-100 text-base font-mono focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/20 transition-all placeholder-neutral-600"
-                autoComplete="off"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck="false"
-              />
-            </div>
+            <input
+              ref={inputRef}
+              type="text"
+              value={userInput}
+              onChange={handleInputChange}
+              disabled={
+                completedWords.length === (currentWordSet?.words?.length || 0)
+              }
+              placeholder={
+                completedWords.length === 0
+                  ? `输入 ${currentWord} (${currentWord?.length || 0} 个字符)`
+                  : '输入上面的单词...'
+              }
+              className="border-t-0 mb-4 w-full px-5 py-3.5 bg-neutral-900/40 border border-red-500/30  text-neutral-100 text-base font-mono focus:outline-none transition-all placeholder-neutral-600"
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+            />
 
             {/* 进度条区域 */}
-            <div className="bg-neutral-900/40 rounded-lg p-4">
+            <div className="bg-neutral-900/40 p-4">
               <div className="flex justify-between items-center text-xs text-neutral-400 mb-2">
-                <span className="tracking-wider">练习进度</span>
                 <span className="font-mono">
                   {completedWords.length} / {currentWordSet?.words?.length || 0}
                 </span>
@@ -608,99 +604,95 @@ const TypingPractice: React.FC = () => {
       </div>
 
       {/* 自定义词汇集模态框 */}
-      {showCustomModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-red-500/20">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent mb-4">
-                创建自定义词汇集
-              </h2>
+      <Modal
+        title="创建自定义词汇集"
+        isOpen={showCustomModal}
+        onClose={() => setShowCustomModal(false)}
+      >
+        <div className="p-6">
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-neutral-300 mb-2">
+              词汇集名称
+            </label>
+            <input
+              type="text"
+              value={newSetName}
+              onChange={(e) => setNewSetName(e.target.value)}
+              placeholder="例如：雅思词汇"
+              className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
+            />
+          </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                  词汇集名称
-                </label>
-                <input
-                  type="text"
-                  value={newSetName}
-                  onChange={(e) => setNewSetName(e.target.value)}
-                  placeholder="例如：雅思词汇"
-                  className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                  单词和释义列表
-                </label>
-                <div className="space-y-3">
-                  {wordMeaningPairs.map((pair, index) => (
-                    <div key={index} className="flex gap-3 items-start">
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          value={pair.word}
-                          onChange={(e) => updateWord(index, e.target.value)}
-                          placeholder="英文单词"
-                          className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
-                        />
-                      </div>
-                      <div className="flex-[2]">
-                        <input
-                          type="text"
-                          value={pair.meaning}
-                          onChange={(e) => updateMeaning(index, e.target.value)}
-                          placeholder="中文释义"
-                          className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
-                        />
-                      </div>
-                      {wordMeaningPairs.length > 1 && (
-                        <button
-                          onClick={() => removeWordMeaningPair(index)}
-                          className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors border border-red-500/30"
-                        >
-                          删除
-                        </button>
-                      )}
-                    </div>
-                  ))}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-neutral-300 mb-2">
+              单词和释义列表
+            </label>
+            <div className="space-y-3">
+              {wordMeaningPairs.map((pair, index) => (
+                <div key={index} className="flex gap-3 items-start">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={pair.word}
+                      onChange={(e) => updateWord(index, e.target.value)}
+                      placeholder="英文单词"
+                      className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
+                    />
+                  </div>
+                  <div className="flex-[2]">
+                    <input
+                      type="text"
+                      value={pair.meaning}
+                      onChange={(e) => updateMeaning(index, e.target.value)}
+                      placeholder="中文释义"
+                      className="w-full px-4 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:border-red-500 text-neutral-200 placeholder-neutral-500"
+                    />
+                  </div>
+                  {wordMeaningPairs.length > 1 && (
+                    <button
+                      onClick={() => removeWordMeaningPair(index)}
+                      className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors border border-red-500/30"
+                    >
+                      删除
+                    </button>
+                  )}
                 </div>
-                <button
-                  onClick={addWordMeaningPair}
-                  className="mt-3 px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm border border-red-500/30"
-                >
-                  + 添加单词
-                </button>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleAddCustomSet}
-                  className="flex-1 px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
-                >
-                  保存
-                </button>
-                <button
-                  onClick={() => {
-                    setShowCustomModal(false);
-                    setNewSetName('');
-                    setWordMeaningPairs([{ word: '', meaning: '' }]);
-                  }}
-                  className="flex-1 px-6 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors border border-red-500/30"
-                >
-                  取消
-                </button>
-              </div>
-
-              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                <p className="text-sm text-neutral-400">
-                  💡 提示：每个单词都会保存到词汇集中，释义会一起保存。
-                </p>
-              </div>
+              ))}
             </div>
+            <button
+              onClick={addWordMeaningPair}
+              className="mt-3 px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm border border-red-500/30"
+            >
+              + 添加单词
+            </button>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleAddCustomSet}
+              className="flex-1 px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
+            >
+              保存
+            </button>
+            <button
+              onClick={() => {
+                setShowCustomModal(false);
+                setNewSetName('');
+                setWordMeaningPairs([{ word: '', meaning: '' }]);
+              }}
+              className="flex-1 px-6 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors border border-red-500/30"
+            >
+              取消
+            </button>
+          </div>
+
+          <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-sm text-neutral-400">
+              💡 提示：每个单词都会保存到词汇集中，释义会一起保存。
+            </p>
           </div>
         </div>
-      )}
+      </Modal>
 
       <style>{`
         @keyframes fade-in {

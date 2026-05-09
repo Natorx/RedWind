@@ -13,7 +13,10 @@ const DocReader: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showIntro, setShowIntro] = useState<boolean>(true);
-  const [fileInfo, setFileInfo] = useState<{ name: string; size: number } | null>(null);
+  const [fileInfo, setFileInfo] = useState<{
+    name: string;
+    size: number;
+  } | null>(null);
 
   // 读取文件（通过路径）
   const readFileFromPath = async (filePath: string) => {
@@ -54,7 +57,14 @@ const DocReader: React.FC = () => {
         {
           name: 'Documents',
           extensions: [
-            'md', 'txt', 'html', 'json', 'csv', 'xml', 'yml', 'yaml',
+            'md',
+            'txt',
+            'html',
+            'json',
+            'csv',
+            'xml',
+            'yml',
+            'yaml',
           ],
         },
       ],
@@ -64,26 +74,9 @@ const DocReader: React.FC = () => {
     }
   };
 
-  // 清除当前文件
-  const handleClear = () => {
-    clearPath();
-  };
-
-  // 点击历史记录项
-  const handleHistorySelect = (filePath: string) => {
-    setPath(filePath); // 自动触发 useEffect 读取
-  };
-
   // 加载动画
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-950 to-neutral-900">
-        <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-neutral-400">正在读取文件...</p>
-        </div>
-      </div>
-    );
+    return <LoadingPage />;
   }
 
   return (
@@ -119,7 +112,7 @@ const DocReader: React.FC = () => {
             </button>
             {path && (
               <button
-                onClick={handleClear}
+                onClick={() => clearPath()}
                 className="flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-lg text-neutral-400 transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -171,7 +164,9 @@ const DocReader: React.FC = () => {
               {history.length > 0 && (
                 <div className="w-80 flex flex-col">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-red-300">最近打开</span>
+                    <span className="text-sm font-semibold text-red-300">
+                      最近打开
+                    </span>
                     <button
                       onClick={clearHistory}
                       className="px-2 py-1 cursor-pointer rounded-md bg-#3A1614 hover:bg-#3A1404 text-xs text-neutral-500 text-red-400 transition-colors"
@@ -182,18 +177,26 @@ const DocReader: React.FC = () => {
                   <div className="flex-1 overflow-y-auto max-h-80 space-y-2">
                     {history.map((itemPath, index) => {
                       const fileName = itemPath.split(/[\\/]/).pop() || '';
-                      const dir = itemPath.substring(0, itemPath.length - fileName.length).replace(/[/\\]$/, '') || '/';
-                      const displayDir = dir.length > 35 ? dir.slice(0, 32) + '...' : dir;
+                      const dir =
+                        itemPath
+                          .substring(0, itemPath.length - fileName.length)
+                          .replace(/[/\\]$/, '') || '/';
+                      const displayDir =
+                        dir.length > 35 ? dir.slice(0, 32) + '...' : dir;
                       return (
                         <button
                           key={index}
-                          onClick={() => handleHistorySelect(itemPath)}
+                          onClick={() => setPath(itemPath)}
                           className="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 bg-red-500/10 hover:bg-red-500/8 cursor-pointer transition-colors group"
                         >
                           <FileText className="w-4 h-4 text-red-400 shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-red-200 truncate">{fileName}</div>
-                            <div className="text-xs text-neutral-500 truncate">{displayDir}</div>
+                            <div className="text-sm font-medium text-red-200 truncate">
+                              {fileName}
+                            </div>
+                            <div className="text-xs text-neutral-500 truncate">
+                              {displayDir}
+                            </div>
                           </div>
                         </button>
                       );
@@ -381,6 +384,17 @@ const DocReader: React.FC = () => {
         .animate-scan-left { animation: scan-left 1.25s ease-in-out infinite; }
         .animate-pulse-glow { animation: pulse-glow 1.25s ease-in-out infinite; }
       `}</style>
+    </div>
+  );
+};
+
+const LoadingPage: React.FC = () => {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-950 to-neutral-900">
+      <div className="text-center">
+        <div className="inline-block w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-neutral-400">正在读取文件...</p>
+      </div>
     </div>
   );
 };

@@ -134,13 +134,6 @@ export const sidebarItems: SidebarItem[] = [
 
   // ========== 网络功能 (coming_soon & incomplete, order: 17-22) ==========
   {
-    id: 'network-scanner',
-    label: '局域网扫描',
-    icon: '📡',
-    order: 17,
-    source: 'coming_soon',
-  },
-  {
     id: 'p2p-chat',
     label: 'P2P聊天室',
     icon: '💬',

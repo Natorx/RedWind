@@ -16,7 +16,6 @@ import Algorithms from '../pages/Algorithms';
 import WAudioController from '../pages/WAudioController';
 import SysCommands from '../pages/SysCommands';
 import StartPage from '../pages/Start';
-import NetworkScanner from '../pages/NetScanner';
 import DrillGround from '../pages/DrillGround';
 import P2PChat from '../pages/Chat_RsP2P';
 import ServerChat from '../pages/Chat_Server';
@@ -39,7 +38,6 @@ const contentMap: Record<string, JSX.Element> = {
   algorithms: <Algorithms />,
   'audio-control': <WAudioController />,
   'sys-commands':<SysCommands/>,
-  'network-scanner': <NetworkScanner/>,
   'drill-ground':<DrillGround/>,
   'p2p-chat':<P2PChat/>,
   'server-chat':<ServerChat/>,

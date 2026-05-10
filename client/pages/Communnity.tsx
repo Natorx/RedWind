@@ -1,13 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { req_to_server } from '../apis/requests';
-
-interface Post {
-  id?: number;
-  title: string;
-  content: string;
-  tag?: string;
-  createdAt?: string;
-}
+import React, { useState, useEffect, useRef } from 'react';
+import { Post } from '../interface/post';
+import { postApi } from '../apis/post';
 
 const SkeletonPost = () => (
   <div className="bg-neutral-900/50 border border-red-500/10 rounded-xl p-5 animate-pulse space-y-3">
@@ -30,10 +23,14 @@ const Community: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
+  // 图片相关状态
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const res = await req_to_server.get<Post[]>('/post/');
+      const res = await postApi.get();
       setPosts(res.data);
     } catch {
       setMessage('获取帖子失败');
@@ -53,22 +50,51 @@ const Community: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // 选择文件
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    // 限制最多6张（可选）
+    const remaining = 6 - selectedFiles.length;
+    if (files.length > remaining) {
+      setMessage(`最多可选择 ${6 - selectedFiles.length} 张图片`);
+      return;
+    }
+    setSelectedFiles((prev) => [...prev, ...files]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // 删除已选择的某个文件
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // 提交表单
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) {
       setMessage('标题不能为空');
       return;
     }
+
+    const formData = new FormData();
+    formData.append('title', form.title);
+    formData.append('content', form.content);
+    if (form.tag) formData.append('tag', form.tag);
+    selectedFiles.forEach((file) => {
+      formData.append('images', file);
+    });
+
     try {
       if (editingId !== null) {
-        await req_to_server.put(`/post/edit/${editingId}`, form);
+        await postApi.edit(editingId, formData);
         setMessage('帖子更新成功');
       } else {
-        await req_to_server.post('/post/setPosts', form);
+        await postApi.set(formData);
         setMessage('帖子添加成功');
       }
       setForm({ title: '', content: '', tag: '' });
       setEditingId(null);
+      setSelectedFiles([]);
       fetchPosts();
     } catch {
       setMessage('操作失败');
@@ -78,17 +104,19 @@ const Community: React.FC = () => {
   const handleEdit = (post: Post) => {
     setForm({ title: post.title, content: post.content, tag: post.tag || '' });
     setEditingId(post.id!);
+    setSelectedFiles([]);
   };
 
   const handleCancelEdit = () => {
     setForm({ title: '', content: '', tag: '' });
     setEditingId(null);
+    setSelectedFiles([]);
   };
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('确定删除该帖子吗？')) return;
     try {
-      await req_to_server.delete(`/post/remove/${id}`);
+      await postApi.delete(id);
       setMessage('删除成功');
       fetchPosts();
     } catch {
@@ -103,10 +131,24 @@ const Community: React.FC = () => {
     }
   }, [message]);
 
+  // 根据图片数量返回合适的 CSS 类名
+  const getImageContainerClass = (count: number) => {
+    if (count === 1) return 'grid grid-cols-1 gap-2';
+    if (count === 2) return 'grid grid-cols-2 gap-2';
+    if (count <= 4) return 'grid grid-cols-2 gap-2';
+    return 'grid grid-cols-3 gap-2';
+  };
+
+  const getImageSizeClass = (count: number) => {
+    if (count === 1) return 'w-full h-48 object-cover rounded';
+    if (count === 2) return 'w-full h-32 object-cover rounded';
+    return 'w-full h-24 object-cover rounded';
+  };
+
   return (
     <div className="min-h-screen flex justify-between flex-col bg-gradient-to-br from-red-950 to-neutral-900 text-neutral-100 relative">
-      {/* 主内容区 —— 唯一改动：添加 h-screen overflow-y-auto pb-[120px] */}
-      <div className="w-full mx-auto p-6 h-screen overflow-y-auto scroll-none pb-[120px]">
+      {/* 帖子列表区域 */}
+      <div className="w-full mx-auto p-6 h-screen overflow-y-auto scroll-none pb-[140px]">
         {message && (
           <div className="mb-3 px-3 py-1.5 bg-red-500/20 border border-red-500/30 rounded text-sm text-center">
             {message}
@@ -121,89 +163,86 @@ const Community: React.FC = () => {
               暂无帖子，发布第一条吧
             </p>
           ) : (
-            posts.map((post) => (
-              <div
-                key={post.id}
-                className="group relative bg-neutral-900/50 border border-red-500/10 rounded-xl p-5 hover:border-red-400/40 transition-all duration-300 shadow-sm hover:shadow-red-500/10"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex max-w-[75%]">
-                    <h3 className="text-lg font-semibold text-red-200 tracking-wide ">
-                      {post.title}
-                    </h3>
-                    {post.tag && (
-                      <span className="inline-block ml-4 mb-2 px-2 py-0.5 text-xs rounded-full bg-red-500/10 text-red-300 border border-red-500/20">
-                        {post.tag}
+            posts.map((post) => {
+              const imageCount = post.images?.length || 0;
+              return (
+                <div
+                  key={post.id}
+                  className="group relative bg-neutral-900/50 border border-red-500/10 rounded-xl p-5 hover:border-red-400/40 transition-all duration-300 shadow-sm hover:shadow-red-500/10"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex max-w-[75%]">
+                      <h3 className="text-lg font-semibold text-red-200 tracking-wide">
+                        {post.title}
+                      </h3>
+                      {post.tag && (
+                        <span className="inline-block ml-4 mb-2 px-2 py-0.5 text-xs rounded-full bg-red-500/10 text-red-300 border border-red-500/20">
+                          {post.tag}
+                        </span>
+                      )}
+                    </div>
+                    {post.createdAt && (
+                      <span className="text-[11px] text-neutral-500 whitespace-nowrap">
+                        {new Date(post.createdAt).toLocaleDateString()}
                       </span>
                     )}
                   </div>
-                  {post.createdAt && (
-                    <span className="text-[11px] text-neutral-500 whitespace-nowrap">
-                      {new Date(post.createdAt).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
 
-                <p className="text-neutral-300 leading-relaxed text-sm break-words">
-                  {post.content}
-                </p>
-                <div className="absolute right-3 bottom-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={() => handleEdit(post)}
-                    className="p-1.5 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 hover:text-blue-200 transition-colors"
-                    title="编辑"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
+                  <p className="text-neutral-300 leading-relaxed text-sm break-words">
+                    {post.content}
+                  </p>
+
+                  {/* 图片展示：适应1-6张 */}
+                  {imageCount > 0 && (
+                    <div className={`mt-3 ${getImageContainerClass(imageCount)}`}>
+                      {post.images!.map((url, idx) => (
+                        <img
+                          key={idx}
+                          src={url}
+                          alt={`img-${idx}`}
+                          className={getImageSizeClass(imageCount) + ' border border-red-500/10'}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="absolute right-3 bottom-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button
+                      onClick={() => handleEdit(post)}
+                      className="p-1.5 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 hover:text-blue-200 transition-colors"
+                      title="编辑"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L13 15H11v-2l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(post.id!)}
-                    className="p-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-200 transition-colors"
-                    title="删除"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L13 15H11v-2l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(post.id!)}
+                      className="p-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-200 transition-colors"
+                      title="删除"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
 
-      {/* 底部输入栏 —— 完全不动，保持您的原始结构 */}
+      {/* 底部输入栏 */}
       <div
-        className="absolute bottom-0 left-0 right-0 z-50 bg-neutral-900/90 backdrop-blur-md border-t border-red-500/20 shadow-2xl h-15% max-h-120px overflow-y-auto px-4 py-3"
+        className="absolute bottom-0 left-0 right-0 z-50 bg-neutral-900/90 backdrop-blur-md border-t border-red-500/20 shadow-2xl h-auto overflow-y-auto px-4 py-3"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0.5rem)' }}
       >
-        <form
-          onSubmit={handleSubmit}
-          className="max-w-4xl mx-auto h-full flex flex-col gap-2"
-        >
+        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex flex-col gap-2">
+          {/* 标签和标题 */}
           <div className="grid grid-cols-12 gap-2 shrink-0">
             <div className="col-span-3">
               <input
@@ -226,7 +265,9 @@ const Community: React.FC = () => {
               />
             </div>
           </div>
-          <div className="flex gap-2 items-center shrink-0">
+
+          {/* 内容输入 + 操作按钮 */}
+          <div className="flex gap-2 items-center shrink-0 flex-wrap">
             <input
               type="text"
               name="content"
@@ -249,6 +290,43 @@ const Community: React.FC = () => {
               >
                 取消
               </button>
+            )}
+          </div>
+
+          {/* 图片选择 */}
+          <div className="flex items-center gap-2 mt-1">
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-2 py-1 text-xs bg-neutral-800 border border-red-500/20 rounded hover:bg-neutral-700"
+            >
+              选择图片
+            </button>
+
+            {selectedFiles.length > 0 && (
+              <span className="text-xs text-neutral-400">
+                已选择 {selectedFiles.length} 个文件
+                {selectedFiles.map((file, idx) => (
+                  <span key={idx} className="ml-1 inline-flex items-center gap-1 bg-neutral-800 px-1.5 py-0.5 rounded">
+                    <span className="max-w-[80px] truncate">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="text-red-300 hover:text-red-100"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </span>
             )}
           </div>
         </form>

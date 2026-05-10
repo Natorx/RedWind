@@ -53,10 +53,10 @@ const Community: React.FC = () => {
   // 选择文件
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    // 限制最多6张（可选）
+    // 限制最多6张
     const remaining = 6 - selectedFiles.length;
     if (files.length > remaining) {
-      setMessage(`最多可选择 ${6 - selectedFiles.length} 张图片`);
+      setMessage(`最多可选择 ${remaining} 张图片`);
       return;
     }
     setSelectedFiles((prev) => [...prev, ...files]);
@@ -131,7 +131,7 @@ const Community: React.FC = () => {
     }
   }, [message]);
 
-  // 根据图片数量返回合适的 CSS 类名
+  // 图片布局函数
   const getImageContainerClass = (count: number) => {
     if (count === 1) return 'grid grid-cols-1 gap-2';
     if (count === 2) return 'grid grid-cols-2 gap-2';
@@ -146,101 +146,113 @@ const Community: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-between flex-col bg-gradient-to-br from-red-950 to-neutral-900 text-neutral-100 relative">
-      {/* 帖子列表区域 */}
-      <div className="w-full mx-auto p-6 h-screen overflow-y-auto scroll-none pb-[140px]">
-        {message && (
-          <div className="mb-3 px-3 py-1.5 bg-red-500/20 border border-red-500/30 rounded text-sm text-center">
-            {message}
-          </div>
-        )}
+    <div className="h-screen flex flex-col bg-gradient-to-br from-red-950 to-neutral-900 text-neutral-100">
+      {/* 消息提示（浮动） */}
+      {message && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded text-sm text-center">
+          {message}
+        </div>
+      )}
 
-        <div className="space-y-4">
-          {loading ? (
-            Array.from({ length: 3 }).map((_, i) => <SkeletonPost key={i} />)
-          ) : posts.length === 0 ? (
-            <p className="text-center text-neutral-500 text-sm">
-              暂无帖子，发布第一条吧
-            </p>
-          ) : (
-            posts.map((post) => {
-              const imageCount = post.images?.length || 0;
-              return (
-                <div
-                  key={post.id}
-                  className="group relative bg-neutral-900/50 border border-red-500/10 rounded-xl p-5 hover:border-red-400/40 transition-all duration-300 shadow-sm hover:shadow-red-500/10"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex max-w-[75%]">
-                      <h3 className="text-lg font-semibold text-red-200 tracking-wide">
-                        {post.title}
-                      </h3>
-                      {post.tag && (
-                        <span className="inline-block ml-4 mb-2 px-2 py-0.5 text-xs rounded-full bg-red-500/10 text-red-300 border border-red-500/20">
-                          {post.tag}
+      {/* 上部展示区：占满剩余高度，可滚动 */}
+      <div className="flex-1 overflow-y-auto scroll-none p-6">
+        <div className="flex justify-around items-start gap-2">
+          {/* 左栏：帖子列表（可滚动） */}
+          <div className="w-70% space-y-4">
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => <SkeletonPost key={i} />)
+            ) : posts.length === 0 ? (
+              <p className="text-center text-neutral-500 text-sm">
+                暂无帖子，发布第一条吧
+              </p>
+            ) : (
+              posts.map((post) => {
+                const imageCount = post.images?.length || 0;
+                return (
+                  <div
+                    key={post.id}
+                    className="group relative bg-neutral-900/50 border border-red-500/10 rounded-xl p-5 hover:border-red-400/40 transition-all duration-300 shadow-sm hover:shadow-red-500/10"
+                  >
+                    {/* 标题、标签、日期 */}
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex max-w-[75%]">
+                        <h3 className="text-lg font-semibold text-red-200 tracking-wide">
+                          {post.title}
+                        </h3>
+                        {post.tag && (
+                          <span className="inline-block ml-4 mb-2 px-2 py-0.5 text-xs rounded-full bg-red-500/10 text-red-300 border border-red-500/20">
+                            {post.tag}
+                          </span>
+                        )}
+                      </div>
+                      {post.createdAt && (
+                        <span className="text-[14px] font-bold text-neutral-500 whitespace-nowrap">
+                          {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                       )}
                     </div>
-                    {post.createdAt && (
-                      <span className="text-[11px] text-neutral-500 whitespace-nowrap">
-                        {new Date(post.createdAt).toLocaleDateString()}
-                      </span>
+
+                    <p className="text-neutral-300 leading-relaxed text-sm break-words">
+                      {post.content}
+                    </p>
+
+                    {/* 图片展示 */}
+                    {imageCount > 0 && (
+                      <div className={`mt-3 ${getImageContainerClass(imageCount)}`}>
+                        {post.images!.map((url, idx) => (
+                          <img
+                            key={idx}
+                            src={url}
+                            alt={`img-${idx}`}
+                            className={getImageSizeClass(imageCount) + ' border border-red-500/10'}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        ))}
+                      </div>
                     )}
-                  </div>
 
-                  <p className="text-neutral-300 leading-relaxed text-sm break-words">
-                    {post.content}
-                  </p>
-
-                  {/* 图片展示：适应1-6张 */}
-                  {imageCount > 0 && (
-                    <div className={`mt-3 ${getImageContainerClass(imageCount)}`}>
-                      {post.images!.map((url, idx) => (
-                        <img
-                          key={idx}
-                          src={url}
-                          alt={`img-${idx}`}
-                          className={getImageSizeClass(imageCount) + ' border border-red-500/10'}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      ))}
+                    {/* 编辑/删除按钮 */}
+                    <div className="absolute right-3 bottom-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <button
+                        onClick={() => handleEdit(post)}
+                        className="p-1.5 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 hover:text-blue-200 transition-colors"
+                        title="编辑"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L13 15H11v-2l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post.id!)}
+                        className="p-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-200 transition-colors"
+                        title="删除"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
-                  )}
-
-                  <div className="absolute right-3 bottom-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button
-                      onClick={() => handleEdit(post)}
-                      className="p-1.5 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 hover:text-blue-200 transition-colors"
-                      title="编辑"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L13 15H11v-2l8.586-8.586z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(post.id!)}
-                      className="p-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-200 transition-colors"
-                      title="删除"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
+          </div>
+
+          {/* 右栏：固定区域（示例） */}
+          <div className="w-30% sticky top-0">
+            {/* 右侧内容可自定义 */}
+            <div className="bg-neutral-800/50 rounded-xl p-4 border border-red-500/10">
+              <h2 className="text-red-200 font-semibold mb-2">右侧面板</h2>
+              <p className="text-neutral-400 text-sm">此处可展示其他信息，固定不动。</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 底部输入栏 */}
-      <div
-        className="absolute bottom-0 left-0 right-0 z-50 bg-neutral-900/90 backdrop-blur-md border-t border-red-500/20 shadow-2xl h-auto overflow-y-auto px-4 py-3"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0.5rem)' }}
-      >
+      {/* 底部输入栏：始终固定在底部 */}
+      <div className="bg-neutral-900/90 backdrop-blur-md border-t border-red-500/20 shadow-2xl px-4 py-3">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex flex-col gap-2">
           {/* 标签和标题 */}
           <div className="grid grid-cols-12 gap-2 shrink-0">
@@ -251,7 +263,7 @@ const Community: React.FC = () => {
                 value={form.tag || ''}
                 onChange={handleInputChange}
                 placeholder="标签"
-                className="w-full px-3 py-1.5 text-sm bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
+                className="w-full px-3 py-1.5 text-sm text-gray bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
               />
             </div>
             <div className="col-span-9">
@@ -261,7 +273,7 @@ const Community: React.FC = () => {
                 value={form.title}
                 onChange={handleInputChange}
                 placeholder="输入帖子标题"
-                className="w-full px-3 py-1.5 text-sm bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
+                className="w-full px-3 py-1.5 text-sm text-gray bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
               />
             </div>
           </div>
@@ -274,11 +286,11 @@ const Community: React.FC = () => {
               value={form.content}
               onChange={handleInputChange}
               placeholder="写点什么…"
-              className="flex-1 min-w-0 px-3 py-1.5 text-sm bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
+              className="flex-1 min-w-0 px-3 py-1.5 text-sm text-gray bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
             />
             <button
               type="submit"
-              className="px-4 py-1.5 text-sm bg-gradient-to-r from-red-500 to-red-700 rounded hover:from-red-600 hover:to-red-800 transition-all shadow whitespace-nowrap shrink-0"
+              className="px-4 py-1.5 text-sm text-white cursor-pointer bg-gradient-to-r from-red-500 to-red-700 rounded hover:from-red-600 hover:to-red-800 transition-all shadow whitespace-nowrap shrink-0"
             >
               {editingId ? '保存' : '发布'}
             </button>
@@ -306,7 +318,7 @@ const Community: React.FC = () => {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="px-2 py-1 text-xs bg-neutral-800 border border-red-500/20 rounded hover:bg-neutral-700"
+              className="px-2 py-1 text-xs text-gray bg-neutral-800 border border-red-500/20 rounded hover:bg-neutral-700"
             >
               选择图片
             </button>

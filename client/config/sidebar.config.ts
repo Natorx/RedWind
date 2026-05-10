@@ -198,7 +198,7 @@ export const sidebarItems: SidebarItem[] = [
     label: '社区',
     icon: '🏠',
     order: 27,
-    source: 'incomplete',
+    source: 'server',
   },
 ];
 

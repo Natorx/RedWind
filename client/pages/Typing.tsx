@@ -6,7 +6,7 @@ import {
   TypingStats,
   WordSet,
   WordItem,
-} from '../interface/typing.interface';
+} from '../interface/typing';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 import Modal from '../components/Modal';

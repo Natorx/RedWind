@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { server_chat_addr, server_port } from '../config/api.config';
+import { server_api } from '../config/api.config';
 
 const request = axios.create({
   timeout: 3000,
@@ -28,7 +28,7 @@ request.interceptors.response.use(
 );
 
 const req_to_server = axios.create({
-  baseURL: `http://${server_chat_addr}:${server_port}`,
+  baseURL: server_api,
   headers: {
     'Content-Type': 'application/json',
   },

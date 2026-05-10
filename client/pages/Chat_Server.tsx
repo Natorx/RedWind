@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { server_chat_addr } from '../config/api.config';
 import useAppStore from '../stores/appStore';
+import { server_api } from '../config/api.config';
 
 interface ChatMessage {
   username: string;
@@ -119,7 +119,7 @@ const ServerChat: React.FC = () => {
   useEffect(() => {
     if (!username) return;
 
-    const socketInstance = io(server_chat_addr, {
+    const socketInstance = io(server_api, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
     });

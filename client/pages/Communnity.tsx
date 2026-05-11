@@ -27,6 +27,9 @@ const Community: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 图片放大查看
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const fetchPosts = async () => {
     setLoading(true);
     try {
@@ -154,6 +157,33 @@ const Community: React.FC = () => {
         </div>
       )}
 
+      {/* 图片放大查看弹窗 */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={selectedImage}
+              alt="large view"
+              className="max-w-full max-h-[90vh] object-contain rounded"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 text-white bg-black/50 rounded-full p-1 hover:bg-black/70 transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 上部展示区：占满剩余高度，可滚动 */}
       <div className="flex-1 overflow-y-auto scroll-none p-6">
         <div className="flex justify-around items-start gap-2">
@@ -204,7 +234,8 @@ const Community: React.FC = () => {
                             key={idx}
                             src={url}
                             alt={`img-${idx}`}
-                            className={getImageSizeClass(imageCount) + ' border border-red-500/10'}
+                            className={getImageSizeClass(imageCount) + ' border border-red-500/10 cursor-pointer hover:opacity-80 transition'}
+                            onClick={() => setSelectedImage(url)}
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}

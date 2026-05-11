@@ -4544,7 +4544,7 @@ dependencies = [
 
 [[package]]
 name = "red-wind"
-version = "0.3.22"
+version = "0.3.24"
 dependencies = [
  "chrono",
  "encoding",

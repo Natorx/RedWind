@@ -27,7 +27,216 @@ interface FileInfo {
   file: File;
 }
 
-const FileFormatConverter: React.FC = () => {
+const FileHandler:React.FC = () => {
+  return(
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 p-4 md:p-8">
+      <Conversion/>
+      <JsonHandler/>
+    </div>
+  )
+}
+
+interface Group {
+  keys: string[];
+  rows: Record<string, any>[];
+  selectedKeys: string[];
+}
+
+const JsonHandler: React.FC = () => {
+  const [groups, setGroups] = useState<Group[]>([]);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const json = JSON.parse(text);
+        if (!Array.isArray(json)) {
+          alert('请上传一个 JSON 数组文件（例如 [{"a":1}, {"b":2}]）');
+          return;
+        }
+        const rawGroups = groupByStructure(json);
+        const processedGroups = rawGroups.map((g) => ({
+          ...g,
+          selectedKeys: g.keys.slice(0, 3),
+        }));
+        setGroups(processedGroups);
+      } catch {
+        alert('JSON 解析失败，请检查文件格式');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const groupByStructure = (arr: any[]): { keys: string[]; rows: Record<string, any>[] }[] => {
+    const map = new Map<string, Record<string, any>[]>();
+    for (const obj of arr) {
+      if (typeof obj !== 'object' || obj === null) continue;
+      const sortedKeys = Object.keys(obj).sort();
+      const keyStr = sortedKeys.join(',');
+      if (!map.has(keyStr)) map.set(keyStr, []);
+      map.get(keyStr)!.push(obj);
+    }
+    const groups: { keys: string[]; rows: Record<string, any>[] }[] = [];
+    for (const [keyStr, rows] of map.entries()) {
+      groups.push({ keys: keyStr.split(','), rows });
+    }
+    return groups;
+  };
+
+  const handleKeyToggle = (groupIndex: number, key: string) => {
+    setGroups((prev) => {
+      const newGroups = prev.map((g) => ({ ...g }));
+      const group = newGroups[groupIndex];
+      const isSelected = group.selectedKeys.includes(key);
+      if (isSelected) {
+        group.selectedKeys = group.selectedKeys.filter((k) => k !== key);
+      } else {
+        const newSelected: string[] = [];
+        for (const k of group.keys) {
+          if (k === key || group.selectedKeys.includes(k)) {
+            newSelected.push(k);
+          }
+        }
+        group.selectedKeys = newSelected;
+      }
+      newGroups[groupIndex] = group;
+      return newGroups;
+    });
+  };
+
+  const handleExport = () => {
+    const exportData = groups.map((group) => ({
+      keys: group.selectedKeys,
+      rows: group.rows.map((row) => {
+        const filtered: Record<string, any> = {};
+        group.selectedKeys.forEach((key) => {
+          filtered[key] = row[key];
+        });
+        return filtered;
+      }),
+    }));
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'filtered_data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* 上传卡片 */}
+      <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
+        <div
+          className="border-2 border-dashed border-red-500/30 rounded-xl m-6 p-8 text-center cursor-pointer hover:border-red-500/60 hover:bg-red-500/5 transition-all duration-300"
+          onClick={() => document.getElementById('json-input')?.click()}
+        >
+          <h3 className="text-lg font-semibold text-neutral-200 mb-2">
+            上传 JSON 文件
+          </h3>
+          <p className="text-neutral-400 text-sm mb-4">
+            支持 .json 格式（JSON 数组）
+          </p>
+          <button className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25">
+            选择文件
+          </button>
+          <input
+            id="json-input"
+            type="file"
+            accept=".json"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+        </div>
+      </div>
+
+      {/* 数据展示区 */}
+      {groups.length === 0 && (
+        <div className="text-center py-12 text-neutral-500">
+          <p>请上传一个 JSON 数组文件</p>
+        </div>
+      )}
+
+      {groups.map((group, groupIdx) => (
+        <div key={groupIdx} className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-neutral-200 mb-4">
+              结构 {groupIdx + 1}（共 {group.rows.length} 条记录）
+            </h3>
+
+            {/* 列勾选框 */}
+            <div className="mb-4 flex flex-wrap gap-2">
+              {group.keys.map((key) => (
+                <label key={key} className="flex items-center space-x-1 cursor-pointer text-neutral-300">
+                  <input
+                    type="checkbox"
+                    checked={group.selectedKeys.includes(key)}
+                    onChange={() => handleKeyToggle(groupIdx, key)}
+                    className="accent-red-500"
+                  />
+                  <span className="text-sm">{key}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* 表格容器 */}
+            <div className="max-h-48 overflow-y-auto custom-scrollbar border border-red-500/20 rounded-lg">
+              <table className="w-full border-collapse">
+                <thead className="sticky top-0 bg-neutral-800 z-10">
+                  <tr>
+                    {group.selectedKeys.map((key) => (
+                      <th
+                        key={key}
+                        className="px-3 py-2 text-left text-sm font-semibold text-neutral-300 border-b border-red-500/20 bg-neutral-800"
+                      >
+                        {key}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.rows.map((row, rowIdx) => (
+                    <tr
+                      key={rowIdx}
+                      className="transition-colors hover:bg-red-500/5 even:bg-neutral-800/30"
+                    >
+                      {group.selectedKeys.map((key) => (
+                        <td
+                          key={key}
+                          className="px-3 py-2 text-sm text-neutral-300 border-b border-red-500/10"
+                        >
+                          {row[key] !== undefined ? String(row[key]) : ''}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {groups.length > 0 && (
+        <div className="text-center">
+          <button
+            onClick={handleExport}
+            className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25 font-medium"
+          >
+            导出筛选后的数据（JSON）
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Conversion: React.FC = () => {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [selectedFile, setSelectedFile] = useState<FileInfo | null>(null);
   const [conversionType, setConversionType] = useState<string>('');
@@ -193,7 +402,7 @@ const handleDownload = async (url: string, filename: string) => {
   };
 
 return (
-    <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 p-4 md:p-8">
+    <div>
       <div className="max-w-6xl mx-auto">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -435,4 +644,4 @@ return (
   );
 };
 
-export default FileFormatConverter;
+export default FileHandler;

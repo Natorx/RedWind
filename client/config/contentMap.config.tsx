@@ -9,7 +9,6 @@ import TypingPractice from '../pages/Typing';
 import Recorder from '../pages/Recorder';
 import QRCodeGenerator from '../pages/QRCodeGenerator';
 import Charts from '../pages/Charts';
-import FileFormatConverter from '../pages/Conversion';
 import FuncConfig from '../pages/FuncConfigs';
 import Algorithms from '../pages/Algorithms';
 import WAudioController from '../pages/WAudioController';
@@ -20,13 +19,14 @@ import P2PChat from '../pages/Chat_RsP2P';
 import ServerChat from '../pages/Chat_Server';
 import DocReader from '../pages/DocReader';
 import Community from '../pages/Communnity';
+import FileHandler from '../pages/Filehandler';
 
 const contentMap: Record<string, JSX.Element> = {
   start: <StartPage />,
   'module-config': <FuncConfig />,
   dashboard: <Dashboard />,
   'api-debug': <RequestTool />,
-  conversion: <FileFormatConverter />,
+  'file-hander': <FileHandler />,
   chatbox: <AIChat />,
   'process-manager': <SysInfo />,
   'typing-practice': <TypingPractice />,

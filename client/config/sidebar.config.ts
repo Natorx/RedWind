@@ -86,8 +86,8 @@ export const sidebarItems: SidebarItem[] = [
     source: 'local',
   },
   {
-    id: 'conversion',
-    label: '文件格式转换',
+    id: 'file-hander',
+    label: '文件处理',
     icon: '🔄',
     order: 10,
     source: 'local',

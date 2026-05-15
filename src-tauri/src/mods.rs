@@ -9,4 +9,4 @@ pub mod typing;
 pub mod open;
 pub mod p2p_chat;
 pub mod docs;
-pub mod file_handle;
+pub mod file_handler;

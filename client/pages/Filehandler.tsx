@@ -4,6 +4,7 @@ import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 import { invoke } from '@tauri-apps/api/core';
 import { CONVERSION_OPTIONS, SUPPORTED_FORMATS } from '../config/data/conversion';
+import * as XLSX from 'xlsx';
 
 
 // 文件类型图标映射
@@ -45,17 +46,27 @@ interface Group {
 const JsonHandler: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
 
+  /** 格式化单元格值：对象显示为 JSON 字符串 */
+  const formatCellValue = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') {
+      const str = JSON.stringify(value, null, 2);
+      return str.length > 200 ? str.slice(0, 200) + '...' : str;
+    }
+    return String(value);
+  };
+
+  /** 文件上传（不变） */
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
         const json = JSON.parse(text);
         if (!Array.isArray(json)) {
-          alert('请上传一个 JSON 数组文件（例如 [{"a":1}, {"b":2}]）');
+          alert('请上传一个 JSON 数组文件');
           return;
         }
         const rawGroups = groupByStructure(json);
@@ -71,6 +82,7 @@ const JsonHandler: React.FC = () => {
     reader.readAsText(file);
   };
 
+  /** 分组逻辑（不变） */
   const groupByStructure = (arr: any[]): { keys: string[]; rows: Record<string, any>[] }[] => {
     const map = new Map<string, Record<string, any>[]>();
     for (const obj of arr) {
@@ -87,6 +99,7 @@ const JsonHandler: React.FC = () => {
     return groups;
   };
 
+  /** 列勾选切换（不变） */
   const handleKeyToggle = (groupIndex: number, key: string) => {
     setGroups((prev) => {
       const newGroups = prev.map((g) => ({ ...g }));
@@ -108,110 +121,159 @@ const JsonHandler: React.FC = () => {
     });
   };
 
-  const handleExport = () => {
+  // ========== JSON 导出（原有） ==========
+  const handleExportGroup = async (groupIndex: number) => {
+    const group = groups[groupIndex];
+    if (!group || group.selectedKeys.length === 0) return;
+    const exportData = {
+      keys: group.selectedKeys,
+      rows: group.rows.map((row) => {
+        const filtered: Record<string, any> = {};
+        group.selectedKeys.forEach((key) => (filtered[key] = row[key]));
+        return filtered;
+      }),
+    };
+    try {
+      await invoke('export_json', {
+        content: JSON.stringify(exportData, null, 2),
+        defaultName: `group_${groupIndex + 1}.json`,
+      });
+    } catch (e) {
+      console.error('JSON 导出失败:', e);
+    }
+  };
+
+  const handleExportAll = async () => {
     const exportData = groups.map((group) => ({
       keys: group.selectedKeys,
       rows: group.rows.map((row) => {
         const filtered: Record<string, any> = {};
-        group.selectedKeys.forEach((key) => {
-          filtered[key] = row[key];
-        });
+        group.selectedKeys.forEach((key) => (filtered[key] = row[key]));
         return filtered;
       }),
     }));
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'filtered_data.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      await invoke('export_json', {
+        content: JSON.stringify(exportData, null, 2),
+        defaultName: 'all_groups.json',
+      });
+    } catch (e) {
+      console.error('JSON 导出失败:', e);
+    }
+  };
+
+  // ========== Excel 导出（新增） ==========
+  const handleExportGroupXlsx = async (groupIndex: number) => {
+    const group = groups[groupIndex];
+    if (!group || group.selectedKeys.length === 0) return;
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(group.rows, { header: group.selectedKeys });
+    XLSX.utils.book_append_sheet(wb, ws, `结构${groupIndex + 1}`);
+
+    const wbArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    try {
+      await invoke('save_file_bytes', {
+        data: Array.from(new Uint8Array(wbArray)),
+        defaultName: `group_${groupIndex + 1}.xlsx`,
+      });
+    } catch (e) {
+      console.error('Excel 导出失败:', e);
+    }
+  };
+
+  const handleExportAllXlsx = async () => {
+    if (groups.length === 0) return;
+
+    const wb = XLSX.utils.book_new();
+    groups.forEach((group, idx) => {
+      const ws = XLSX.utils.json_to_sheet(group.rows, { header: group.selectedKeys });
+      XLSX.utils.book_append_sheet(wb, ws, `结构${idx + 1}`);
+    });
+
+    const wbArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    try {
+      await invoke('save_file_bytes', {
+        data: Array.from(new Uint8Array(wbArray)),
+        defaultName: 'all_groups.xlsx',
+      });
+    } catch (e) {
+      console.error('Excel 导出失败:', e);
+    }
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* 上传卡片 */}
+      {/* 上传卡片（不变） */}
       <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
         <div
           className="border-2 border-dashed border-red-500/30 rounded-xl m-6 p-8 text-center cursor-pointer hover:border-red-500/60 hover:bg-red-500/5 transition-all duration-300"
           onClick={() => document.getElementById('json-input')?.click()}
         >
-          <h3 className="text-lg font-semibold text-neutral-200 mb-2">
-            上传 JSON 文件
-          </h3>
-          <p className="text-neutral-400 text-sm mb-4">
-            支持 .json 格式（JSON 数组）
-          </p>
-          <button className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25">
-            选择文件
-          </button>
-          <input
-            id="json-input"
-            type="file"
-            accept=".json"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
+          <h3 className="text-lg font-semibold text-neutral-200 mb-2">上传 JSON 文件</h3>
+          <p className="text-neutral-400 text-sm mb-4">支持 .json 格式（JSON 数组）</p>
+          <button className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25">选择文件</button>
+          <input id="json-input" type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
         </div>
       </div>
 
-      {/* 数据展示区 */}
       {groups.length === 0 && (
-        <div className="text-center py-12 text-neutral-500">
-          <p>请上传一个 JSON 数组文件</p>
-        </div>
+        <div className="text-center py-12 text-neutral-500">请上传一个 JSON 数组文件</div>
       )}
 
       {groups.map((group, groupIdx) => (
-        <div key={groupIdx} className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
+        <div
+          key={groupIdx}
+          className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden"
+        >
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-neutral-200 mb-4">
-              结构 {groupIdx + 1}（共 {group.rows.length} 条记录）
-            </h3>
+            {/* 标题与双按钮（JSON + Excel） */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-neutral-200">
+                结构 {groupIdx + 1}（共 {group.rows.length} 条记录）
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleExportGroup(groupIdx)}
+                  className="px-4 py-1.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
+                >
+                  JSON
+                </button>
+                <button
+                  onClick={() => handleExportGroupXlsx(groupIdx)}
+                  className="px-4 py-1.5 bg-gradient-to-r from-green-600 to-green-700 text-white text-sm rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg shadow-green-500/25"
+                >
+                  Excel
+                </button>
+              </div>
+            </div>
 
-            {/* 列勾选框 */}
+            {/* 列勾选框（不变） */}
             <div className="mb-4 flex flex-wrap gap-2">
               {group.keys.map((key) => (
                 <label key={key} className="flex items-center space-x-1 cursor-pointer text-neutral-300">
-                  <input
-                    type="checkbox"
-                    checked={group.selectedKeys.includes(key)}
-                    onChange={() => handleKeyToggle(groupIdx, key)}
-                    className="accent-red-500"
-                  />
+                  <input type="checkbox" checked={group.selectedKeys.includes(key)}
+                    onChange={() => handleKeyToggle(groupIdx, key)} className="accent-red-500" />
                   <span className="text-sm">{key}</span>
                 </label>
               ))}
             </div>
 
-            {/* 表格容器 */}
-            <div className="max-h-48 overflow-y-auto custom-scrollbar border border-red-500/20 rounded-lg">
+            {/* 表格容器（不变） */}
+            <div className="max-h-96 overflow-y-auto custom-scrollbar border border-red-500/20 rounded-lg">
               <table className="w-full border-collapse">
                 <thead className="sticky top-0 bg-neutral-800 z-10">
                   <tr>
                     {group.selectedKeys.map((key) => (
-                      <th
-                        key={key}
-                        className="px-3 py-2 text-left text-sm font-semibold text-neutral-300 border-b border-red-500/20 bg-neutral-800"
-                      >
-                        {key}
-                      </th>
+                      <th key={key} className="px-3 py-2 text-left text-sm font-semibold text-neutral-300 border-b border-red-500/20 bg-neutral-800">{key}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {group.rows.map((row, rowIdx) => (
-                    <tr
-                      key={rowIdx}
-                      className="transition-colors hover:bg-red-500/5 even:bg-neutral-800/30"
-                    >
+                    <tr key={rowIdx} className="transition-colors hover:bg-red-500/5 even:bg-neutral-800/30">
                       {group.selectedKeys.map((key) => (
-                        <td
-                          key={key}
-                          className="px-3 py-2 text-sm text-neutral-300 border-b border-red-500/10"
-                        >
-                          {row[key] !== undefined ? String(row[key]) : ''}
-                        </td>
+                        <td key={key} className="px-3 py-2 text-sm text-neutral-300 border-b border-red-500/10 whitespace-pre-wrap">{formatCellValue(row[key])}</td>
                       ))}
                     </tr>
                   ))}
@@ -222,13 +284,20 @@ const JsonHandler: React.FC = () => {
         </div>
       ))}
 
+      {/* 底部全局双按钮 */}
       {groups.length > 0 && (
-        <div className="text-center">
+        <div className="text-center flex justify-center gap-4">
           <button
-            onClick={handleExport}
+            onClick={handleExportAll}
             className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25 font-medium"
           >
-            导出筛选后的数据（JSON）
+            导出全部 JSON
+          </button>
+          <button
+            onClick={handleExportAllXlsx}
+            className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg shadow-green-500/25 font-medium"
+          >
+            导出全部 Excel
           </button>
         </div>
       )}

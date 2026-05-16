@@ -40,49 +40,87 @@ const FileHandler:React.FC = () => {
 interface Group {
   keys: string[];
   rows: Record<string, any>[];
-  selectedKeys: string[];
+  selectedKeys: string[];       // 普通模式选中的原始键
+  flattened: boolean;           // 是否开启展平
+  flatSelected: string[];       // 展平模式选中的路径（例如 ["body.name", "body.value"]）
+}
+
+function flattenValue(value: any, prefix: string = ''): Record<string, any> {
+  if (value === null || value === undefined) return {};
+  if (Array.isArray(value)) {
+    if (value.length === 0) return {};
+    const first = value[0];
+    if (typeof first === 'object' && first !== null) {
+      const fields = new Set<string>();
+      value.forEach(item => Object.keys(item).forEach(k => fields.add(k)));
+      const result: Record<string, any> = {};
+      for (const field of fields) {
+        const values = value.map(item => item[field]);
+        const key = prefix ? `${prefix}.${field}` : field;
+        result[key] = values;
+      }
+      return result;
+    }
+    return { [prefix]: JSON.stringify(value) };
+  }
+  if (typeof value === 'object') {
+    const result: Record<string, any> = {};
+    for (const [k, v] of Object.entries(value)) {
+      const childPrefix = prefix ? `${prefix}.${k}` : k;
+      Object.assign(result, flattenValue(v, childPrefix));
+    }
+    return result;
+  }
+  return { [prefix]: value };
+}
+
+function flattenRow(row: Record<string, any>, keys: string[]): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const key of keys) {
+    Object.assign(result, flattenValue(row[key], key));
+  }
+  return result;
 }
 
 const JsonHandler: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
 
-  /** 格式化单元格值：对象显示为 JSON 字符串 */
-  const formatCellValue = (value: any): string => {
-    if (value === null || value === undefined) return '';
-    if (typeof value === 'object') {
-      const str = JSON.stringify(value, null, 2);
-      return str.length > 200 ? str.slice(0, 200) + '...' : str;
+  const formatCell = (val: any): string => {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'object') {
+      const s = JSON.stringify(val, null, 2);
+      return s.length > 200 ? s.slice(0, 200) + '...' : s;
     }
-    return String(value);
+    return String(val);
   };
 
-  /** 文件上传（不变） */
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = (ev) => {
       try {
-        const text = e.target?.result as string;
+        const text = ev.target?.result as string;
         const json = JSON.parse(text);
         if (!Array.isArray(json)) {
-          alert('请上传一个 JSON 数组文件');
+          alert('请上传 JSON 数组');
           return;
         }
         const rawGroups = groupByStructure(json);
-        const processedGroups = rawGroups.map((g) => ({
+        const processed: Group[] = rawGroups.map(g => ({
           ...g,
           selectedKeys: g.keys.slice(0, 3),
+          flattened: false,
+          flatSelected: [],
         }));
-        setGroups(processedGroups);
+        setGroups(processed);
       } catch {
-        alert('JSON 解析失败，请检查文件格式');
+        alert('JSON 解析失败');
       }
     };
     reader.readAsText(file);
   };
 
-  /** 分组逻辑（不变） */
   const groupByStructure = (arr: any[]): { keys: string[]; rows: Record<string, any>[] }[] => {
     const map = new Map<string, Record<string, any>[]>();
     for (const obj of arr) {
@@ -92,105 +130,136 @@ const JsonHandler: React.FC = () => {
       if (!map.has(keyStr)) map.set(keyStr, []);
       map.get(keyStr)!.push(obj);
     }
-    const groups: { keys: string[]; rows: Record<string, any>[] }[] = [];
-    for (const [keyStr, rows] of map.entries()) {
-      groups.push({ keys: keyStr.split(','), rows });
-    }
-    return groups;
+    return Array.from(map.entries()).map(([keyStr, rows]) => ({
+      keys: keyStr.split(','),
+      rows,
+    }));
   };
 
-  /** 列勾选切换（不变） */
-  const handleKeyToggle = (groupIndex: number, key: string) => {
-    setGroups((prev) => {
-      const newGroups = prev.map((g) => ({ ...g }));
-      const group = newGroups[groupIndex];
-      const isSelected = group.selectedKeys.includes(key);
-      if (isSelected) {
-        group.selectedKeys = group.selectedKeys.filter((k) => k !== key);
+  const toggleKey = (groupIdx: number, key: string) => {
+    setGroups(prev => {
+      const g = { ...prev[groupIdx] };
+      if (g.selectedKeys.includes(key)) {
+        g.selectedKeys = g.selectedKeys.filter(k => k !== key);
       } else {
-        const newSelected: string[] = [];
-        for (const k of group.keys) {
-          if (k === key || group.selectedKeys.includes(k)) {
-            newSelected.push(k);
-          }
-        }
-        group.selectedKeys = newSelected;
+        g.selectedKeys = [...g.selectedKeys, key];
       }
-      newGroups[groupIndex] = group;
-      return newGroups;
+      const next = [...prev];
+      next[groupIdx] = g;
+      return next;
     });
   };
 
-  // ========== JSON 导出（原有） ==========
-  const handleExportGroup = async (groupIndex: number) => {
-    const group = groups[groupIndex];
-    if (!group || group.selectedKeys.length === 0) return;
-    const exportData = {
-      keys: group.selectedKeys,
-      rows: group.rows.map((row) => {
-        const filtered: Record<string, any> = {};
-        group.selectedKeys.forEach((key) => (filtered[key] = row[key]));
-        return filtered;
-      }),
-    };
-    try {
-      await invoke('export_json', {
-        content: JSON.stringify(exportData, null, 2),
-        defaultName: `group_${groupIndex + 1}.json`,
+  const toggleFlatKey = (groupIdx: number, path: string) => {
+    setGroups(prev => {
+      const g = { ...prev[groupIdx], flatSelected: [...prev[groupIdx].flatSelected] };
+      if (g.flatSelected.includes(path)) {
+        g.flatSelected = g.flatSelected.filter(p => p !== path);
+      } else {
+        g.flatSelected = [...g.flatSelected, path];
+      }
+      const next = [...prev];
+      next[groupIdx] = g;
+      return next;
+    });
+  };
+
+  const toggleFlatten = (groupIdx: number) => {
+    setGroups(prev => {
+      const g = { ...prev[groupIdx] };
+      if (g.flattened) {
+        g.flattened = false;
+        g.flatSelected = [];
+      } else {
+        g.flattened = true;
+        const allPaths = new Set<string>();
+        for (const row of g.rows) {
+          const flat = flattenRow(row, g.keys);
+          Object.keys(flat).forEach(p => allPaths.add(p));
+        }
+        g.flatSelected = Array.from(allPaths).sort();
+      }
+      const next = [...prev];
+      next[groupIdx] = g;
+      return next;
+    });
+  };
+
+  const buildExportRows = (group: Group): Record<string, any>[] => {
+    if (group.flattened) {
+      const cols = group.flatSelected;
+      return group.rows.map(row => {
+        const flat = flattenRow(row, group.keys);
+        const obj: Record<string, any> = {};
+        for (const col of cols) obj[col] = flat[col];
+        return obj;
       });
-    } catch (e) {
-      console.error('JSON 导出失败:', e);
+    } else {
+      const cols = group.selectedKeys;
+      return group.rows.map(row => {
+        const obj: Record<string, any> = {};
+        for (const col of cols) obj[col] = row[col];
+        return obj;
+      });
     }
   };
 
-  const handleExportAll = async () => {
-    const exportData = groups.map((group) => ({
-      keys: group.selectedKeys,
-      rows: group.rows.map((row) => {
-        const filtered: Record<string, any> = {};
-        group.selectedKeys.forEach((key) => (filtered[key] = row[key]));
-        return filtered;
-      }),
-    }));
+  // ---------- 导出函数 ----------
+  const handleExportGroup = async (groupIdx: number) => {
+    const group = groups[groupIdx];
+    if (!group || (group.flattened && group.flatSelected.length === 0) || (!group.flattened && group.selectedKeys.length === 0)) return;
+    const rows = buildExportRows(group);
     try {
       await invoke('export_json', {
-        content: JSON.stringify(exportData, null, 2),
-        defaultName: 'all_groups.json',
+        content: JSON.stringify(rows, null, 2),
+        defaultName: `group_${groupIdx + 1}.json`,
       });
     } catch (e) {
-      console.error('JSON 导出失败:', e);
+      console.error('JSON 导出失败', e);
     }
   };
 
-  // ========== Excel 导出（新增） ==========
-  const handleExportGroupXlsx = async (groupIndex: number) => {
-    const group = groups[groupIndex];
-    if (!group || group.selectedKeys.length === 0) return;
-
+  const handleExportGroupXlsx = async (groupIdx: number) => {
+    const group = groups[groupIdx];
+    if (!group || (group.flattened && group.flatSelected.length === 0) || (!group.flattened && group.selectedKeys.length === 0)) return;
+    const rows = buildExportRows(group);
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(group.rows, { header: group.selectedKeys });
-    XLSX.utils.book_append_sheet(wb, ws, `结构${groupIndex + 1}`);
-
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, `结构${groupIdx + 1}`);
     const wbArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     try {
       await invoke('save_file_bytes', {
         data: Array.from(new Uint8Array(wbArray)),
-        defaultName: `group_${groupIndex + 1}.xlsx`,
+        defaultName: `group_${groupIdx + 1}.xlsx`,
       });
     } catch (e) {
-      console.error('Excel 导出失败:', e);
+      console.error('Excel 导出失败', e);
+    }
+  };
+
+  const handleExportAll = async () => {
+    const allData = groups.map((group, idx) => ({
+      group: idx + 1,
+      rows: buildExportRows(group),
+    }));
+    try {
+      await invoke('export_json', {
+        content: JSON.stringify(allData, null, 2),
+        defaultName: 'all_groups.json',
+      });
+    } catch (e) {
+      console.error('JSON 导出失败', e);
     }
   };
 
   const handleExportAllXlsx = async () => {
     if (groups.length === 0) return;
-
     const wb = XLSX.utils.book_new();
     groups.forEach((group, idx) => {
-      const ws = XLSX.utils.json_to_sheet(group.rows, { header: group.selectedKeys });
+      const rows = buildExportRows(group);
+      const ws = XLSX.utils.json_to_sheet(rows);
       XLSX.utils.book_append_sheet(wb, ws, `结构${idx + 1}`);
     });
-
     const wbArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     try {
       await invoke('save_file_bytes', {
@@ -198,21 +267,21 @@ const JsonHandler: React.FC = () => {
         defaultName: 'all_groups.xlsx',
       });
     } catch (e) {
-      console.error('Excel 导出失败:', e);
+      console.error('Excel 导出失败', e);
     }
   };
 
+  // ---------- 渲染 ----------
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* 上传卡片（不变） */}
+      {/* 上传卡片 */}
       <div className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden">
         <div
           className="border-2 border-dashed border-red-500/30 rounded-xl m-6 p-8 text-center cursor-pointer hover:border-red-500/60 hover:bg-red-500/5 transition-all duration-300"
           onClick={() => document.getElementById('json-input')?.click()}
         >
           <h3 className="text-lg font-semibold text-neutral-200 mb-2">上传 JSON 文件</h3>
-          <p className="text-neutral-400 text-sm mb-4">支持 .json 格式（JSON 数组）</p>
-          <button className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25">选择文件</button>
+          <button className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg">选择文件</button>
           <input id="json-input" type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
         </div>
       </div>
@@ -221,13 +290,11 @@ const JsonHandler: React.FC = () => {
         <div className="text-center py-12 text-neutral-500">请上传一个 JSON 数组文件</div>
       )}
 
-      {groups.map((group, groupIdx) => (
-        <div
-          key={groupIdx}
-          className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden"
-        >
-          <div className="p-6">
-            {/* 标题与双按钮（JSON + Excel） */}
+      {groups.map((group, groupIdx) => {
+        const columns = group.flattened ? group.flatSelected : group.selectedKeys;
+
+        return (
+          <div key={groupIdx} className="bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-lg border border-red-500/20 overflow-hidden p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-neutral-200">
                 结构 {groupIdx + 1}（共 {group.rows.length} 条记录）
@@ -248,43 +315,75 @@ const JsonHandler: React.FC = () => {
               </div>
             </div>
 
-            {/* 列勾选框（不变） */}
-            <div className="mb-4 flex flex-wrap gap-2">
-              {group.keys.map((key) => (
-                <label key={key} className="flex items-center space-x-1 cursor-pointer text-neutral-300">
-                  <input type="checkbox" checked={group.selectedKeys.includes(key)}
-                    onChange={() => handleKeyToggle(groupIdx, key)} className="accent-red-500" />
-                  <span className="text-sm">{key}</span>
-                </label>
-              ))}
+            {/* 展平开关 */}
+            <label className="flex items-center space-x-2 text-neutral-300 mb-3">
+              <input type="checkbox" checked={group.flattened} onChange={() => toggleFlatten(groupIdx)} className="accent-red-500" />
+              <span>展开嵌套对象/数组</span>
+            </label>
+
+            {/* 列选择 */}
+            <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1">
+              {!group.flattened ? (
+                group.keys.map(key => (
+                  <label key={key} className="flex items-center space-x-1 text-sm text-neutral-300">
+                    <input type="checkbox" checked={group.selectedKeys.includes(key)} onChange={() => toggleKey(groupIdx, key)} className="accent-red-500" />
+                    <span>{key}</span>
+                  </label>
+                ))
+              ) : (
+                (() => {
+                  const allPaths = new Set<string>();
+                  for (const row of group.rows) {
+                    const flat = flattenRow(row, group.keys);
+                    Object.keys(flat).forEach(p => allPaths.add(p));
+                  }
+                  return Array.from(allPaths).sort().map(path => (
+                    <label key={path} className="flex items-center space-x-1 text-sm text-neutral-300">
+                      <input type="checkbox" checked={group.flatSelected.includes(path)} onChange={() => toggleFlatKey(groupIdx, path)} className="accent-red-500" />
+                      <span>{path}</span>
+                    </label>
+                  ));
+                })()
+              )}
             </div>
 
-            {/* 表格容器（不变） */}
-            <div className="max-h-96 overflow-y-auto custom-scrollbar border border-red-500/20 rounded-lg">
+            {/* 表格 */}
+            <div className="max-h-96 overflow-auto border border-red-500/20 rounded-lg">
               <table className="w-full border-collapse">
                 <thead className="sticky top-0 bg-neutral-800 z-10">
                   <tr>
-                    {group.selectedKeys.map((key) => (
-                      <th key={key} className="px-3 py-2 text-left text-sm font-semibold text-neutral-300 border-b border-red-500/20 bg-neutral-800">{key}</th>
+                    {columns.map(col => (
+                      <th key={col} className="px-3 py-2 text-left text-sm font-semibold text-neutral-300 border-b border-red-500/20">{col}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {group.rows.map((row, rowIdx) => (
-                    <tr key={rowIdx} className="transition-colors hover:bg-red-500/5 even:bg-neutral-800/30">
-                      {group.selectedKeys.map((key) => (
-                        <td key={key} className="px-3 py-2 text-sm text-neutral-300 border-b border-red-500/10 whitespace-pre-wrap">{formatCellValue(row[key])}</td>
-                      ))}
+                  {group.rows.map((row, ri) => (
+                    <tr key={ri} className="hover:bg-red-500/5 even:bg-neutral-800/30">
+                      {columns.map(col => {
+                        let val: any;
+                        if (group.flattened) {
+                          const flat = flattenRow(row, group.keys);
+                          val = flat[col];
+                        } else {
+                          val = row[col];
+                        }
+                        return (
+                          <td key={col} className="px-3 py-2 text-sm text-neutral-300 border-b border-red-500/10 whitespace-pre-wrap">
+                            {formatCell(val)}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
-      {/* 底部全局双按钮 */}
+      {/* 底部全局导出 */}
       {groups.length > 0 && (
         <div className="text-center flex justify-center gap-4">
           <button

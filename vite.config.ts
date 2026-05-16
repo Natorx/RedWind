@@ -4,7 +4,7 @@ import UnoCSS from 'unocss/vite'
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(async () => ({
-  base:'/RedWind/',
+  base:'./',
   plugins: [react(),UnoCSS()],
   clearScreen: false,
   server: {

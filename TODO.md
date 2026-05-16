@@ -5,16 +5,19 @@
 - [] 二维码的反向解码
 - [] 音乐播放器
 
-- [] SSE服务端推送
+- [] SSE服务端更新日志推送
 #### Level3
 - [ ] 语音通讯(P2P WebRTC)
 - [ ] 文件共享（上传文件+来源于xx主机的P2P模式）
 - [ ] 多设备登录（私钥借用，服务端）
 - [ ] 插件扩展
 - [ ] 桌面挂件子进程
-- [ ] Mobile clinet
 #### Level4
+- [ ] Mobile client
 - [] 桌面远程控制共享
+
+#### Optimize
+- [] 系统信息模块发布订阅`window.emit("data-changed", payload)`推送
 
 #### Bugs
 1. 修复CPU占用是0%的问题（CPU占用需要时间间隔来查看使用率）

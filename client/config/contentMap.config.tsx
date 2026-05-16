@@ -20,6 +20,7 @@ import ServerChat from '../pages/Chat_Server';
 import DocReader from '../pages/DocReader';
 import Community from '../pages/Communnity';
 import FileHandler from '../pages/Filehandler';
+import TodoList from '../pages/TodoList';
 
 const contentMap: Record<string, JSX.Element> = {
   start: <StartPage />,
@@ -42,6 +43,7 @@ const contentMap: Record<string, JSX.Element> = {
   'server-chat': <ServerChat />,
   'doc-reader': <DocReader />,
   community: <Community />,
+  'todo':<TodoList/>
 };
 export default contentMap;
 

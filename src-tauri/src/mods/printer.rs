@@ -48,12 +48,12 @@ pub async fn print_text(options: PrintOptions) -> Result<PrintResult, String> {
     let ip = options.ip.unwrap_or_else(|| DEFAULT_IP.to_string());
     let port = options.port.unwrap_or(DEFAULT_PORT);
     
-    println!("收到打印请求: {}...", &text[..text.len().min(50)]);
+    println!("收到打印请求: {}...", text.chars().take(50).collect::<String>());
 
     match print_gb18030(&text, &ip, port).await {
         Ok(preview) => Ok(PrintResult {
             success: true,
-            message: format!("打印成功: {}...", &text[..text.len().min(50)]),
+            message: format!("打印成功: {}...", text.chars().take(50).collect::<String>()),
             preview: Some(preview),
             error: None,
         }),
@@ -136,7 +136,7 @@ async fn print_gb18030(text: &str, ip: &str, port: u16) -> Result<String, String
     
     writer.flush().map_err(|e| format!("刷新缓冲区失败: {}", e))?;
     
-    println!("打印任务完成: {}...", &text[..text.len().min(50)]);
+    println!("打印任务完成: {}...", text.chars().take(50).collect::<String>());
     
     Ok(text.chars().take(50).collect::<String>() + if text.len() > 50 { "..." } else { "" })
 }

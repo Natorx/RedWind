@@ -1,3 +1,5 @@
+import { invoke } from '@tauri-apps/api/core';
+import { message } from '@tauri-apps/plugin-dialog';
 import { useState } from 'react';
 
 interface Todo {
@@ -24,6 +26,42 @@ export default function TodoList() {
 
   const deleteTodo = (id: number) => {
     setTodos(prev => prev.filter(t => t.id !== id));
+  };
+
+  // 新增：生成 Markdown 内容
+  const generateMarkdown = (): string => {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    let md = `# ${dateStr} 任务列表\n\n`;
+    md += `| 状态 | 任务 |\n|------|------|\n`;
+    todos.forEach(todo => {
+      const status = todo.completed ? '✅ 已完成' : '⬜ 未完成';
+      // 注意转义 Markdown 中的特殊符号（如竖线）
+      const text = todo.text.replace(/\|/g, '\\|');
+      md += `| ${status} | ${text} |\n`;
+    });
+    return md;
+  };
+
+  // 新增：导出按钮点击事件
+  const handleExport = async () => {
+    if (todos.length === 0) {
+      await message('列表为空，无需导出');
+      return;
+    }
+    const markdown = generateMarkdown();
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    try {
+      const savedPath = await invoke('export_markdown', {
+        content: markdown,
+        date: dateStr,
+      });
+      // 替换 alert('导出成功！文件保存在：' + savedPath);
+  await message('导出成功！文件保存在：' + savedPath, { title: '提示' }); 
+    } catch (error) {
+      await message('导出失败：' + error);
+    }
   };
 
   return (
@@ -62,10 +100,10 @@ export default function TodoList() {
             placeholder="输入新任务..."
           />
           <button
-            className="px-5 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium transition-colors"
-            onClick={addTodo}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors"
+            onClick={handleExport}
           >
-            +
+            导出为 Markdown
           </button>
         </div>
 

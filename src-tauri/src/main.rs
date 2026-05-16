@@ -75,7 +75,9 @@ fn main() {
             mods::docs::read_document,
             // file_handler
             mods::file_handler::export_json,
-            mods::file_handler::save_file_bytes
+            mods::file_handler::save_file_bytes,
+            // todo
+            mods::todo::export_markdown,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

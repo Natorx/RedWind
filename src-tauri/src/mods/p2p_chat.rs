@@ -1,20 +1,20 @@
 // src-tauri/src/mods/p2p_chat.rs
+use futures::stream::StreamExt;
+use libp2p::{
+    gossipsub, mdns, noise,
+    swarm::{NetworkBehaviour, SwarmEvent},
+    tcp, yamux,
+};
+use serde::{Deserialize, Serialize};
+use std::io;
 use std::{
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
     sync::Arc,
     time::Duration,
 };
-use libp2p::{
-    gossipsub, mdns, noise,
-    swarm::{NetworkBehaviour, SwarmEvent},
-    tcp, yamux,
-};
-use futures::stream::StreamExt;
 use tauri::{AppHandle, Emitter};
-use serde::{Serialize, Deserialize};
 use tokio::sync::Mutex;
-use std::io;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {
@@ -51,12 +51,12 @@ impl P2PChat {
                     gossipsub::MessageId::from(s.finish().to_string())
                 };
 
-let gossipsub_config = gossipsub::ConfigBuilder::default()
-    .heartbeat_interval(Duration::from_millis(500))  // 改成 500ms
-    .validation_mode(gossipsub::ValidationMode::Strict)
-    .message_id_fn(message_id_fn)
-    .build()
-    .map_err(io::Error::other)?;
+                let gossipsub_config = gossipsub::ConfigBuilder::default()
+                    .heartbeat_interval(Duration::from_millis(500)) // 改成 500ms
+                    .validation_mode(gossipsub::ValidationMode::Strict)
+                    .message_id_fn(message_id_fn)
+                    .build()
+                    .map_err(io::Error::other)?;
 
                 let gossipsub = gossipsub::Behaviour::new(
                     gossipsub::MessageAuthenticity::Signed(key.clone()),
@@ -73,18 +73,18 @@ let gossipsub_config = gossipsub::ConfigBuilder::default()
             .build();
 
         let topic = gossipsub::IdentTopic::new("test-net");
-        
+
         let mut swarm_guard = swarm;
         swarm_guard.behaviour_mut().gossipsub.subscribe(&topic)?;
         swarm_guard.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
 
         let peer_id = swarm_guard.local_peer_id().to_string();
-        let _ = app.emit("p2p_ready", peer_id.clone());  // 修复：clone peer_id
+        let _ = app.emit("p2p_ready", peer_id.clone()); // 修复：clone peer_id
 
-        Ok(Self { 
+        Ok(Self {
             swarm: Arc::new(Mutex::new(swarm_guard)),
-            topic, 
-            app 
+            topic,
+            app,
         })
     }
 
@@ -96,19 +96,21 @@ let gossipsub_config = gossipsub::ConfigBuilder::default()
                     let mut swarm = self_clone.swarm.lock().await;
                     swarm.select_next_some().await
                 };
-                
+
                 match event {
-                    SwarmEvent::Behaviour(MyBehaviourEvent::Mdns(mdns::Event::Discovered(list))) => {
+                    SwarmEvent::Behaviour(MyBehaviourEvent::Mdns(mdns::Event::Discovered(
+                        list,
+                    ))) => {
                         for (peer_id, addr) in list {
                             println!("mDNS discovered a new peer: {}", peer_id);
-                            
+
                             let mut swarm = self_clone.swarm.lock().await;
                             let _ = swarm.behaviour_mut().gossipsub.add_explicit_peer(&peer_id);
                             if let Err(e) = swarm.dial(addr.clone()) {
                                 println!("Dial to {} failed: {:?}", peer_id, e);
                             }
                             drop(swarm);
-                            
+
                             let _ = self_clone.app.emit("p2p_peer", peer_id.to_string());
                         }
                     }
@@ -116,17 +118,23 @@ let gossipsub_config = gossipsub::ConfigBuilder::default()
                         for (peer_id, _addr) in list {
                             println!("mDNS peer expired: {}", peer_id);
                             let mut swarm = self_clone.swarm.lock().await;
-                            let _ = swarm.behaviour_mut().gossipsub.remove_explicit_peer(&peer_id);
+                            let _ = swarm
+                                .behaviour_mut()
+                                .gossipsub
+                                .remove_explicit_peer(&peer_id);
                             let _ = self_clone.app.emit("p2p_peer_gone", peer_id.to_string());
                         }
                     }
-                    SwarmEvent::Behaviour(MyBehaviourEvent::Gossipsub(gossipsub::Event::Message {
-                        message, ..
-                    })) => {
+                    SwarmEvent::Behaviour(MyBehaviourEvent::Gossipsub(
+                        gossipsub::Event::Message { message, .. },
+                    )) => {
                         if let Ok(text) = String::from_utf8(message.data) {
                             println!("Received message: {}", text);
                             let msg = ChatMessage {
-                                from: message.source.map(|p| p.to_string()).unwrap_or("unknown".to_string()),
+                                from: message
+                                    .source
+                                    .map(|p| p.to_string())
+                                    .unwrap_or("unknown".to_string()),
                                 content: text,
                             };
                             let _ = self_clone.app.emit("p2p_msg", msg);
@@ -146,32 +154,36 @@ let gossipsub_config = gossipsub::ConfigBuilder::default()
         });
     }
 
-pub async fn send(&self, msg: &str) -> Result<(), String> {
-    // 等待一下确保 mesh 已建立
-    tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
-    
-    println!("[P2P] send() called with: {}", msg);
-    let mut swarm = self.swarm.lock().await;
-    println!("[P2P] Got swarm lock, connected peers: {}", swarm.connected_peers().count());
-    
-    // 修复：遍历打印 topics
-    let topics: Vec<_> = swarm.behaviour().gossipsub.topics().collect();
-    println!("[P2P] Topics: {:?}", topics);
-    
-    match swarm
-        .behaviour_mut()
-        .gossipsub
-        .publish(self.topic.clone(), msg.as_bytes()) {
-        Ok(id) => {
-            println!("[P2P] Publish success, id: {:?}", id);
-            Ok(())
-        }
-        Err(e) => {
-            println!("[P2P] Publish error: {:?}", e);
-            Err(format!("发送失败: {:?}", e))
+    pub async fn send(&self, msg: &str) -> Result<(), String> {
+        // 等待一下确保 mesh 已建立
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+
+        println!("[P2P] send() called with: {}", msg);
+        let mut swarm = self.swarm.lock().await;
+        println!(
+            "[P2P] Got swarm lock, connected peers: {}",
+            swarm.connected_peers().count()
+        );
+
+        // 修复：遍历打印 topics
+        let topics: Vec<_> = swarm.behaviour().gossipsub.topics().collect();
+        println!("[P2P] Topics: {:?}", topics);
+
+        match swarm
+            .behaviour_mut()
+            .gossipsub
+            .publish(self.topic.clone(), msg.as_bytes())
+        {
+            Ok(id) => {
+                println!("[P2P] Publish success, id: {:?}", id);
+                Ok(())
+            }
+            Err(e) => {
+                println!("[P2P] Publish error: {:?}", e);
+                Err(format!("发送失败: {:?}", e))
+            }
         }
     }
-}
 }
 
 pub struct P2PState(pub Arc<Mutex<Option<Arc<P2PChat>>>>);
@@ -188,24 +200,24 @@ pub async fn start_p2p(
     app: AppHandle,
 ) -> Result<String, String> {
     let mut guard = state.0.lock().await;
-    
+
     if guard.is_some() {
         return Err("P2P 已经在运行".to_string());
     }
-    
+
     match P2PChat::new(app).await {
         Ok(chat) => {
             let peer_id = {
                 let swarm = chat.swarm.lock().await;
                 swarm.local_peer_id().to_string()
             };
-            
+
             let chat_arc = Arc::new(chat);
             chat_arc.clone().run().await;
             *guard = Some(chat_arc);
             Ok(format!("启动成功, ID: {}", peer_id))
         }
-        Err(e) => Err(format!("启动失败: {}", e))
+        Err(e) => Err(format!("启动失败: {}", e)),
     }
 }
 
@@ -222,7 +234,7 @@ pub async fn send_p2p(
     message: String,
 ) -> Result<String, String> {
     let guard = state.0.lock().await;
-    
+
     if let Some(chat) = guard.as_ref() {
         chat.send(&message).await?;
         Ok("已发送".to_string())

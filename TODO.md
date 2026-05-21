@@ -18,9 +18,9 @@
 
 #### Optimize
 - [] 系统信息模块发布订阅`window.emit("data-changed", payload)`推送
+- [] SQLite和内存数据库来做AI记忆存储
 
 #### Bugs
-1. 修复CPU占用是0%的问题（CPU占用需要时间间隔来查看使用率）
 2. utils中UIState切换成最新方案
 3. 帖子模块中服务端在更新帖子时，不用的图片删掉
 4. 帖子模块添加服务端密钥+密码配置删除权限

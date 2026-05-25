@@ -12,7 +12,6 @@ import Charts from '../pages/Charts';
 import FuncConfig from '../pages/FuncConfigs';
 import Algorithms from '../pages/Algorithms';
 import WAudioController from '../pages/WAudioController';
-import SysCommands from '../pages/SysCommands';
 import StartPage from '../pages/Start';
 import DrillGround from '../pages/DrillGround';
 import P2PChat from '../pages/Chat_RsP2P';
@@ -37,7 +36,6 @@ const contentMap: Record<string, JSX.Element> = {
   charts: <Charts />,
   algorithms: <Algorithms />,
   'audio-control': <WAudioController />,
-  'sys-commands': <SysCommands />,
   'drill-ground': <DrillGround />,
   'p2p-chat': <P2PChat />,
   'server-chat': <ServerChat />,

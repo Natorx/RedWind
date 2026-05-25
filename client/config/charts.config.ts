@@ -1,17 +1,17 @@
-import DualAxisLineChart from '../../components/charts/LineChart';
-import ScatterChart from '../../components/charts/ScatterChart';
-import RadarChart from '../../components/charts/RadarChart';
-import AreaChart from '../../components/charts/AreaChart';
-import PieChart from '../../components/charts/PieChart';
-import BarChart from '../../components/charts/BarChart';
-import Heatmap from '../../components/charts/HeatMap';
-import { dimensions, radarData } from '../../mock/radar.mock';
-import { mockData_heatMap } from '../../mock/heatmap.mock';
-import { dualAxisData } from '../../mock/dualAxis.mock';
-import { scatterData } from '../../mock/scatter.mock';
-import { areaData } from '../../mock/area.mock';
-import { pieData } from '../../mock/pie.mock';
-import { barData } from '../../mock/bar.mock';
+import DualAxisLineChart from '../components/charts/LineChart';
+import ScatterChart from '../components/charts/ScatterChart';
+import RadarChart from '../components/charts/RadarChart';
+import AreaChart from '../components/charts/AreaChart';
+import PieChart from '../components/charts/PieChart';
+import BarChart from '../components/charts/BarChart';
+import Heatmap from '../components/charts/HeatMap';
+import { dimensions, radarData } from '../mock/radar.mock';
+import { mockData_heatMap } from '../mock/heatmap.mock';
+import { dualAxisData } from '../mock/dualAxis.mock';
+import { scatterData } from '../mock/scatter.mock';
+import { areaData } from '../mock/area.mock';
+import { pieData } from '../mock/pie.mock';
+import { barData } from '../mock/bar.mock';
 
 // 配置项类型
 interface ChartConfig {

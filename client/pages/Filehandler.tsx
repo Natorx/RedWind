@@ -3,7 +3,7 @@ import { Upload, FileText, Image, FileVideo, Music, Download, X, CheckCircle, Al
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 import { invoke } from '@tauri-apps/api/core';
-import { CONVERSION_OPTIONS, SUPPORTED_FORMATS } from '../config/data/conversion';
+import { CONVERSION_OPTIONS, SUPPORTED_FORMATS } from '../config/conversion.config';
 import * as XLSX from 'xlsx';
 
 

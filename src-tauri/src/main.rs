@@ -8,6 +8,7 @@ use std::sync::Mutex;
 use sysinfo::System;
 
 fn main() {
+    dotenv::dotenv().ok();
     let db_state = mods::sidebar::init_db_state();
     let typing_db_state = mods::typing::init_typing_db_state();
     let p2p_state = mods::p2p_chat::P2PState::new();

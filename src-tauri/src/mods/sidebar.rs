@@ -4,6 +4,7 @@ use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use tauri::State;
+use crate::mods::path_set;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SidebarItem {
@@ -31,9 +32,18 @@ pub fn init_db_state() -> DbState {
 }
 
 pub fn init_db() -> Result<DbState, Box<dyn std::error::Error>> {
-    let mut db_path = std::env::temp_dir();
-    println!("数据库路径: {}", db_path.display());
-    db_path.push("red-wind-project.db");
+    let dev_mode = std::env::var("dev_mode")
+        .map(|val| val.eq_ignore_ascii_case("true"))
+        .unwrap_or(false);
+    println!("dev_mode = {}", dev_mode);
+
+    let db_dir = if dev_mode {
+        path_set::get_dev_data_dir()?
+    } else {
+        path_set::get_prod_data_dir_sidebar()
+    };
+    let db_path = db_dir.join("sidebar.db");
+    println!("sidebar database directory: {}", db_path.display());
     let conn = Connection::open(db_path)?;
 
     // 创建表

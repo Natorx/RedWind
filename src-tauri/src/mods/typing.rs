@@ -2,6 +2,7 @@ use rusqlite::{params, Connection, Result as SqliteResult};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use tauri::command;
+use crate::mods::path_set;
 
 // 词汇集结构
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -372,10 +373,16 @@ pub fn init_default_word_sets(conn: &Connection) -> SqliteResult<()> {
 
 // 初始化打字练习数据库
 pub fn init_typing_database() -> Result<DbState, String> {
-    let app_dir = get_app_data_dir();
-    std::fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
-    let db_path = app_dir.join("typing_practice.db");
-    println!("数据库路径: {}", db_path.display());
+    let dev_mode = std::env::var("dev_mode")
+        .map(|val| val.eq_ignore_ascii_case("true"))
+        .unwrap_or(false);
+    let app_dir = if dev_mode {
+        path_set::get_dev_data_dir().map_err(|e| e.to_string())?
+    } else {
+        path_set::get_prod_data_dir_typing()
+    };
+    let db_path = app_dir.join("typing.db");
+    println!("typing database path: {}", db_path.display());
 
     let conn = Connection::open(db_path).map_err(|e| e.to_string())?;
 

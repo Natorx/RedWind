@@ -2,7 +2,6 @@
 // 在非调试构建时，隐藏 Windows 控制台窗口
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::Manager;
 mod mods;
 use std::sync::Mutex;
 use sysinfo::System;
@@ -16,11 +15,6 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .setup(|app| {
-            let config_manager = mods::rd_config::ConfigManager::new(app.handle());
-            app.manage(config_manager);
-            Ok(())
-        })
         .manage(mods::hardinfo::AppState {
             sys: Mutex::new(System::new_all()),
         })
@@ -60,9 +54,6 @@ fn main() {
             mods::win_audio_control::set_system_volume_cmd,
             mods::win_audio_control::set_app_volume_cmd,
             mods::win_audio_control::set_app_mute_cmd,
-            // Config
-            mods::rd_config::get_active_ui,
-            mods::rd_config::set_active_ui,
             // printer
             mods::printer::print_text,
             mods::printer::test_connection,

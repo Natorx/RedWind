@@ -4,8 +4,8 @@ import Drawer from '../components/Drawer';
 import Modal from '../components/Modal';
 import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext';
-import { uiState } from '../utils/uiState';
 import useAppStore from '../stores/appStore';
+import { useUiStore } from '../stores/useUiStore';
 
 export const DrawerPage: React.FC = () => {
   const { isSettingsOpen, setIsSettingsOpen } = useSettingDrawer();
@@ -16,6 +16,8 @@ export const DrawerPage: React.FC = () => {
 
   // 个人资料 Modal 的本地状态
   const [localName, setLocalName] = useState(username);
+
+  const toggleSidebar = useUiStore((state) => state.toggleSidebar);
 
   const handleSaveProfile = () => {
     if (localName.trim()) {
@@ -82,7 +84,7 @@ export const DrawerPage: React.FC = () => {
             {/* 切换模式 */}
             <div
               className="setting-item p-3 hover:bg-red-500/10 rounded-lg cursor-pointer transition-all duration-200 border border-transparent hover:border-red-500/30"
-              onClick={() => uiState.toggleSidebar()}
+              onClick={toggleSidebar}
             >
               <span className="text-neutral-300 hover:text-red-400 transition-colors">切换模式</span>
             </div>

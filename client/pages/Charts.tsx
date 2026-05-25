@@ -1,4 +1,5 @@
-import { chartConfigs } from '../config/data/charts';
+import { chartConfigs } from "../config/charts.config";
+
 
 const Charts: React.FC = () => {
   return (

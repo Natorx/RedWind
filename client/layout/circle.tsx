@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useActiveItem } from '../context/activeItemContext';
 import iconSrc from '../assets/icon.png';
 import { useSettingDrawer } from '../context/drawerSettingContext';
-import { uiState } from '../utils/uiState';
 import { useModuleStore } from '../stores/moduleItemsStore';
+import { useUiStore } from '../stores/useUiStore';
 
 const Circle: React.FC = () => {
   const { sidebarItems, loadItems } = useModuleStore();
@@ -13,15 +13,14 @@ const Circle: React.FC = () => {
   const { activeItem, setActiveItem } = useActiveItem();
   const { setIsSettingsOpen } = useSettingDrawer();
 
+  const activeUi = useUiStore((state) => state.activeUi);
+
   useEffect(() => {
-    const unsubscribe = uiState.subscribe((activeUi) => {
-      setShowCircle(activeUi === 'circle');
-      if (activeUi !== 'circle') {
-        setIsExpanded(false);
-      }
-    });
-    return unsubscribe;
-  }, []);
+    setShowCircle(activeUi === 'circle');
+    if (activeUi !== 'circle') {
+      setIsExpanded(false);
+    }
+  }, [activeUi]); 
 
   // 加载侧边栏项
   useEffect(() => {

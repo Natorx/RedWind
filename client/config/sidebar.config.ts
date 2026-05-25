@@ -94,7 +94,7 @@ export const sidebarItems: SidebarItem[] = [
   // ========== 外部服务 (external, order: 13) ==========
   {
     id: 'chatbox',
-    label: 'Chatbox Mini',
+    label: 'Deepseek chat',
     icon: '💬',
     order: 13,
     source: 'external',

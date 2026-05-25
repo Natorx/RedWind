@@ -6,7 +6,6 @@ pub mod node_server;
 pub mod open;
 pub mod p2p_chat;
 pub mod printer;
-pub mod rd_config;
 pub mod sidebar;
 pub mod todo;
 pub mod typing;

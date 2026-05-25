@@ -15,14 +15,12 @@
 - [ ] 多设备登录（私钥借用，服务端）
 - [ ] 插件扩展
 - [ ] 桌面挂件子进程
-- [ ] 接入py_deepseek_Agent
 #### Level4
 - [ ] Mobile client
 - [] 桌面远程控制共享
 
 #### Optimize
 - [] 系统信息模块发布订阅`window.emit("data-changed", payload)`推送
-- [] SQLite和内存数据库来做AI记忆存储
 
 #### Bugs
 2. utils中UIState切换成最新方案
@@ -59,6 +57,7 @@
 - ✔️ 读硬件配置（主板，内存等）
 - ✔️ 进程调度查看（任务管理器）
 - ✔️ 应用指令和快速启动
+- ✔️ 接入py_deepseek_Agent `2026.5.26`
 
 ### Deprecated
 - 🚫 mini代码编辑器

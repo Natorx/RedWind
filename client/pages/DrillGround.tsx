@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from "react";
-import init, { add } from "../wasm/WASM";
+import init, { add } from "../utils/wasm/WASM";
 
 const DrillGround: React.FC = () => {
   const [ready, setReady] = useState(false);

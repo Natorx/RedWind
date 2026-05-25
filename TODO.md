@@ -1,17 +1,21 @@
 ### 📋Todo
 #### Level1
+- [] 优化Deepseek-chat页面
+- [] 优化Api测试页面
 #### Level2
 - [] todolist + 作为.md保存本地，且被md阅读器获取
 - [] 二维码的反向解码
 - [] 音乐播放器
 - [] SSE服务端更新日志推送
 - [] 音频保存
+- [] 用py做数据收集
 #### Level3
 - [ ] 语音通讯(P2P WebRTC)
 - [ ] 文件共享（上传文件+来源于xx主机的P2P模式）
 - [ ] 多设备登录（私钥借用，服务端）
 - [ ] 插件扩展
 - [ ] 桌面挂件子进程
+- [ ] 接入py_deepseek_Agent
 #### Level4
 - [ ] Mobile client
 - [] 桌面远程控制共享
@@ -59,3 +63,4 @@
 ### Deprecated
 - 🚫 mini代码编辑器
 - 🚫 命令行
+- 🚫 输入框指令

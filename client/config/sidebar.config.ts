@@ -42,13 +42,6 @@ export const sidebarItems: SidebarItem[] = [
     source: 'local',
   },
   {
-    id: 'recorder',
-    label: '录音机',
-    icon: '🎙️',
-    order: 4,
-    source: 'local',
-  },
-  {
     id: 'printer',
     label: '本地打印',
     icon: '🖨️',

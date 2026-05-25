@@ -6,12 +6,11 @@ import Dashboard from '../pages/Dashboard';
 import Printer from '../pages/Printer';
 import SysInfo from '../pages/SysInfo';
 import TypingPractice from '../pages/Typing';
-import Recorder from '../pages/Recorder';
 import QRCodeGenerator from '../pages/QRCodeGenerator';
 import Charts from '../pages/Charts';
 import FuncConfig from '../pages/FuncConfigs';
 import Algorithms from '../pages/Algorithms';
-import WAudioController from '../pages/WAudioController';
+
 import StartPage from '../pages/Start';
 import DrillGround from '../pages/DrillGround';
 import P2PChat from '../pages/Chat_RsP2P';
@@ -20,6 +19,7 @@ import DocReader from '../pages/DocReader';
 import Community from '../pages/Communnity';
 import FileHandler from '../pages/Filehandler';
 import TodoList from '../pages/TodoList';
+import Audio from '../pages/WAudioController';
 
 const contentMap: Record<string, JSX.Element> = {
   start: <StartPage />,
@@ -31,11 +31,10 @@ const contentMap: Record<string, JSX.Element> = {
   'process-manager': <SysInfo />,
   'typing-practice': <TypingPractice />,
   printer: <Printer />,
-  recorder: <Recorder />,
   qrcode: <QRCodeGenerator />,
   charts: <Charts />,
   algorithms: <Algorithms />,
-  'audio-control': <WAudioController />,
+  'audio-control': <Audio />,
   'drill-ground': <DrillGround />,
   'p2p-chat': <P2PChat />,
   'server-chat': <ServerChat />,

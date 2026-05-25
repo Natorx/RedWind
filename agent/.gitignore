@@ -1,0 +1,7 @@
+/venv/*
+/docs/*
+js/node_modules/*
+/example/*
+chat_history.json
+chat-history.db
+/module/__pycache__/*

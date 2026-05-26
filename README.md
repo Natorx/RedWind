@@ -39,3 +39,15 @@ First, ensure you have Node.js (24.0.0+) and Rust installed on your computer. If
 `pnpm ds`: Features tagged with `server` all depend on the Node.js service, which provides functions like chat rooms and posts. You need to use `pnpm ds` to start it.
 
 `pnpm agent`: The Agent functionality requires Python. If you want to debug locally, ensure you have Python installed on your computer. Use `pnpm agent` to start the Agent interface service.
+
+### File Directory
+
+redwind/
+├── agent          This module is written in Python and contains several startup programs, command-line startup, interface services (interface layer used by applications), test files, etc.
+├── assets         Stores images and other miscellaneous items, nothing significant.
+├── client         Client side; all pages and components related to client-side rendering are in this folder.
+├── commands       Some commands used to upgrade versions, quickly start the project, etc.
+├── release        Installation packages for various versions of the software.
+├── server         Node.js service built with Fastify, providing features like chat rooms and posts.
+├── src-tauri      Backend built with Rust, used to launch processes and provide system integration functionalities as a backend for the client page.
+└── wasm           Rust package for optimizing client performance, with limited content inside.

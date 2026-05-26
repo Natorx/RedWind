@@ -28,9 +28,8 @@
 - 数据：本地数据使用SQLite进行存储，由Rust后端来控制，服务端数据使用PGSQL进行存储
 - 性能：使用Rust后端以及Rust的WASM来提供高性能
 
-## For dev
-
-### How to Start
+## 开发
+### 开始
 首先，确保你的电脑中有Nodejs(24.0.0+)，和Rust，如果你电脑中的Nodejs版本低于24.0.0，部分功能会无法使用
     
 `pnpm install`安装所需的依赖
@@ -40,3 +39,16 @@
 `pnpm ds`：标有server标签的都依赖于Node服务，它提供聊天室，帖子等功能，你需要使用`pnpm ds`启动它
 
 `pnpm agent`：关于Agent功能，需要用到Python，如果你想要本地调试，需要保证你的电脑中有Python，使用`pnpm agent`启动Agent接口服务
+
+### 文件目录
+```
+redwind/
+├── agent       这个模块是使用Python写的，包含了几个启动程序，命令行启动，接口服务（给应用程序使用的接口层），测试文件等
+├── assets      放一些图片的，没啥的东西
+├── client      客户端，所有的客户端渲染相关的页面和组件都在这个文件夹中
+├── commands    一些指令，用来升级版本，快速启动项目等
+├── release     软件各个版本的安装包
+├── server      使用Fastify构建的Node服务，提供了聊天室，帖子等功能
+├── src-tauri   Rust构建的后端，用来启动作为后端配合客户端页面启动进程，提供对接系统的一些功能
+└── wasm        用于优化客户端性能的Rust包，里面的内容并不多
+```

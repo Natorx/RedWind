@@ -17,7 +17,8 @@
     "dlinux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
     "fmt": "cd src-tauri && cargo fmt",
     "updater": "cmd /c commands\\version_update.bat",
-    "get_build": "cmd /c commands\\extract_release.bat"
+    "get_build": "cmd /c commands\\extract_release.bat",
+    "agent": "cd agent && python server.py"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

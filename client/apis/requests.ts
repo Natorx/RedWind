@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { server_api } from '../config/api.config';
 
 const request = axios.create({
   timeout: 3000,
@@ -28,7 +27,7 @@ request.interceptors.response.use(
 );
 
 const req_to_server = axios.create({
-  baseURL: server_api,
+  baseURL: import.meta.env.VITE_SERVER_URL,
   headers: {
     'Content-Type': 'application/json',
   },

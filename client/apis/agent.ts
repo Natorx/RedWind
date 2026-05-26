@@ -29,7 +29,7 @@ class AgentApiService {
   private baseUrl: string;
   private sessionId: string | null = null;
 
-  constructor(baseUrl: string = 'http://localhost:8000/api') {
+  constructor(baseUrl: string = import.meta.env.VITE_AGENT_URL) {
     this.baseUrl = baseUrl;
     // 从 localStorage 恢复会话
     const savedSessionId = localStorage.getItem('agent_session_id');
@@ -40,7 +40,7 @@ class AgentApiService {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const response = await fetch(url, {
@@ -59,7 +59,10 @@ class AgentApiService {
     return response.json();
   }
 
-  async sendMessage(message: string, autoExecute: boolean = true): Promise<ChatResponse> {
+  async sendMessage(
+    message: string,
+    autoExecute: boolean = true,
+  ): Promise<ChatResponse> {
     const request: ChatRequest = {
       message,
       session_id: this.sessionId || undefined,
@@ -125,6 +128,4 @@ class AgentApiService {
   }
 }
 
-export const agentApi = new AgentApiService(
-   'http://localhost:8000/api'
-);
+export const agentApi = new AgentApiService(import.meta.env.VITE_AGENT_URL);

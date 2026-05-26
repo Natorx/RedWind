@@ -102,7 +102,7 @@ export const sidebarItems: SidebarItem[] = [
   // ========== 外部服务 (external, order 12) ==========
   {
     id: 'chatbox',
-    label: 'AI聊天',
+    label: 'Deepseek chat',
     icon: '💬',
     order: 12,
     source: 'external',
@@ -111,14 +111,14 @@ export const sidebarItems: SidebarItem[] = [
   // ========== 服务器功能 (server, order 13-14) ==========
   {
     id: 'server-chat',
-    label: '服务聊天室',
+    label: '聊天室',
     icon: '💬',
     order: 13,
     source: 'server',
   },
   {
     id: 'agent',
-    label: 'Deepseek智能体',
+    label: 'Deepseek Agent',
     icon: '🤖',
     order: 14,
     source: 'server',
@@ -190,7 +190,7 @@ export const sidebarItems: SidebarItem[] = [
     label: '文档阅读器',
     icon: '📖',
     order: 23,
-    source: 'coming_soon',
+    source: 'local',
   },
 
   // ========== 其他 (server / local, order 24-25) ==========

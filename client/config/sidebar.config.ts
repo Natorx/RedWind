@@ -26,10 +26,10 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'community', label: '社区', icon: '🏠', order: 24, source: 'server' },
 
   // ========== local ==========
+  { id: 'dashboard', label: '仪表盘', icon: '📊', order: 1, source: 'local' },
   { id: 'typing-practice', label: '打字练习', icon: '⌨️', order: 2, source: 'local' },
   { id: 'audio-control', label: '音频控制', icon: '🎵', order: 3, source: 'local' },
   { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },
-  { id: 'wasm', label: 'WASM工具', icon: '🧩', order: 6, source: 'local' },
   { id: 'api-debug', label: 'API调试', icon: '🛠️', order: 7, source: 'local' },
   { id: 'algorithms', label: '算法', icon: '🧮', order: 8, source: 'local' },
   { id: 'file-hander', label: '文件处理', icon: '🔄', order: 9, source: 'local' },
@@ -44,7 +44,6 @@ export const sidebarItems: SidebarItem[] = [
 
   // ========== 未开发 (coming_soon / incomplete) ==========
   // 注意：incomplete 优先级略高于 coming_soon？按 order 混合排序即可
-  { id: 'dashboard', label: '仪表盘', icon: '📊', order: 1, source: 'incomplete' },
   { id: 'p2p-chat', label: 'P2P聊天', icon: '💬', order: 16, source: 'incomplete' },
   { id: 'drill-ground', label: '演练场', icon: '🏟️', order: 15, source: 'coming_soon' },
   { id: 'file-sharing', label: '文件共享', icon: '📁', order: 17, source: 'coming_soon' },

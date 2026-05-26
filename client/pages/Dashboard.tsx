@@ -8,11 +8,9 @@ import { invoke } from '@tauri-apps/api/core';
 import {
   Users,
   ShoppingCart,
-  DollarSign,
   Activity,
   TrendingUp,
   TrendingDown,
-  MoreHorizontal,
   HardDrive,
   Cpu,
 } from 'lucide-react';
@@ -169,7 +167,7 @@ const SystemResourcesCard = ({ hardware }: { hardware: HardwareInfo | null }) =>
 
   // 4. 所有网络（显示总接收 / 总发送）
   if (hardware?.networks) {
-    hardware.networks.forEach((net, idx) => {
+    hardware.networks.forEach((net) => {
       resources.push({
         label: net.name,
         icon: Activity,
@@ -237,7 +235,7 @@ const ProcessTable = () => {
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>('pid');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [loading, setLoading] = useState(false);
+  const [_, setLoading] = useState(false);
   const [killingPid, setKillingPid] = useState<string | null>(null);
   const maxMemoryKb = useRef<number>(1024 * 1024);
 
@@ -413,7 +411,7 @@ const ProcessTable = () => {
 const Dashboard = () => {
   // 硬件信息
   const [hardware, setHardware] = useState<HardwareInfo | null>(null);
-  const [loadingHw, setLoadingHw] = useState(true);
+  const [_, setLoadingHw] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadHardware = async () => {

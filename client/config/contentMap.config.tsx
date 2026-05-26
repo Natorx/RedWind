@@ -20,7 +20,6 @@ import FileHandler from '../pages/Filehandler';
 import TodoList from '../pages/TodoList';
 import Audio from '../pages/WAudioController';
 import Agent from '../pages/Agent';
-import WASM from '../pages/WASM';
 
 const contentMap: Record<string, JSX.Element> = {
   start: <StartPage />,
@@ -42,7 +41,6 @@ const contentMap: Record<string, JSX.Element> = {
   community: <Community />,
   todo: <TodoList />,
   agent: <Agent />,
-  wasm: <WASM />,
 };
 export default contentMap;
 

@@ -3,8 +3,13 @@ import requests
 import json
 import time
 import os
+from module.config import load_config
 
-API_KEY = os.getenv("DEEPSEEK_API_KEY", "your_api_key")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(current_dir)
+config = load_config(BASE_DIR)
+User_Key = config['api_key']
+API_KEY = os.getenv("DEEPSEEK_API_KEY", User_Key)
 BASE_URL = "https://api.deepseek.com/v1/chat/completions"
 
 def deepseek_chat(messages: list, model: str = "deepseek-v4-flash", max_retries: int = 3) -> str:

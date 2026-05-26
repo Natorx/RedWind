@@ -7,7 +7,6 @@ pub mod open;
 pub mod p2p_chat;
 pub mod printer;
 pub mod sidebar;
-pub mod todo;
 pub mod typing;
 pub mod win_audio_control;
 pub mod path_set;

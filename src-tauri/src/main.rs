@@ -65,11 +65,10 @@ fn main() {
             mods::p2p_chat::start_p2p,
             // Docs
             mods::docs::read_document,
+            mods::docs::export_markdown,
             // file_handler
             mods::file_handler::export_json,
             mods::file_handler::save_file_bytes,
-            // todo
-            mods::todo::export_markdown,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

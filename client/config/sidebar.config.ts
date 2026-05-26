@@ -14,8 +14,9 @@ type SidebarItem = {
 };
 
 export const startPage_latestFeatures = [
+  { id:'agent', label:'Deepseeek智能体', icon:'🤖', date:'2025-05-25' },
+  { id:'wasm', label:'WASM工具', icon:'🧩', date:'2025-05-22' },
   { id: 'audio-control', label: '音频控制', icon: '🎵', date: '2025-05-01' },
-  { id: 'algorithms', label: '算法', icon: '🧮', date: '2025-05-01' },
 ];
 
 export const sidebarItems: SidebarItem[] = [
@@ -54,6 +55,13 @@ export const sidebarItems: SidebarItem[] = [
     icon: '💻',
     order: 6,
     source: 'local',
+  },
+  {
+    id:'wasm',
+    label:'WASM工具',
+    icon:'🧩',
+    order:7,
+    source:'local',
   },
   {
     id: 'api-debug',
@@ -106,6 +114,13 @@ export const sidebarItems: SidebarItem[] = [
     label: '服务聊天室',
     icon: '💬',
     order: 14,
+    source: 'server',
+  },
+  {
+    id: 'agent',
+    label: 'Deepseek智能体',
+    icon: '🤖',
+    order: 15,
     source: 'server',
   },
   {

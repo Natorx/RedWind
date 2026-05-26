@@ -1,14 +1,10 @@
 ### 📋Todo
 #### Level1
-- [] 优化Deepseek-chat页面
-- [] 优化Api测试页面
 #### Level2
 - [] todolist + 作为.md保存本地，且被md阅读器获取
 - [] 二维码的反向解码
 - [] 音乐播放器
 - [] SSE服务端更新日志推送
-- [] 音频保存
-- [] 用py做数据收集
 #### Level3
 - [ ] 语音通讯(P2P WebRTC)
 - [ ] 文件共享（上传文件+来源于xx主机的P2P模式）
@@ -19,11 +15,7 @@
 - [ ] Mobile client
 - [] 桌面远程控制共享
 
-#### Optimize
-- [] 系统信息模块发布订阅`window.emit("data-changed", payload)`推送
-
 #### Bugs
-2. utils中UIState切换成最新方案
 3. 帖子模块中服务端在更新帖子时，不用的图片删掉
 4. 帖子模块添加服务端密钥+密码配置删除权限
 

@@ -1,11 +1,8 @@
-/**src/components/RequestTool.tsx
- * @Author: Fofow
- * @Date: 2026/4/1
- * @Description:
- * @Copyright: Copyright (©)}) 2026 Fofow. All rights reserved.
- */
+/** src/components/RequestTool.tsx */
 import React, { useState } from 'react';
 import { request } from '../apis/requests';
+import { useRequestStore, SavedRequest } from '../stores/requests'
+import Drawer from '../components/Drawer';
 
 interface ParamItem {
   key: string;
@@ -22,6 +19,7 @@ type HttpMethod =
   | 'OPTIONS';
 
 const RequestTool: React.FC = () => {
+  // ------------------ 本地状态 ------------------
   const [method, setMethod] = useState<HttpMethod>('GET');
   const [url, setUrl] = useState('');
   const [params, setParams] = useState<ParamItem[]>([
@@ -31,14 +29,18 @@ const RequestTool: React.FC = () => {
     { key: 'Content-Type', value: 'application/json', enabled: true },
   ]);
   const [body, setBody] = useState('');
+  const [note, setNote] = useState('');                // 备注
+
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'params' | 'headers' | 'body'>(
-    'params',
-  );
+  const [activeTab, setActiveTab] = useState<'params' | 'headers' | 'body'>('params');
+  const [drawerOpen, setDrawerOpen] = useState(false); // 抽屉开关
 
-  // 添加参数行
+  // ------------------ Zustand Store ------------------
+  const { savedRequests, addRequest, removeRequest } = useRequestStore();
+
+  // ------------------ 参数操作 ------------------
   const addParam = (type: 'params' | 'headers') => {
     const newItem = { key: '', value: '', enabled: true };
     if (type === 'params') {
@@ -48,7 +50,6 @@ const RequestTool: React.FC = () => {
     }
   };
 
-  // 更新参数行
   const updateParam = (
     type: 'params' | 'headers',
     index: number,
@@ -56,21 +57,16 @@ const RequestTool: React.FC = () => {
     value: any,
   ) => {
     if (type === 'params') {
-      setParams((prevParams) =>
-        prevParams.map((item, i) =>
-          i === index ? { ...item, [field]: value } : item,
-        ),
+      setParams((prev) =>
+        prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
       );
     } else {
-      setHeaders((prevHeaders) =>
-        prevHeaders.map((item, i) =>
-          i === index ? { ...item, [field]: value } : item,
-        ),
+      setHeaders((prev) =>
+        prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
       );
     }
   };
 
-  // 删除参数行
   const removeParam = (type: 'params' | 'headers', index: number) => {
     if (type === 'params') {
       setParams(params.filter((_, i) => i !== index));
@@ -79,28 +75,23 @@ const RequestTool: React.FC = () => {
     }
   };
 
-  // 发送请求
+  // ------------------ 发送请求（原有逻辑） ------------------
   const sendRequest = async () => {
     if (!url.trim()) {
       setError('请输入请求地址');
       return;
     }
-
     setLoading(true);
     setError(null);
-
     try {
-      // 构建 query 参数
       const queryParams = params
         .filter((p) => p.key.trim() && p.enabled)
         .reduce((acc, p) => ({ ...acc, [p.key]: p.value }), {});
 
-      // 构建请求头
       const requestHeaders = headers
         .filter((h) => h.key.trim() && h.enabled)
         .reduce((acc, h) => ({ ...acc, [h.key]: h.value }), {});
 
-      // 解析 body
       let requestBody = undefined;
       if (
         body.trim() &&
@@ -131,7 +122,40 @@ const RequestTool: React.FC = () => {
     }
   };
 
-  // 格式化 JSON 显示
+  // ------------------ 保存当前请求到 Store ------------------
+  const handleSaveRequest = () => {
+    if (!url.trim()) {
+      setError('请输入请求地址才能保存');
+      return;
+    }
+    addRequest({
+      note: note.trim() || `请求 - ${url}`,
+      method,
+      url,
+      params,
+      headers,
+      body,
+    });
+    // 保存后自动打开抽屉
+    setDrawerOpen(true);
+    setError(null);
+  };
+
+  // ------------------ 加载已保存的请求（填充并发送） ------------------
+  const loadAndSendRequest = (saved: SavedRequest) => {
+    setMethod(saved.method);
+    setUrl(saved.url);
+    setParams(saved.params);
+    setHeaders(saved.headers);
+    setBody(saved.body);
+    // 备注保持当前输入框内容不变（或可以选择填充备注）
+    setNote(saved.note);
+    setDrawerOpen(false);
+    // 自动发送请求
+    setTimeout(() => sendRequest(), 0); // 等待状态更新
+  };
+
+  // ------------------ 格式化响应 ------------------
   const formatResponse = () => {
     if (!response) return '';
     try {
@@ -141,11 +165,21 @@ const RequestTool: React.FC = () => {
     }
   };
 
-return (
+  // ------------------ 格式化为相对时间 ------------------
+  const formatTime = (timestamp: number) => {
+    const diff = Date.now() - timestamp;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return '刚刚';
+    if (mins < 60) return `${mins}分钟前`;
+    const hours = Math.floor(mins / 60);
+    return `${hours}小时前`;
+  };
+
+  return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-red-950 to-neutral-900">
-      {/* 请求栏 */}
+      {/* ========== 请求栏 ========== */}
       <div className="bg-neutral-900/80 backdrop-blur-sm border-b border-red-500/20 p-4">
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           {/* 请求方法 */}
           <select
             value={method}
@@ -168,7 +202,32 @@ return (
             className="flex-1 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500 font-mono text-sm"
           />
 
-          {/* 发送按钮 */}
+          {/* 备注输入框（新增） */}
+          <input
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="备注（可选）"
+            className="w-40 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-neutral-200 placeholder-neutral-500 font-mono text-sm"
+          />
+
+          {/* 保存按钮（新增） */}
+          <button
+            onClick={handleSaveRequest}
+            className="px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white rounded-lg font-medium transition-all shadow-lg shadow-yellow-500/25"
+          >
+            💾 保存
+          </button>
+
+          {/* 打开抽屉按钮（新增） */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all shadow-lg shadow-blue-500/25"
+          >
+            📂 历史
+          </button>
+
+          {/* 原来的发送请求按钮保留（可选，建议保留方便快速测试） */}
           <button
             onClick={sendRequest}
             disabled={loading}
@@ -179,14 +238,14 @@ return (
         </div>
       </div>
 
-      {/* 参数配置区域 */}
+      {/* ========== 参数配置区域（保持不变） ========== */}
       <div className="bg-neutral-900/80 backdrop-blur-sm border-b border-red-500/20">
         <div className="flex gap-4 px-4">
           <button
             onClick={() => setActiveTab('params')}
             className={`px-3 py-2 text-sm font-medium transition-all ${
               activeTab === 'params'
-                ? 'text-red-400 border-b-2 border-red-500'
+                ? 'text-white rounded bg-red-600 border-b-2 border-red-500'
                 : 'text-neutral-400 hover:text-neutral-300'
             }`}
           >
@@ -196,7 +255,7 @@ return (
             onClick={() => setActiveTab('headers')}
             className={`px-3 py-2 text-sm font-medium transition-all ${
               activeTab === 'headers'
-                ? 'text-red-400 border-b-2 border-red-500'
+                ? 'text-white rounded bg-red-600 border-b-2 border-red-500'
                 : 'text-neutral-400 hover:text-neutral-300'
             }`}
           >
@@ -206,7 +265,7 @@ return (
             onClick={() => setActiveTab('body')}
             className={`px-3 py-2 text-sm font-medium transition-all ${
               activeTab === 'body'
-                ? 'text-red-400 border-b-2 border-red-500'
+                ? 'text-white rounded bg-red-600 border-b-2 border-red-500'
                 : 'text-neutral-400 hover:text-neutral-300'
             }`}
           >
@@ -222,7 +281,7 @@ return (
                 <span className="text-sm text-neutral-400">Query 参数</span>
                 <button
                   onClick={() => addParam('params')}
-                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                  className="text-sm rounded text-white px-2 py-1 bg-red-600 cursor-pointer hover:text-red-300 transition-colors"
                 >
                   + 添加参数
                 </button>
@@ -234,12 +293,7 @@ return (
                       type="checkbox"
                       checked={param.enabled}
                       onChange={(e) =>
-                        updateParam(
-                          'params',
-                          index,
-                          'enabled',
-                          e.target.checked,
-                        )
+                        updateParam('params', index, 'enabled', e.target.checked)
                       }
                       className="w-4 h-4 rounded border-red-500/30 bg-neutral-800 text-red-500 focus:ring-red-500 focus:ring-offset-0"
                     />
@@ -263,7 +317,7 @@ return (
                     />
                     <button
                       onClick={() => removeParam('params', index)}
-                      className="text-red-400 hover:text-red-300 text-sm transition-colors"
+                      className="text-white cursor-pointer bg-red-600 p-1 rounded hover:text-red-300 text-sm transition-colors"
                     >
                       删除
                     </button>
@@ -276,10 +330,10 @@ return (
           {activeTab === 'headers' && (
             <div>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm text-neutral-400">请求头</span>
+                <span className="text-sm p-2 text-neutral-400">请求头</span>
                 <button
                   onClick={() => addParam('headers')}
-                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                  className="px-2 py-1 bg-red-600 text-sm text-white rounded-lg hover:text-red-200 cursor-pointer transition-colors"
                 >
                   + 添加请求头
                 </button>
@@ -291,12 +345,7 @@ return (
                       type="checkbox"
                       checked={header.enabled}
                       onChange={(e) =>
-                        updateParam(
-                          'headers',
-                          index,
-                          'enabled',
-                          e.target.checked,
-                        )
+                        updateParam('headers', index, 'enabled', e.target.checked)
                       }
                       className="w-4 h-4 rounded border-red-500/30 bg-neutral-800 text-red-500 focus:ring-red-500 focus:ring-offset-0"
                     />
@@ -320,7 +369,7 @@ return (
                     />
                     <button
                       onClick={() => removeParam('headers', index)}
-                      className="text-red-400 hover:text-red-300 text-sm transition-colors"
+                      className="rounded p-1 bg-red-600 text-white cursor-pointer hover:text-red-300 text-sm transition-colors"
                     >
                       删除
                     </button>
@@ -338,10 +387,7 @@ return (
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                placeholder='{
-  "name": "example",
-  "value": 123
-}'
+                placeholder={`{\n  "name": "example",\n  "value": 123\n}`}
                 className="w-full h-48 px-3 py-2 bg-neutral-800 border border-red-500/30 rounded-lg font-mono text-sm text-neutral-200 placeholder-neutral-500 resize-none focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
@@ -349,7 +395,7 @@ return (
         </div>
       </div>
 
-      {/* 响应区域 */}
+      {/* ========== 响应区域（保持不变） ========== */}
       <div className="flex-1 overflow-auto p-4">
         <div className="mb-2 flex justify-between items-center">
           <span className="text-sm font-medium text-neutral-300">响应结果</span>
@@ -376,25 +422,17 @@ return (
 
         {error && !loading && (
           <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-            <div className="text-red-400 text-sm font-medium mb-1">
-              请求失败
-            </div>
-            <pre className="text-red-400 text-sm whitespace-pre-wrap">
-              {error}
-            </pre>
+            <div className="text-red-400 text-sm font-medium mb-1">请求失败</div>
+            <pre className="text-red-400 text-sm whitespace-pre-wrap">{error}</pre>
             {response && (
-              <pre className="text-red-400 text-sm whitespace-pre-wrap mt-2">
-                {formatResponse()}
-              </pre>
+              <pre className="text-red-400 text-sm whitespace-pre-wrap mt-2">{formatResponse()}</pre>
             )}
           </div>
         )}
 
         {response && !loading && !error && (
           <div className="bg-neutral-900 rounded-lg p-4 overflow-auto border border-red-500/20">
-            <pre className="text-green-400 text-sm font-mono whitespace-pre-wrap">
-              {formatResponse()}
-            </pre>
+            <pre className="text-green-400 text-sm font-mono whitespace-pre-wrap">{formatResponse()}</pre>
           </div>
         )}
 
@@ -408,6 +446,67 @@ return (
         )}
       </div>
 
+      {/* ========== 抽屉组件 ========== */}
+      <Drawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        title="已保存的请求"
+        position="right"
+        width="w-80 md:w-96"
+      >
+        {savedRequests.length === 0 ? (
+          <div className="text-neutral-500 text-center mt-8">暂无保存的请求</div>
+        ) : (
+          <ul className="space-y-3">
+            {savedRequests.map((saved) => (
+              <li
+                key={saved.id}
+                className="p-3 bg-neutral-800/50 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-colors"
+              >
+                {/* 备注名 */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-neutral-200 truncate max-w-[180px]">
+                    {saved.note}
+                  </span>
+                  <span className="text-xs text-neutral-500">{formatTime(saved.timestamp)}</span>
+                </div>
+
+                {/* 请求详情（方法 + 简短 URL） */}
+                <div className="flex items-center gap-2 mb-3 text-xs">
+                  <span className={`px-2 py-0.5 rounded font-bold ${
+                    saved.method === 'GET'    ? 'bg-green-500/20 text-green-400' :
+                    saved.method === 'POST'   ? 'bg-yellow-500/20 text-yellow-400' :
+                    saved.method === 'PUT'    ? 'bg-blue-500/20 text-blue-400' :
+                    saved.method === 'DELETE' ? 'bg-red-500/20 text-red-400' :
+                    'bg-purple-500/20 text-purple-400'
+                  }`}>
+                    {saved.method}
+                  </span>
+                  <span className="text-neutral-400 truncate max-w-[200px]">{saved.url}</span>
+                </div>
+
+                {/* 操作按钮 */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => loadAndSendRequest(saved)}
+                    className="flex-1 px-2 py-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-xs rounded font-medium transition-all shadow"
+                  >
+                    🚀 发送
+                  </button>
+                  <button
+                    onClick={() => removeRequest(saved.id)}
+                    className="px-2 py-1 bg-transparent border border-red-500/40 text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs rounded transition-all"
+                  >
+                    🗑️ 删除
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Drawer>
+
+      {/* 原有的 bounce 动画 */}
       <style>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }

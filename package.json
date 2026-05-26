@@ -1,7 +1,7 @@
 {
   "name": "red-wind-project",
   "private": true,
-  "version": "0.4.2",
+  "version": "0.4.3",
   "author": "Fofow",
   "workspaces": [
     "client",

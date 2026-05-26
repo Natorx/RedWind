@@ -15,7 +15,6 @@
 ![alt text](assets/pics-doc/chat_server.png)
 ![alt text](assets/pics-doc/conversion.png)
 ![alt text](assets/pics-doc/english.png)
-![alt text](assets/pics-doc/english.png)
 ![alt text](assets/pics-doc/printer.png)
 ![alt text](assets/pics-doc/qrcode.png)
 ![alt text](assets/pics-doc/sys.png)

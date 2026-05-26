@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { request } from '../apis/requests';
 import { useRequestStore, SavedRequest } from '../stores/requests'
-import Drawer from '../components/Drawer';
 
 interface ParamItem {
   key: string;
@@ -35,7 +34,6 @@ const RequestTool: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'params' | 'headers' | 'body'>('params');
-  const [drawerOpen, setDrawerOpen] = useState(false); // 抽屉开关
 
   // ------------------ Zustand Store ------------------
   const { savedRequests, addRequest, removeRequest } = useRequestStore();
@@ -136,8 +134,7 @@ const RequestTool: React.FC = () => {
       headers,
       body,
     });
-    // 保存后自动打开抽屉
-    setDrawerOpen(true);
+
     setError(null);
   };
 
@@ -150,7 +147,6 @@ const RequestTool: React.FC = () => {
     setBody(saved.body);
     // 备注保持当前输入框内容不变（或可以选择填充备注）
     setNote(saved.note);
-    setDrawerOpen(false);
     // 自动发送请求
     setTimeout(() => sendRequest(), 0); // 等待状态更新
   };
@@ -217,14 +213,6 @@ const RequestTool: React.FC = () => {
             className="px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white rounded-lg font-medium transition-all shadow-lg shadow-yellow-500/25"
           >
             💾 保存
-          </button>
-
-          {/* 打开抽屉按钮（新增） */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all shadow-lg shadow-blue-500/25"
-          >
-            📂 历史
           </button>
 
           {/* 原来的发送请求按钮保留（可选，建议保留方便快速测试） */}
@@ -395,14 +383,15 @@ const RequestTool: React.FC = () => {
         </div>
       </div>
 
+      <div className='flex gap-4'>
       {/* ========== 响应区域（保持不变） ========== */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-[7] overflow-auto p-4">
         <div className="mb-2 flex justify-between items-center">
           <span className="text-sm font-medium text-neutral-300">响应结果</span>
           {response && (
             <button
               onClick={() => navigator.clipboard.writeText(formatResponse())}
-              className="text-sm text-red-400 hover:text-red-300 transition-colors"
+              className="py-1 px-2 bg-red-600 rounded cursor-pointer text-sm text-white hover:text-red-300 transition-colors"
             >
               复制
             </button>
@@ -431,7 +420,7 @@ const RequestTool: React.FC = () => {
         )}
 
         {response && !loading && !error && (
-          <div className="bg-neutral-900 rounded-lg p-4 overflow-auto border border-red-500/20">
+          <div className="bg-neutral-900 rounded-lg p-4 overflow-auto max-h-60vh border border-red-500/20">
             <pre className="text-green-400 text-sm font-mono whitespace-pre-wrap">{formatResponse()}</pre>
           </div>
         )}
@@ -445,16 +434,8 @@ const RequestTool: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* ========== 抽屉组件 ========== */}
-      <Drawer
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        title="已保存的请求"
-        position="right"
-        width="w-80 md:w-96"
-      >
-        {savedRequests.length === 0 ? (
+      <div className='flex-[3] overflow-auto p-4'>
+                {savedRequests.length === 0 ? (
           <div className="text-neutral-500 text-center mt-8">暂无保存的请求</div>
         ) : (
           <ul className="space-y-3">
@@ -504,18 +485,8 @@ const RequestTool: React.FC = () => {
             ))}
           </ul>
         )}
-      </Drawer>
-
-      {/* 原有的 bounce 动画 */}
-      <style>{`
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        .animate-bounce {
-          animation: bounce 0.6s ease-in-out infinite;
-        }
-      `}</style>
+      </div>
+      </div>
     </div>
   );
 };

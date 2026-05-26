@@ -8,7 +8,7 @@ import SysInfo from '../pages/SysInfo';
 import TypingPractice from '../pages/Typing';
 import QRCodeGenerator from '../pages/QRCodeGenerator';
 import Charts from '../pages/Charts';
-import FuncConfig from '../pages/FuncConfigs';
+import FuncConfig from '../pages/Configs';
 import Algorithms from '../pages/Algorithms';
 
 import StartPage from '../pages/Start';

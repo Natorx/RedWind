@@ -55,3 +55,16 @@
 - 🚫 mini代码编辑器
 - 🚫 命令行
 - 🚫 输入框指令
+
+### 语音通讯
+- 方案1：可以用Nestjs来传输语音数据，也就是作为信号服务Signaling Server，帮两个客户端找到对方，交换网络地址和通讯号，然后绕过服务器通信。
+Tech：Nestjs+WebSocket
+- 方案2：使用WebRTC来让两个客户端通过P2P通话，低延迟且不用服务器带宽。
+Tech：Rust的saorsa-webrtc等库(DHT网络发现)
+方案2会更难，但正是这样才有挑战。
+
+saorsa-webrtc使用QUIC协议通信
+难点：
+1. 异步Rust代码，需要理解`signaling.rs`,`media.rs`,`call.rs`
+2. 库较新，只能看API文档
+3. 调试比较难

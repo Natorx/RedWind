@@ -1,5 +1,7 @@
 ## 项目简介
 
+[English](./README.md)
+
     红风工具库 —— 集成了包括Deepseek Agent在内的一些常用的功能
     Red wind —— a multi functional tool library
 

@@ -3,3 +3,4 @@
 2. develop dashboard module
 3. add CHANGELOG.md
 4. delete "WASM" page
+5. "README.md" in English version

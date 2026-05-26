@@ -11,7 +11,6 @@
 ![alt text](assets/pics-doc/a_modules.png)
 ![alt text](assets/pics-doc/a_start.png)
 ![alt text](assets/pics-doc/audio_control.png)
-![alt text](assets/pics-doc/audio_record.png)
 ![alt text](assets/pics-doc/chat_ai.png)
 ![alt text](assets/pics-doc/chat_server.png)
 ![alt text](assets/pics-doc/conversion.png)

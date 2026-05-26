@@ -42,3 +42,75 @@ pub fn export_markdown(content: String, date: String) -> Result<String, String> 
     // 返回文件路径
     Ok(file_path.to_string_lossy().to_string())
 }
+
+
+#[tauri::command]
+pub fn list_markdown_files() -> Result<Vec<String>, String> {
+    let current_dir = std::env::current_dir().map_err(|e| e.to_string())?;
+
+    // 定义候选目录（按优先级排列）
+    let candidates = [
+        current_dir.join("docs"),                       // 项目根下的 docs/
+        current_dir.join("src-tauri").join("docs"),     // 嵌套一次 src-tauri/docs
+        // 如果你还有别的位置，可以继续添加
+    ];
+
+    // 找到第一个存在的目录
+    for docs_dir in candidates.iter() {
+        if docs_dir.is_dir() {
+            println!("📁 使用文档目录: {:?}", docs_dir);  // 调试时可以看到
+            let mut files = Vec::new();
+            for entry in std::fs::read_dir(docs_dir).map_err(|e| e.to_string())? {
+                let entry = entry.map_err(|e| e.to_string())?;
+                let path = entry.path();
+                if path.extension().and_then(|ext| ext.to_str()) == Some("md") {
+                    files.push(path.to_string_lossy().to_string());
+                }
+            }
+            return Ok(files);
+        }
+    }
+
+    // 如果都不存在，返回空列表
+    Ok(Vec::new())
+}
+
+
+#[tauri::command]
+pub fn read_markdown_file(path: String) -> Result<String, String> {
+    std::fs::read_to_string(&path)
+        .map_err(|e| format!("读取文件失败: {}", e))
+}
+
+#[tauri::command]
+pub fn copy_file_to_docs(source_path: String) -> Result<String, String> {
+    let current_dir = std::env::current_dir().map_err(|e| e.to_string())?;
+    
+    // 与 list_markdown_files 相同的候选目录逻辑
+    let candidates = [
+        current_dir.join("docs"),
+        current_dir.join("src-tauri").join("docs"),
+    ];
+
+    // 找到第一个存在的目录，若都不存在则创建项目根下的 docs
+    let docs_dir = candidates.iter().find(|d| d.is_dir())
+        .cloned()
+        .unwrap_or_else(|| {
+            let default = current_dir.join("docs");
+            let _ = std::fs::create_dir_all(&default);
+            default
+        });
+
+    let source = std::path::Path::new(&source_path);
+    let file_name = source.file_name()
+        .and_then(|n| n.to_str())
+        .ok_or_else(|| "无法从路径中提取文件名".to_string())?;
+    
+    let dest_path = docs_dir.join(file_name);
+
+    // 复制文件，如果目标已存在则覆盖
+    std::fs::copy(source, &dest_path)
+        .map_err(|e| format!("复制文件失败: {}", e))?;
+
+    Ok(dest_path.to_string_lossy().to_string())
+}

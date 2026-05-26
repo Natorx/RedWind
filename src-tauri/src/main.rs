@@ -66,6 +66,9 @@ fn main() {
             // Docs
             mods::docs::read_document,
             mods::docs::export_markdown,
+            mods::docs::list_markdown_files,
+            mods::docs::read_markdown_file,
+            mods::docs::copy_file_to_docs,
             // file_handler
             mods::file_handler::export_json,
             mods::file_handler::save_file_bytes,

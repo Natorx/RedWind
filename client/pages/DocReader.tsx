@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Upload, FileText, X, AlertCircle } from 'lucide-react';
+import { Upload, FileText, X, AlertCircle, Save } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-dialog';
-import { readTextFile } from '@tauri-apps/plugin-fs';
 import { useDocStore } from '../stores/doc';
+import { invoke } from '@tauri-apps/api/core';
 
 const DocReader: React.FC = () => {
   const { path, history, setPath, clearPath, clearHistory } = useDocStore();
@@ -13,31 +13,38 @@ const DocReader: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showIntro, setShowIntro] = useState<boolean>(true);
+  const [docFiles, setDocFiles] = useState<string[]>([]);
+  const [_, setCopyMessage] = useState<string | null>(null); // 用于显示提示
   const [fileInfo, setFileInfo] = useState<{
     name: string;
     size: number;
   } | null>(null);
 
-  // 读取文件（通过路径）
-  const readFileFromPath = async (filePath: string) => {
-    setLoading(true);
-    setError(null);
+  // 保存到 docs 目录
+  const handleSaveToDocs = async () => {
+    if (!path) return;
+    setCopyMessage(null);
     try {
-      const fileName = filePath.split(/[\\/]/).pop() || '';
-      setFileInfo({ name: fileName, size: 0 }); // size 无法从 readTextFile 获取
-      const content = await readTextFile(filePath);
-      setMarkdownContent(content);
-      setShowIntro(false);
+      await invoke<string>('copy_file_to_docs', { sourcePath: path });
+      setCopyMessage('已保存到文档目录！');
+      // 刷新文档列表
+      const files = await invoke<string[]>('list_markdown_files');
+      setDocFiles(files);
     } catch (err) {
-      console.error('读取文件失败:', err);
-      setError('无法读取文件内容，请确认文件编码为 UTF-8');
-      setMarkdownContent('');
-    } finally {
-      setLoading(false);
+      console.error('保存失败:', err);
+      setCopyMessage('保存失败: ' + err);
     }
   };
 
-  // 当 path 变化时自动读取（初始化、选择文件后、清除后）
+  // ===== 所有 Hooks 必须放在 return 之前 =====
+  // 获取 docs 目录下的 .md 文件列表（只执行一次）
+  useEffect(() => {
+    invoke<string[]>('list_markdown_files')
+      .then((files) => setDocFiles(files))
+      .catch((err) => console.error('读取文档列表失败', err));
+  }, []); // 依赖于空数组，仅挂载时执行
+
+  // 当 path 变化时自动读取文件
   useEffect(() => {
     if (path) {
       readFileFromPath(path);
@@ -48,6 +55,27 @@ const DocReader: React.FC = () => {
       setShowIntro(true);
     }
   }, [path]);
+
+  // 读取文件（通过路径）
+  const readFileFromPath = async (filePath: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const fileName = filePath.split(/[\\/]/).pop() || '';
+      setFileInfo({ name: fileName, size: 0 });
+      const content: string = await invoke('read_markdown_file', {
+        path: filePath,
+      });
+      setMarkdownContent(content);
+      setShowIntro(false);
+    } catch (err) {
+      console.error('读取文件失败:', err);
+      setError('无法读取文件内容，请确认文件编码为 UTF-8');
+      setMarkdownContent('');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 选择文件（系统对话框）
   const handleOpenFile = async () => {
@@ -74,13 +102,18 @@ const DocReader: React.FC = () => {
     }
   };
 
-  // 加载动画
-  if (loading) {
-    return <LoadingPage />;
-  }
-
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
+      {/* 加载遮罩（替代之前的提前 return） */}
+      {loading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="text-center">
+            <div className="inline-block w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+            <p className="mt-4 text-neutral-400">正在读取文件...</p>
+          </div>
+        </div>
+      )}
+
       {/* 扫描动画 - 仅当无文件时显示 */}
       <div
         className={`absolute inset-0 pointer-events-none z-20 transition-opacity duration-500 ${
@@ -97,12 +130,50 @@ const DocReader: React.FC = () => {
         <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-red-500/80 rounded-br-lg animate-pulse-glow" />
       </div>
 
-      {/* 主内容区域 */}
-      <div className="flex-1 flex flex-col overflow-y-auto relative z-10 p-8">
-        {/* 顶部操作栏 */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-red-400">文档阅读器</h1>
-          <div className="flex gap-3">
+      {/* 左侧边栏 */}
+      <div className="w-64 flex flex-col justify-between bg-neutral-900/70 border-r border-red-500/20 overflow-y-auto p-4 relative z-10 shrink-0">
+        <div>
+          <h2 className="text-sm font-semibold text-red-400 mb-4 flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            文档列表
+            <span className="text-xs text-neutral-500 font-normal">
+              ({docFiles.length})
+            </span>
+          </h2>
+          <div className="space-y-3">
+            {docFiles.map((filePath) => {
+              const fileName = filePath.split(/[\\/]/).pop() || '';
+              const isActive = path === filePath;
+              return (
+                <button
+                  key={filePath}
+                  onClick={() => setPath(filePath)}
+                  className={`bg-red-500/10 w-full text-left px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
+                    isActive
+                      ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                      : 'text-neutral-400 hover:bg-red-500/10 hover:text-red-200'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 inline-block mr-2 shrink-0" />
+                  <span className="truncate">{fileName}</span>
+                </button>
+              );
+            })}
+            {docFiles.length === 0 && (
+              <p className="text-xs text-neutral-600 px-3 py-2">暂无文档</p>
+            )}
+          </div>
+        </div>
+        <div>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleSaveToDocs}
+              className="px-3 py-1.5 rounded-lg bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-300 text-sm transition-colors flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              保存到目录
+            </button>
+
             <button
               onClick={handleOpenFile}
               className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 transition-colors"
@@ -121,11 +192,14 @@ const DocReader: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
 
-        {/* 文件信息标签（当有文件时） */}
+      {/* 主内容区域 */}
+      <div className="flex-1 flex flex-col overflow-y-auto relative z-10 p-8">
+        {/* 文件信息标签 */}
         {fileInfo && (
           <div className="flex gap-3 mb-6 flex-wrap">
-            <div className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 backdrop-blur-sm">
+            <div className=" px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 backdrop-blur-sm">
               <span className="text-xs text-neutral-400">文件路径</span>
               <span className="ml-2 text-sm text-red-400 font-mono truncate max-w-xs">
                 {path}
@@ -143,12 +217,10 @@ const DocReader: React.FC = () => {
             </div>
           </div>
         )}
-
-        {/* 未选择文件时显示：左右布局 */}
+        {/* 未选择文件时显示 */}
         {!path && !error && (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex gap-8 w-full max-w-4xl">
-              {/* 左侧：选择文档提示 */}
               <div
                 className="flex-1 flex flex-col items-center justify-center gap-4 p-12 rounded-2xl border-2 border-dashed border-red-500/30 bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors"
                 onClick={handleOpenFile}
@@ -160,7 +232,6 @@ const DocReader: React.FC = () => {
                 </p>
               </div>
 
-              {/* 右侧：最近打开的文件列表 */}
               {history.length > 0 && (
                 <div className="w-80 flex flex-col">
                   <div className="flex items-center justify-between mb-3">
@@ -218,7 +289,7 @@ const DocReader: React.FC = () => {
 
         {/* 文档内容区域 */}
         {markdownContent && (
-          <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-red-500/20 overflow-hidden min-h-[60vh]">
+          <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-red-500/20 overflow-hidden min-h-[60vh] max-h-80vh overflow-y-scroll scroll-none">
             <div className="p-8 text-red-200">
               <div className="markdown-content">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -230,7 +301,7 @@ const DocReader: React.FC = () => {
         )}
       </div>
 
-      {/* 样式（保留你原来的全部样式） */}
+      {/* 样式 */}
       <style>{`
         .markdown-content h1 {
           font-size: 2rem;
@@ -384,17 +455,6 @@ const DocReader: React.FC = () => {
         .animate-scan-left { animation: scan-left 1.25s ease-in-out infinite; }
         .animate-pulse-glow { animation: pulse-glow 1.25s ease-in-out infinite; }
       `}</style>
-    </div>
-  );
-};
-
-const LoadingPage: React.FC = () => {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-950 to-neutral-900">
-      <div className="text-center">
-        <div className="inline-block w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-neutral-400">正在读取文件...</p>
-      </div>
     </div>
   );
 };

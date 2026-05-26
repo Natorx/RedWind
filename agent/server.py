@@ -12,12 +12,7 @@ app = FastAPI(title="AI Agent API")
 # 或者更精确的配置（推荐）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:1420",  # 你的 React 开发服务器端口
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:1420",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],

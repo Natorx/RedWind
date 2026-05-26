@@ -4,7 +4,6 @@ import AIChat from '../pages/Chat_AI';
 import RequestTool from '../pages/RequestTool';
 import Dashboard from '../pages/Dashboard';
 import Printer from '../pages/Printer';
-import SysInfo from '../pages/SysInfo';
 import TypingPractice from '../pages/Typing';
 import QRCodeGenerator from '../pages/QRCodeGenerator';
 import Charts from '../pages/Charts';
@@ -30,7 +29,6 @@ const contentMap: Record<string, JSX.Element> = {
   'api-debug': <RequestTool />,
   'file-hander': <FileHandler />,
   chatbox: <AIChat />,
-  'process-manager': <SysInfo />,
   'typing-practice': <TypingPractice />,
   printer: <Printer />,
   qrcode: <QRCodeGenerator />,

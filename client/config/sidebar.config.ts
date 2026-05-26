@@ -29,7 +29,6 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'typing-practice', label: '打字练习', icon: '⌨️', order: 2, source: 'local' },
   { id: 'audio-control', label: '音频控制', icon: '🎵', order: 3, source: 'local' },
   { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },
-  { id: 'process-manager', label: '系统信息', icon: '💻', order: 5, source: 'local' },
   { id: 'wasm', label: 'WASM工具', icon: '🧩', order: 6, source: 'local' },
   { id: 'api-debug', label: 'API调试', icon: '🛠️', order: 7, source: 'local' },
   { id: 'algorithms', label: '算法', icon: '🧮', order: 8, source: 'local' },

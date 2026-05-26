@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Post } from '../interface/post';
 import { postApi } from '../apis/post';
+import { useAccountStore } from '../stores/account';
 
 const SkeletonPost = () => (
   <div className="bg-neutral-900/50 border border-red-500/10 rounded-xl p-5 animate-pulse space-y-3">
@@ -16,19 +17,21 @@ const SkeletonPost = () => (
   </div>
 );
 
+/** 初始化空表单（不包含 id） */
+const emptyForm: Partial<Post> = { title: '', content: '', tag: '' };
+
 const Community: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [form, setForm] = useState<Post>({ title: '', content: '', tag: '' });
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState<Partial<Post>>(emptyForm);          // ✅ 改为 Partial<Post>
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  // 图片相关状态
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // 图片放大查看
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const { user, isLoggedIn } = useAccountStore();
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -53,10 +56,8 @@ const Community: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 选择文件
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    // 限制最多6张
     const remaining = 6 - selectedFiles.length;
     if (files.length > remaining) {
       setMessage(`最多可选择 ${remaining} 张图片`);
@@ -66,22 +67,27 @@ const Community: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // 删除已选择的某个文件
   const removeFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // 提交表单
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) {
+
+    // 🔐 未登录提示
+    if (!isLoggedIn) {
+      setMessage('请先登录后再发布帖子');
+      return;
+    }
+
+    if (!form.title?.trim()) {
       setMessage('标题不能为空');
       return;
     }
 
     const formData = new FormData();
     formData.append('title', form.title);
-    formData.append('content', form.content);
+    formData.append('content', form.content || '');
     if (form.tag) formData.append('tag', form.tag);
     selectedFiles.forEach((file) => {
       formData.append('images', file);
@@ -95,7 +101,7 @@ const Community: React.FC = () => {
         await postApi.set(formData);
         setMessage('帖子添加成功');
       }
-      setForm({ title: '', content: '', tag: '' });
+      setForm(emptyForm);
       setEditingId(null);
       setSelectedFiles([]);
       fetchPosts();
@@ -106,17 +112,17 @@ const Community: React.FC = () => {
 
   const handleEdit = (post: Post) => {
     setForm({ title: post.title, content: post.content, tag: post.tag || '' });
-    setEditingId(post.id!);
+    setEditingId(post.id);
     setSelectedFiles([]);
   };
 
   const handleCancelEdit = () => {
-    setForm({ title: '', content: '', tag: '' });
+    setForm(emptyForm);
     setEditingId(null);
     setSelectedFiles([]);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm('确定删除该帖子吗？')) return;
     try {
       await postApi.delete(id);
@@ -134,7 +140,8 @@ const Community: React.FC = () => {
     }
   }, [message]);
 
-  // 图片布局函数
+  // ... 图片布局函数不变 ...
+
   const getImageContainerClass = (count: number) => {
     if (count === 1) return 'grid grid-cols-1 gap-2';
     if (count === 2) return 'grid grid-cols-2 gap-2';
@@ -184,20 +191,20 @@ const Community: React.FC = () => {
         </div>
       )}
 
-      {/* 上部展示区：占满剩余高度，可滚动 */}
+      {/* 上部展示区 */}
       <div className="flex-1 overflow-y-auto scroll-none p-6">
         <div className="flex justify-around items-start gap-2">
-          {/* 左栏：帖子列表（可滚动） */}
+          {/* 左栏：帖子列表 */}
           <div className="w-70% space-y-4">
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => <SkeletonPost key={i} />)
             ) : posts.length === 0 ? (
-              <p className="text-center text-neutral-500 text-sm">
-                暂无帖子，发布第一条吧
-              </p>
+              <p className="text-center text-neutral-500 text-sm">暂无帖子，发布第一条吧</p>
             ) : (
               posts.map((post) => {
                 const imageCount = post.images?.length || 0;
+                const isAuthor = isLoggedIn && user?.id === post.author?.id;
+
                 return (
                   <div
                     key={post.id}
@@ -222,6 +229,14 @@ const Community: React.FC = () => {
                       )}
                     </div>
 
+                    {/* 作者信息 */}
+                    {post.author && (
+                      <div className="flex items-center gap-1 mb-2">
+                        <span className="text-xs text-neutral-500">发布者：</span>
+                        <span className="text-sm text-red-400 font-medium">{post.author.username}</span>
+                      </div>
+                    )}
+
                     <p className="text-neutral-300 leading-relaxed text-sm break-words">
                       {post.content}
                     </p>
@@ -244,36 +259,37 @@ const Community: React.FC = () => {
                       </div>
                     )}
 
-                    {/* 编辑/删除按钮 */}
-                    <div className="absolute right-3 bottom-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <button
-                        onClick={() => handleEdit(post)}
-                        className="p-1.5 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 hover:text-blue-200 transition-colors"
-                        title="编辑"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L13 15H11v-2l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(post.id!)}
-                        className="p-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-200 transition-colors"
-                        title="删除"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
+                    {/* 编辑/删除按钮（仅作者本人可见） */}
+                    {isAuthor && (
+                      <div className="absolute right-3 bottom-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button
+                          onClick={() => handleEdit(post)}
+                          className="p-1.5 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 hover:text-blue-200 transition-colors"
+                          title="编辑"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L13 15H11v-2l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(post.id!)}
+                          className="p-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-200 transition-colors"
+                          title="删除"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })
             )}
           </div>
 
-          {/* 右栏：固定区域（示例） */}
+          {/* 右栏：固定区域 */}
           <div className="w-30% sticky top-0">
-            {/* 右侧内容可自定义 */}
             <div className="bg-neutral-800/50 rounded-xl p-4 border border-red-500/10">
               <h2 className="text-red-200 font-semibold mb-2">右侧面板</h2>
               <p className="text-neutral-400 text-sm">此处可展示其他信息，固定不动。</p>
@@ -282,10 +298,9 @@ const Community: React.FC = () => {
         </div>
       </div>
 
-      {/* 底部输入栏：始终固定在底部 */}
+      {/* 底部输入栏 */}
       <div className="bg-neutral-900/90 backdrop-blur-md border-t border-red-500/20 shadow-2xl px-4 py-3">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex flex-col gap-2">
-          {/* 标签和标题 */}
           <div className="grid grid-cols-12 gap-2 shrink-0">
             <div className="col-span-3">
               <input
@@ -301,7 +316,7 @@ const Community: React.FC = () => {
               <input
                 type="text"
                 name="title"
-                value={form.title}
+                value={form.title || ''}
                 onChange={handleInputChange}
                 placeholder="输入帖子标题"
                 className="w-full px-3 py-1.5 text-sm text-gray bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
@@ -309,12 +324,11 @@ const Community: React.FC = () => {
             </div>
           </div>
 
-          {/* 内容输入 + 操作按钮 */}
           <div className="flex gap-2 items-center shrink-0 flex-wrap">
             <input
               type="text"
               name="content"
-              value={form.content}
+              value={form.content || ''}
               onChange={handleInputChange}
               placeholder="写点什么…"
               className="flex-1 min-w-0 px-3 py-1.5 text-sm text-gray bg-neutral-800 border border-red-500/20 rounded focus:outline-none focus:border-red-400 transition-colors"
@@ -336,7 +350,6 @@ const Community: React.FC = () => {
             )}
           </div>
 
-          {/* 图片选择 */}
           <div className="flex items-center gap-2 mt-1">
             <input
               type="file"

@@ -5,6 +5,8 @@
  */
 import { useState, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { getModuleNum } from '../utils/project';
+import { useAccountStore } from '../stores/account';
 import {
   Users,
   ShoppingCart,
@@ -14,7 +16,6 @@ import {
   HardDrive,
   Cpu,
 } from 'lucide-react';
-import { getModuleNum } from '../utils/project';
 
 // ---------- 工具函数 ----------
 const formatBytes = (bytes: number): string => {
@@ -189,7 +190,7 @@ const SystemResourcesCard = ({ hardware }: { hardware: HardwareInfo | null }) =>
           资源占用
         </h3>
       </div>
-      <div className="divide-y divide-red-500/10 max-h-117 overflow-y-auto custom-scrollbar scroll-none">
+      <div className="divide-y divide-red-500/10 max-h-100 overflow-y-auto custom-scrollbar scroll-none">
         {resources.map((res, idx) => {
           const IconComponent = res.icon;
           return (
@@ -397,9 +398,6 @@ const ProcessTable = () => {
           </tbody>
         </table>
       </div>
-      <div className="mt-3 bg-neutral-900/60 p-3 rounded-lg border border-red-500/20 text-xs text-neutral-400">
-        <p>⚠️ 红色按钮可杀死进程，系统进程已保护</p>
-      </div>
     </div>
   );
 };
@@ -413,6 +411,32 @@ const Dashboard = () => {
   const [hardware, setHardware] = useState<HardwareInfo | null>(null);
   const [_, setLoadingHw] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ----- 登录用户信息 -----
+  const { user, isLoggedIn } = useAccountStore();
+
+  // ----- 当前日期时间 -----
+  const [currentDate, setCurrentDate] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
+
+  // 时间更新
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentDate(
+        now.toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          weekday: 'long',
+        })
+      );
+      setCurrentTime(now.toLocaleTimeString('zh-CN', { hour12: false }));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadHardware = async () => {
     try {
@@ -448,27 +472,62 @@ const Dashboard = () => {
     { title: 'Active Sessions', value: '347', icon: Activity, trend: 'up', trendValue: '+5.4%', color: 'bg-gradient-to-br from-orange-500 to-orange-600' },
   ];
 
-  return (
+return (
     <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 pt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 统计卡片网格 */}
+        {/* ========== 欢迎卡片（新增） ========== */}
+        <div className="bg-gradient-to-r from-red-700/30 to-red-900/30 rounded-xl p-6 mb-8 border border-red-500/20 backdrop-blur-sm shadow-lg">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            {/* 左侧：头像 + 欢迎信息 */}
+            <div className="flex items-center gap-4">
+              {/* 用户头像（首字母或问号） */}
+              <div className="w-16 h-16 bg-gradient-to-br from-red-500/30 to-red-700/30 rounded-full flex items-center justify-center ring-2 ring-red-500/50">
+                <span className="text-2xl font-bold text-red-400">
+                  {isLoggedIn ? user?.username?.charAt(0).toUpperCase() : '?'}
+                </span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-neutral-100">
+                  {isLoggedIn ? `欢迎回来，${user?.username}` : '欢迎，游客'}
+                </h2>
+                <p className="text-sm text-neutral-400 mt-1">{currentDate}</p>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="text-xs bg-red-500/10 text-red-300 px-2 py-0.5 rounded-full border border-red-500/20">
+                    已开发模块: {getModuleNum()} 个
+                  </span>
+                  {isLoggedIn && (
+                    <span className="text-xs bg-green-500/10 text-green-300 px-2 py-0.5 rounded-full border border-green-500/20">
+                      已认证用户
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 右侧：当前时间 + 面板标识 */}
+            <div className="text-right">
+              <p className="text-3xl font-bold text-red-400 font-mono">{currentTime}</p>
+              <p className="text-xs text-neutral-500 mt-1">RedWind 系统监控面板</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ========== 统计卡片网格 ========== */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
           {stats.map((stat, index) => (
             <StatCard key={index} {...stat} />
           ))}
         </div>
 
-        {/* 进程列表 + 最近活动 */}
+        {/* ========== 进程列表 + 系统资源 ========== */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           <div className="lg:col-span-2">
             <ProcessTable />
           </div>
           <div className="lg:col-span-1">
-            {/* 系统资源卡片（CPU / 内存 / 硬盘）替代原 System Status */}
-          <SystemResourcesCard hardware={hardware} />
+            <SystemResourcesCard hardware={hardware} />
           </div>
         </div>
-
       </div>
     </div>
   );

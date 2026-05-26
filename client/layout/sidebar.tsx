@@ -6,16 +6,18 @@ import { useEffect, useState } from 'react';
 import iconSrc from '../assets/icon.png';
 import { sourceConfig } from '../styles/sidebar_style.ts';
 import { useModuleStore } from '../stores/moduleItemsStore.ts';
-import useAppStore from '../stores/appStore.ts';
 import { useUiStore } from '../stores/useUiStore.ts';
+import { useAccountStore } from '../stores/account.ts'; // 替换为 account store
 
 const Sidebar: React.FC = () => {
   const { sidebarItems, loadItems } = useModuleStore();
   const { activeItem, setActiveItem } = useActiveItem();
   const { setIsSettingsOpen } = useSettingDrawer();
   const [showSidebar, setShowSidebar] = useState(false);
-  const [username, _] = useState(useAppStore((state) => state.username))
   const activeUi = useUiStore((state) => state.activeUi);
+
+  // 从 account store 获取用户信息
+  const { user, isLoggedIn } = useAccountStore();
 
   useEffect(() => {
     setShowSidebar(activeUi === 'sidebar');
@@ -102,8 +104,10 @@ const Sidebar: React.FC = () => {
               />
             </div>
             <div className="user-details">
-              <p className="user-name font-semibold text-sm text-neutral-200">{ username }</p>
-              <p className="user-status text-xs text-neutral-500">在线</p>
+              {/* 用户名：已登录显示账号用户名，未登录显示“游客” */}
+              <p className="user-name font-semibold text-sm text-neutral-200">
+                {isLoggedIn ? user?.username : '游客'}
+              </p>
             </div>
             <button
               className="ml-auto p-2 rounded-lg transition-colors border-none cursor-pointer text-neutral-400 hover:text-red-400 hover:bg-neutral-800/50"

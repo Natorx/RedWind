@@ -434,7 +434,7 @@ const RequestTool: React.FC = () => {
           </div>
         )}
       </div>
-      <div className='flex-[3] overflow-auto p-4'>
+      <div className='flex-[3] overflow-y-scroll max-h-65vh scroll-none p-4'>
                 {savedRequests.length === 0 ? (
           <div className="text-neutral-500 text-center mt-8">暂无保存的请求</div>
         ) : (

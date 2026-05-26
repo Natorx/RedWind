@@ -12,7 +12,7 @@ interface ChatMessage {
 const onlineUsers = new Map<string, string>(); // socketId -> username
 const messageHistory: ChatMessage[] = [];
 
-export default async function chatController(fastify: FastifyInstance) {
+export default async function chatModule(fastify: FastifyInstance) {
   // 创建 Socket.IO 服务器，挂载到 Fastify 的 HTTP 服务器上
   const io = new Server(fastify.server, {
     cors: {

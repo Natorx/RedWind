@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import fastify from 'fastify';
 import cors from '@fastify/cors';
-import router from './modules/router.js';
 import { TypeORMConfig } from './config/orm.js';
 import path from 'path';
+import router from './router.js';
 
 const server = fastify({
   logger: true,

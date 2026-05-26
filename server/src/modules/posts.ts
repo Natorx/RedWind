@@ -7,7 +7,7 @@ import { Post } from '../tables/posts.js';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
-export default async function postController(fastify: FastifyInstance) {
+export default async function postModule(fastify: FastifyInstance) {
   // 注册 multipart 插件
   await fastify.register(import('@fastify/multipart'), {
     limits: {

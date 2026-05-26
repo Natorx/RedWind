@@ -358,11 +358,6 @@ const HardwareInfoCard: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* 时间戳 */}
-      <div className="text-center text-xs text-neutral-500 mt-4">
-        {new Date().toLocaleString()}
-      </div>
     </div>
   );
 };
@@ -498,11 +493,7 @@ const ProcessInfoCard: React.FC = () => {
 
   return (
     <div className="mt-8">
-      <div className="border-t border-red-500/30 pt-6 mb-4">
-        <h2 className="text-lg font-bold bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent flex items-center gap-2">
-          <span>📊</span> 进程管理
-        </h2>
-      </div>
+
       
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-3">

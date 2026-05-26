@@ -37,7 +37,6 @@ const Printer: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PrintResult | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<string>('');
-  const [healthStatus, setHealthStatus] = useState<HealthCheckResult | null>(null);
 
   // 组件加载时检查服务健康状态
   useEffect(() => {
@@ -48,7 +47,6 @@ const Printer: React.FC = () => {
   const checkHealth = async () => {
     try {
       const res = await invoke<HealthCheckResult>('health_check');
-      setHealthStatus(res);
       console.log('服务健康状态:', res);
     } catch (error) {
       console.error('健康检查失败:', error);
@@ -149,21 +147,6 @@ const Printer: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 p-4">
       <div className="max-w-600px mx-auto px-4">
-        {/* 健康状态显示 */}
-        {healthStatus && (
-          <div className={`p-3 rounded-lg mb-5 ${
-            healthStatus.status === 'ok' 
-              ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
-              : 'bg-red-500/10 border border-red-500/20 text-red-400'
-          }`}>
-            <div className="text-sm">
-              <strong>服务状态:</strong> {healthStatus.status === 'ok' ? '✅ 正常' : '❌ 异常'} <br />
-              <strong>服务名称:</strong> {healthStatus.service} <br />
-              <strong>最后检查:</strong> {new Date(healthStatus.timestamp).toLocaleString()}
-            </div>
-          </div>
-        )}
-        
         {/* 打印机配置 */}
         <div className="mb-5">
           <h3 className="text-red-300 mb-3">📡 打印机配置</h3>

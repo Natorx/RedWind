@@ -1,12 +1,10 @@
 import { JSX } from 'react';
 
-import AIChat from '../pages/Chat_AI';
 import RequestTool from '../pages/RequestTool';
 import Dashboard from '../pages/Dashboard';
 import Printer from '../pages/Printer';
 import TypingPractice from '../pages/Typing';
 import QRCodeGenerator from '../pages/QRCodeGenerator';
-import Charts from '../pages/Charts';
 import FuncConfig from '../pages/Configs';
 import Algorithms from '../pages/Algorithms';
 
@@ -27,11 +25,9 @@ const contentMap: Record<string, JSX.Element> = {
   dashboard: <Dashboard />,
   'api-debug': <RequestTool />,
   'file-hander': <FileHandler />,
-  chatbox: <AIChat />,
   'typing-practice': <TypingPractice />,
   printer: <Printer />,
   qrcode: <QRCodeGenerator />,
-  charts: <Charts />,
   algorithms: <Algorithms />,
   'audio-control': <Audio />,
   'drill-ground': <DrillGround />,

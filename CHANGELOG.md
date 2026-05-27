@@ -2,6 +2,8 @@
 1. feature: Account(include server and client)
 2. Auth
 3. Post page and Dashboard welcome words
+4. delete AI chat(use Deepseek Agent)
+5. unused: chart page
 
 ### 0.4.2
 1. delete "Process manager" module

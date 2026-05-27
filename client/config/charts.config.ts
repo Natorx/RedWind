@@ -1,10 +1,10 @@
-import DualAxisLineChart from '../components/charts/LineChart';
-import ScatterChart from '../components/charts/ScatterChart';
-import RadarChart from '../components/charts/RadarChart';
-import AreaChart from '../components/charts/AreaChart';
-import PieChart from '../components/charts/PieChart';
-import BarChart from '../components/charts/BarChart';
-import Heatmap from '../components/charts/HeatMap';
+import DualAxisLineChart from '../unused/components/charts/LineChart';
+import ScatterChart from '../unused/components/charts/ScatterChart';
+import RadarChart from '../unused/components/charts/RadarChart';
+import AreaChart from '../unused/components/charts/AreaChart';
+import PieChart from '../unused/components/charts/PieChart';
+import BarChart from '../unused/components/charts/BarChart';
+import Heatmap from '../unused/components/charts/HeatMap';
 import { dimensions, radarData } from '../mock/radar.mock';
 import { mockData_heatMap } from '../mock/heatmap.mock';
 import { dualAxisData } from '../mock/dualAxis.mock';

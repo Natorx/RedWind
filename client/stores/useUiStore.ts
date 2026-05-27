@@ -24,11 +24,7 @@ export const useUiStore = create<UiState>()(
     }),
     {
       name: 'ui-state', // localStorage 中的 key
-      // 可选：只持久化部分字段（如果需要）
-      // partialize: (state) => ({ activeUi: state.activeUi }),
     }
   )
 );
 
-// 也可同时导出一个非 React 的原始 store 对象（如果需要订阅）
-// 但 React 组件中直接使用 useUiStore hook 即可。

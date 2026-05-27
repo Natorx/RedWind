@@ -1,13 +1,13 @@
 // sidebar.tsx
 import { useActiveItem } from '../context/activeItemContext.tsx';
-import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
 import { useEffect, useState } from 'react';
-import iconSrc from '../assets/icon.png';
-import { sourceConfig } from '../styles/sidebar_style.ts';
+import { sourceConfig } from '../config/label.config.ts';
 import { useModuleStore } from '../stores/moduleItemsStore.ts';
 import { useUiStore } from '../stores/useUiStore.ts';
 import { useAccountStore } from '../stores/account.ts'; // 替换为 account store
+import iconSrc from '../assets/icon.png';
+import avatar from '../mock/pics/avatar.jpg';
 
 const Sidebar: React.FC = () => {
   const { sidebarItems, loadItems } = useModuleStore();
@@ -43,9 +43,9 @@ const Sidebar: React.FC = () => {
         <ul>
           <li className="mb-2">
             <button
-              className={`nav-btn w-full px-4 py-3 border-none rounded-lg flex items-center cursor-pointer text-sm transition-all duration-200 ease-in-out ${
+              className={` w-full px-4 py-3 border-none rounded-lg flex items-center cursor-pointer text-sm transition-all duration-200 ease-in-out ${
                 activeItem === 'module-config'
-                  ? 'bg-gradient-to-r from-red-500/20 to-red-700/20 text-red-400'
+                  ? 'bg-red-900 text-white'
                   : 'bg-transparent text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200'
               }`}
               onClick={() => setActiveItem('module-config')}
@@ -63,9 +63,9 @@ const Sidebar: React.FC = () => {
           {sidebarItems.map((item) => (
             <li className="mb-2" key={item.id}>
               <button
-                className={`nav-btn w-full px-4 py-3 border-none rounded-lg flex items-center cursor-pointer text-sm transition-all duration-200 ease-in-out ${
+                className={` w-full px-4 py-3 border-none rounded-lg flex items-center cursor-pointer text-sm transition-all duration-200 ease-in-out ${
                   activeItem === item.id
-                    ? 'bg-gradient-to-r from-red-500/20 to-red-700/20 text-red-400'
+                    ? 'bg-red-900 text-white'
                     : 'bg-transparent text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200'
                 }`}
                 onClick={() => setActiveItem(item.id)}
@@ -78,7 +78,7 @@ const Sidebar: React.FC = () => {
                 <div className="flex flex-col items-start">
                   <span className="nav-label font-500">{item.label}</span>
                   <span
-                    className={`text-xs mt-0.5 px-1.5 py-0.5 rounded ${sourceConfig[item.source].className}`}
+                    className={`text-xs mt-0.5 px-1.5 py-0.5 rounded`}
                   >
                     {sourceConfig[item.source].label}
                   </span>

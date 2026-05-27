@@ -22,17 +22,6 @@ ul {
   list-style: none;
 }
 
-.nav-btn:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
-}
-
-.nav-btn.active {
-  background-color: #3b82f6;
-  color: white;
-  font-weight: 500;
-}
-
 .scroll-none::-webkit-scrollbar{
   display: none;
 }

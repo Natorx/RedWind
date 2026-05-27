@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import sidebarItems from '../config/sidebar.config';
-import { labelSourceConfig } from '../styles/sidebar_style';
+import { labelSourceConfig } from '../config/label.config';
 import { useModuleStore } from '../stores/moduleItemsStore';
 
 interface SidebarItem {
@@ -159,10 +159,7 @@ const SidebarModuleManager: React.FC = () => {
                       {item.label}
                     </div>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded ${
-                        labelSourceConfig[item.source]?.className ||
-                        labelSourceConfig.others.className
-                      }`}
+                      className={`text-xs px-2 py-0.5 rounded`}
                     >
                       {labelSourceConfig[item.source]?.label || item.source}
                     </span>

@@ -104,16 +104,6 @@ export const DrawerPage: React.FC = () => {
           {/* 设置选项 */}
           <div className="space-y-2">
 
-            {/* 扩展配置 */}
-            <div
-              className="setting-item p-3 hover:bg-red-500/10 rounded-lg cursor-pointer transition-all duration-200 border border-transparent hover:border-red-500/30"
-              onClick={() => setPluginModalOpen(true)}
-            >
-              <span className="text-neutral-300 hover:text-red-400 transition-colors">
-                扩展设置
-              </span>
-            </div>
-
             {/* 刷新应用 */}
             <div
               className="setting-item p-3 hover:bg-red-500/10 rounded-lg cursor-pointer transition-all duration-200 border border-transparent hover:border-red-500/30"
@@ -221,12 +211,6 @@ export const DrawerPage: React.FC = () => {
         title="扩展管理"
       >
         <div className="space-y-4 bg-gradient-to-br from-neutral-900 to-red-950 p-6 rounded-xl">
-          <div className="border-b border-red-500/30 pb-3 mb-4 -mt-2">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <span className="text-red-500">🔌</span>
-              扩展管理
-            </h3>
-          </div>
 
           <div className="text-neutral-400 p-6 bg-neutral-800/30 rounded-lg border border-red-500/20 text-center">
             <div className="text-4xl mb-3">🔧</div>

@@ -31,7 +31,6 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'audio-control', label: '音频控制', icon: '🎵', order: 3, source: 'local' },
   { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },
   { id: 'api-debug', label: 'API调试', icon: '🛠️', order: 7, source: 'local' },
-  { id: 'algorithms', label: '算法', icon: '🧮', order: 8, source: 'local' },
   { id: 'file-hander', label: '文件处理', icon: '🔄', order: 9, source: 'local' },
   { id: 'qrcode', label: '二维码生成', icon: '📱', order: 10, source: 'local' },
   { id:'personalization',label:'个性化设置',icon:'⚙️',order:12,source:'local'},

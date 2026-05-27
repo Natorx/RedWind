@@ -1,6 +1,10 @@
+import PageBox from "../components/PageBox";
+
 const Personalization: React.FC = () => {
     return(
-        <div>1</div>
+        <PageBox>
+            1
+        </PageBox>
     )
 }
 export default Personalization;

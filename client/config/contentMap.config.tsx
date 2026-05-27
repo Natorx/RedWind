@@ -6,7 +6,6 @@ import Printer from '../pages/Printer';
 import TypingPractice from '../pages/Typing';
 import QRCodeGenerator from '../pages/QRCodeGenerator';
 import FuncConfig from '../pages/Configs';
-import Algorithms from '../pages/Algorithms';
 import StartPage from '../pages/Start';
 import DrillGround from '../pages/DrillGround';
 import P2PChat from '../pages/Chat_RsP2P';
@@ -28,7 +27,6 @@ const contentMap: Record<string, JSX.Element> = {
   'typing-practice': <TypingPractice />,
   printer: <Printer />,
   qrcode: <QRCodeGenerator />,
-  algorithms: <Algorithms />,
   'audio-control': <Audio />,
   'drill-ground': <DrillGround />,
   'p2p-chat': <P2PChat />,

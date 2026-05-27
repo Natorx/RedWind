@@ -40,7 +40,6 @@ export const sidebarItems: SidebarItem[] = [
 
   // ========== 未开发 (coming_soon / incomplete) ==========
   // 注意：incomplete 优先级略高于 coming_soon？按 order 混合排序即可
-  { id: 'p2p-chat', label: 'P2P聊天', icon: '💬', order: 16, source: 'incomplete' },
   { id: 'drill-ground', label: '演练场', icon: '🏟️', order: 15, source: 'coming_soon' },
   { id: 'music-player', label: '音乐播放器', icon: '🎧', order: 20, source: 'coming_soon' },
   { id: 'plugins', label: '插件扩展', icon: '🔌', order: 22, source: 'coming_soon' },

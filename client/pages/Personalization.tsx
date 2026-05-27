@@ -37,7 +37,10 @@ const Personalization: React.FC = () => {
   const handleSaveEdit = () => {
     if (editingIndex !== null && editForm) {
       const updatedStats = [...stats];
-      updatedStats[editingIndex] = { ...stats[editingIndex], ...editForm } as StatItem;
+      updatedStats[editingIndex] = {
+        ...stats[editingIndex],
+        ...editForm,
+      } as StatItem;
       updateStats(updatedStats);
       setEditingIndex(null);
       setEditForm({});
@@ -75,9 +78,12 @@ const Personalization: React.FC = () => {
   const handleMoveCard = (index: number, direction: 'up' | 'down') => {
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= stats.length) return;
-    
+
     const updatedStats = [...stats];
-    [updatedStats[index], updatedStats[newIndex]] = [updatedStats[newIndex], updatedStats[index]];
+    [updatedStats[index], updatedStats[newIndex]] = [
+      updatedStats[newIndex],
+      updatedStats[index],
+    ];
     updateStats(updatedStats);
   };
 
@@ -88,13 +94,13 @@ const Personalization: React.FC = () => {
 
   return (
     <PageBox>
-      <div className="space-y-6">
+      {/* 统计卡片列表 */}
+      <div className="space-y-4 p-4">
         {/* 页面标题和操作栏 */}
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-neutral-100">个性化配置</h1>
-            <p className="text-neutral-400 mt-1">自定义统计卡片的数据和样式</p>
-          </div>
+          <h2 className="text-lg font-semibold text-neutral-200">
+            统计卡片配置
+          </h2>
           <div className="flex gap-3">
             <button
               onClick={refreshStats}
@@ -113,160 +119,192 @@ const Personalization: React.FC = () => {
           </div>
         </div>
 
-        {/* 统计卡片列表 */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-neutral-200">统计卡片配置</h2>
-          
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-neutral-900/60 rounded-xl border border-neutral-800 p-4 hover:border-red-500/30 transition-all"
-            >
-              {editingIndex === index ? (
-                // 编辑模式
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-400 mb-2">标题</label>
-                      <input
-                        type="text"
-                        value={editForm.title || ''}
-                        onChange={(e) => handleInputChange('title', e.target.value)}
-                        className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-400 mb-2">数值</label>
-                      <input
-                        type="text"
-                        value={editForm.value || ''}
-                        onChange={(e) => handleInputChange('value', e.target.value)}
-                        className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-400 mb-2">图标</label>
-                      <select
-                        value={editForm.icon || 'Activity'}
-                        onChange={(e) => handleInputChange('icon', e.target.value)}
-                        className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
-                      >
-                        {iconOptions.map(icon => (
-                          <option key={icon} value={icon}>{icon}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-400 mb-2">趋势</label>
-                      <select
-                        value={editForm.trend || 'up'}
-                        onChange={(e) => handleInputChange('trend', e.target.value as 'up' | 'down')}
-                        className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
-                      >
-                        <option value="up">上升 📈</option>
-                        <option value="down">下降 📉</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-400 mb-2">趋势值</label>
-                      <input
-                        type="text"
-                        value={editForm.trendValue || ''}
-                        onChange={(e) => handleInputChange('trendValue', e.target.value)}
-                        className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-400 mb-2">颜色</label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {colorOptions.map(color => (
-                          <button
-                            key={color}
-                            onClick={() => handleInputChange('color', color)}
-                            className={`h-10 rounded-lg ${color} ${editForm.color === color ? 'ring-2 ring-white ring-offset-2 ring-offset-neutral-900' : ''}`}
-                            title={color}
-                          />
-                        ))}
-                      </div>
-                    </div>
+        {stats.map((stat, index) => (
+          <div
+            key={index}
+            className="bg-neutral-900/60 rounded-xl border border-neutral-800 p-4 hover:border-red-500/30 transition-all"
+          >
+            {editingIndex === index ? (
+              // 编辑模式
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">
+                      标题
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.title || ''}
+                      onChange={(e) =>
+                        handleInputChange('title', e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
+                    />
                   </div>
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={handleCancelEdit}
-                      className="px-4 py-2 bg-neutral-700 text-neutral-300 rounded-lg hover:bg-neutral-600 transition-colors flex items-center gap-2"
-                    >
-                      <X className="w-4 h-4" />
-                      取消
-                    </button>
-                    <button
-                      onClick={handleSaveEdit}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      保存
-                    </button>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">
+                      数值
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.value || ''}
+                      onChange={(e) =>
+                        handleInputChange('value', e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
+                    />
                   </div>
-                </div>
-              ) : (
-                // 查看模式
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className={`p-2 rounded-lg ${stat.color}`}>
-                      <div className="w-8 h-8" /> {/* 图标占位 */}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold text-neutral-100">{stat.title}</h3>
-                        <span className="text-2xl font-bold text-neutral-100">{stat.value}</span>
-                        {stat.trend && (
-                          <span className={`text-sm ${stat.trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
-                            {stat.trendValue}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-neutral-500 mt-1">图标: {stat.icon} | 颜色: {stat.color.split(' ').slice(0, 2).join(' ')}</p>
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">
+                      图标
+                    </label>
+                    <select
+                      value={editForm.icon || 'Activity'}
+                      onChange={(e) =>
+                        handleInputChange('icon', e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
+                    >
+                      {iconOptions.map((icon) => (
+                        <option key={icon} value={icon}>
+                          {icon}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleMoveCard(index, 'up')}
-                      disabled={index === 0}
-                      className="p-2 text-neutral-400 hover:text-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">
+                      趋势
+                    </label>
+                    <select
+                      value={editForm.trend || 'up'}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'trend',
+                          e.target.value as 'up' | 'down',
+                        )
+                      }
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
                     >
-                      ↑
-                    </button>
-                    <button
-                      onClick={() => handleMoveCard(index, 'down')}
-                      disabled={index === stats.length - 1}
-                      className="p-2 text-neutral-400 hover:text-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      onClick={() => handleEdit(index)}
-                      className="p-2 text-blue-400 hover:text-blue-300"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCard(index)}
-                      className="p-2 text-red-400 hover:text-red-300"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      <option value="up">上升 📈</option>
+                      <option value="down">下降 📉</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">
+                      趋势值
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.trendValue || ''}
+                      onChange={(e) =>
+                        handleInputChange('trendValue', e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:outline-none focus:border-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-2">
+                      颜色
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {colorOptions.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => handleInputChange('color', color)}
+                          className={`h-10 rounded-lg ${color} ${editForm.color === color ? 'ring-2 ring-white ring-offset-2 ring-offset-neutral-900' : ''}`}
+                          title={color}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCancelEdit}
+                    className="px-4 py-2 bg-neutral-700 text-neutral-300 rounded-lg hover:bg-neutral-600 transition-colors flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" />
+                    取消
+                  </button>
+                  <button
+                    onClick={handleSaveEdit}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    保存
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // 查看模式
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className={`p-2 rounded-lg ${stat.color}`}>
+                    <div className="w-8 h-8" /> {/* 图标占位 */}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-semibold text-neutral-100">
+                        {stat.title}
+                      </h3>
+                      <span className="text-2xl font-bold text-neutral-100">
+                        {stat.value}
+                      </span>
+                      {stat.trend && (
+                        <span
+                          className={`text-sm ${stat.trend === 'up' ? 'text-green-400' : 'text-red-400'}`}
+                        >
+                          {stat.trendValue}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-neutral-500 mt-1">
+                      图标: {stat.icon} | 颜色:{' '}
+                      {stat.color.split(' ').slice(0, 2).join(' ')}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleMoveCard(index, 'up')}
+                    disabled={index === 0}
+                    className="p-2 text-neutral-400 hover:text-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => handleMoveCard(index, 'down')}
+                    disabled={index === stats.length - 1}
+                    className="p-2 text-neutral-400 hover:text-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={() => handleEdit(index)}
+                    className="p-2 text-blue-400 hover:text-blue-300"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCard(index)}
+                    className="p-2 text-red-400 hover:text-red-300"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
 
-          {stats.length === 0 && (
-            <div className="text-center py-12 bg-neutral-900/40 rounded-xl border border-dashed border-neutral-700">
-              <p className="text-neutral-500">暂无统计卡片，点击"添加卡片"开始配置</p>
-            </div>
-          )}
-        </div>
-
+        {stats.length === 0 && (
+          <div className="text-center py-12 bg-neutral-900/40 rounded-xl border border-dashed border-neutral-700">
+            <p className="text-neutral-500">
+              暂无统计卡片，点击"添加卡片"开始配置
+            </p>
+          </div>
+        )}
       </div>
     </PageBox>
   );

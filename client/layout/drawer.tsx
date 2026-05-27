@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import Drawer from '../components/Drawer';
 import Modal from '../components/Modal';
-import avatar from '../assets/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext';
-
 import { useUiStore } from '../stores/ui';
 import { useAccountStore } from '../stores/account'; // 引入账号 store
+import avatar from '../assets/avatar.jpg';
 
 export const DrawerPage: React.FC = () => {
   const { isSettingsOpen, setIsSettingsOpen } = useSettingDrawer();

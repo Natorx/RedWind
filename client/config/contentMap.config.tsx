@@ -8,7 +8,6 @@ import QRCodePage from '../pages/QRCode';
 import FuncConfig from '../pages/Configs';
 import StartPage from '../pages/Start';
 import DrillGround from '../pages/DrillGround';
-import P2PChat from '../pages/Chat_RsP2P';
 import ServerChat from '../pages/Chat_Server';
 import DocReader from '../pages/Docs';
 import Community from '../pages/Communnity';
@@ -29,7 +28,6 @@ const contentMap: Record<string, JSX.Element> = {
   qrcode: <QRCodePage />,
   'audio-control': <Audio />,
   'drill-ground': <DrillGround />,
-  'p2p-chat': <P2PChat />,
   'server-chat': <ServerChat />,
   'doc-reader': <DocReader />,
   community: <Community />,

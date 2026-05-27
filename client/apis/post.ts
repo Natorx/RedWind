@@ -1,7 +1,6 @@
 import { Post } from '../interface/post';
 import { request } from './requests';
 
-
 export const postApi = {
   // 获取所有帖子
   get: () => request.get<Post[]>('/post/'),

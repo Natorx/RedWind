@@ -1,10 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { useAccountStore } from '../stores/account';
 
-const BASE_URL = import.meta.env.VITE_SERVER_URL;
-
-const request: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
+export const request: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_SERVER_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -47,12 +45,3 @@ request.interceptors.response.use(
     return Promise.reject(new Error('网络异常，请稍后重试'));
   }
 );
-
-const req_to_server = axios.create({
-  baseURL: import.meta.env.VITE_SERVER_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-export { request, req_to_server };

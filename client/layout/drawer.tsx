@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Drawer from '../components/Drawer';
 import Modal from '../components/Modal';
-import avatar from '../mock/pics/avatar.jpg';
+import avatar from '../assets/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext';
 
 import { useUiStore } from '../stores/ui';

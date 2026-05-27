@@ -10,7 +10,7 @@ interface QRCodeGeneratorProps {
   level?: 'L' | 'M' | 'Q' | 'H';
 }
 
-const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
+const QRCodePage: React.FC<QRCodeGeneratorProps> = ({
   defaultText = 'https://example.com',
   size = 200,
   fgColor = '#000000',
@@ -319,4 +319,4 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   );
 };
 
-export default QRCodeGenerator;
+export default QRCodePage;

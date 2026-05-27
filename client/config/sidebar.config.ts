@@ -14,6 +14,7 @@ type SidebarItem = {
 };
 
 export const startPage_latestFeatures = [
+  { id:'dashboard', label:'仪表盘', icon:'📊', date:'2025-05-27' },
   { id:'agent', label:'Deepseek Agent', icon:'🤖', date:'2025-05-25' },
   { id: 'audio-control', label: '音频控制', icon: '🎵', date: '2025-05-01' },
 ];
@@ -33,6 +34,7 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'algorithms', label: '算法', icon: '🧮', order: 8, source: 'local' },
   { id: 'file-hander', label: '文件处理', icon: '🔄', order: 9, source: 'local' },
   { id: 'qrcode', label: '二维码生成', icon: '📱', order: 10, source: 'local' },
+  { id:'personalization',label:'个性化设置',icon:'⚙️',order:12,source:'local'},
   { id: 'doc-reader', label: '文档阅读器', icon: '📖', order: 23, source: 'local' },
   { id: 'todo', label: '待办事项', icon: '📝', order: 25, source: 'local' },
   // 如果有 'others' 或 'basic' 的项，按 order 插入此处

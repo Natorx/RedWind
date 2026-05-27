@@ -80,7 +80,7 @@ const Drawer: React.FC<DrawerProps> = ({
           <div className="flex items-center justify-between p-4 border-b border-red-500/30">
             {title && (
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <span className="text-red-500">⚙️</span>
+                <span className="text-red-500"></span>
                 {title}
               </h2>
             )}

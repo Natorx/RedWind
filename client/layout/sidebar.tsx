@@ -2,7 +2,7 @@
 import { useActiveItem } from '../context/activeItemContext.tsx';
 import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
 import { useEffect, useState } from 'react';
-import { sourceConfig } from '../config/label.config.ts';
+import { sourceConfig } from '../config/module.config.ts';
 import { useModuleStore } from '../stores/moduleItemsStore.ts';
 import { useUiStore } from '../stores/useUiStore.ts';
 import { useAccountStore } from '../stores/account.ts'; // 替换为 account store
@@ -110,10 +110,10 @@ const Sidebar: React.FC = () => {
               </p>
             </div>
             <button
-              className="ml-auto p-2 rounded-lg transition-colors border-none cursor-pointer text-neutral-400 hover:text-red-400 hover:bg-neutral-800/50"
+              className="ml-auto py-1 px-2 rounded-lg transition-colors border-none cursor-pointer text-neutral-200  hover:bg-red-800 bg-red-600"
               aria-label="打开设置"
             >
-              ⚙️
+              设置
             </button>
           </div>
         </div>

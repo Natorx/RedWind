@@ -14,8 +14,11 @@ import {
   TrendingDown,
   HardDrive,
   Cpu,
+  LucideIcon,
+  ShoppingCart,
+  Users,
 } from 'lucide-react';
-import { stats } from '../config/dashboard.config';
+import { useStatsStore } from '../stores/dashboard';
 
 // ---------- 工具函数 ----------
 const formatBytes = (bytes: number): string => {
@@ -75,11 +78,32 @@ interface ProcessInfo {
 
 type SortKey = 'pid' | 'name' | 'memoryKb' | 'totalWrittenBytes' | 'totalReadBytes';
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: string;
+  trend?: 'up' | 'down';
+  trendValue?: string;
+  color: string;
+}
+
+const iconMap: Record<string, LucideIcon> = {
+  Activity: Activity,
+  ShoppingCart: ShoppingCart,
+  Users: Users,
+};
+
+const getIconComponent = (iconName: string): LucideIcon => {
+  return iconMap[iconName] || Activity;
+};
+
 // ==========================================
 //           统计卡片组件（未修改）
 // ==========================================
-const StatCard = ({ title, value, icon: Icon, trend, trendValue, color }: any) => {
+const StatCard = ({ title, value, icon, trend, trendValue, color }: StatCardProps) => {
   const isPositive = trend === 'up';
+  const IconComponent = getIconComponent(icon);
+  
   return (
     <div className="bg-neutral-900/80 rounded-xl shadow-lg p-6 border border-red-500/20 backdrop-blur-sm transition-all hover:shadow-xl hover:border-red-500/40">
       <div className="flex justify-between items-start">
@@ -101,7 +125,7 @@ const StatCard = ({ title, value, icon: Icon, trend, trendValue, color }: any) =
           )}
         </div>
         <div className={`p-3 rounded-lg ${color}`}>
-          <Icon className="w-6 h-6 text-white" />
+          <IconComponent className="w-6 h-6 text-white" />
         </div>
       </div>
     </div>
@@ -407,6 +431,7 @@ const ProcessTable = () => {
 //             主仪表盘组件
 // ==========================================
 const Dashboard = () => {
+  const { stats } = useStatsStore();
   // 硬件信息
   const [hardware, setHardware] = useState<HardwareInfo | null>(null);
   const [_, setLoadingHw] = useState(true);
@@ -498,11 +523,11 @@ return (
         </div>
 
         {/* ========== 统计卡片网格 ========== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
-          {stats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
-          ))}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
+        {stats.map((stat, index) => (
+          <StatCard key={index} {...stat} />
+        ))}
+      </div>
 
         {/* ========== 进程列表 + 系统资源 ========== */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">

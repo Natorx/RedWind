@@ -1,4 +1,5 @@
-// stores/dashboard.ts
+/*stores/dashboard.ts
+@Detail:仪表盘四个卡片的数据配置（未来可能会添加更多配置内容）*/
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { getModuleNum } from '../utils/project';

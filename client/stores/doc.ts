@@ -1,4 +1,5 @@
-// stores/doc.ts
+/*stores/doc.ts
+@Detail:本地文档阅读器的存储*/
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

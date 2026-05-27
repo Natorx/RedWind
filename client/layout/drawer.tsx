@@ -4,7 +4,7 @@ import Modal from '../components/Modal';
 import avatar from '../mock/pics/avatar.jpg';
 import { useSettingDrawer } from '../context/drawerSettingContext';
 
-import { useUiStore } from '../stores/useUiStore';
+import { useUiStore } from '../stores/ui';
 import { useAccountStore } from '../stores/account'; // 引入账号 store
 
 export const DrawerPage: React.FC = () => {

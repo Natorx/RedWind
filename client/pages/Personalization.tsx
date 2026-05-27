@@ -1,11 +1,14 @@
-// pages/Personalization.tsx
+/* pages/Personalization.tsx
+@Date:2026.5.27
+@Detail: you can use this page to customize dashboard (and maybe other pages in the future) cards, including title, value, icon, trend, color and so on. The data is stored in local storage, so it will not be lost when you refresh the page. You can also reset to default data if you want.
+*/
 import React, { useState } from 'react';
 import PageBox from '../components/PageBox';
 import { StatItem, useStatsStore } from '../stores/dashboard';
 import { Plus, Trash2, Save, RefreshCw, Edit2, X } from 'lucide-react';
 
 const Personalization: React.FC = () => {
-  const { stats, updateStats, updateModuleCount, refreshStats } = useStatsStore();
+  const { stats, updateStats, refreshStats } = useStatsStore();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<StatItem>>({});
 
@@ -93,13 +96,6 @@ const Personalization: React.FC = () => {
             <p className="text-neutral-400 mt-1">自定义统计卡片的数据和样式</p>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={updateModuleCount}
-              className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors flex items-center gap-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              同步模块数量
-            </button>
             <button
               onClick={refreshStats}
               className="px-4 py-2 bg-neutral-700 text-neutral-300 rounded-lg hover:bg-neutral-600 transition-colors flex items-center gap-2"
@@ -271,32 +267,6 @@ const Personalization: React.FC = () => {
           )}
         </div>
 
-        {/* 实时预览 */}
-        <div className="mt-8">
-          <h2 className="text-lg font-semibold text-neutral-200 mb-4">实时预览</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((stat, index) => (
-              <div key={`preview-${index}`} className="bg-neutral-900/80 rounded-xl shadow-lg p-6 border border-red-500/20">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium text-neutral-400 mb-1">{stat.title}</p>
-                    <p className="text-2xl font-bold text-neutral-100">{stat.value}</p>
-                    {stat.trend && (
-                      <div className="flex items-center mt-2">
-                        <span className={`text-xs font-medium ${stat.trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
-                          {stat.trendValue}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className={`p-3 rounded-lg ${stat.color}`}>
-                    <div className="w-6 h-6" /> {/* 图标占位 */}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </PageBox>
   );

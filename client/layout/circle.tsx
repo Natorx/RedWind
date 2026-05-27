@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useActiveItem } from '../context/activeItemContext';
 import iconSrc from '../assets/icon.png';
 import { useSettingDrawer } from '../context/drawerSettingContext';
-import { useModuleStore } from '../stores/moduleItemsStore';
-import { useUiStore } from '../stores/useUiStore';
+import { useModuleStore } from '../stores/module';
+import { useUiStore } from '../stores/ui';
 
 const Circle: React.FC = () => {
   const { sidebarItems, loadItems } = useModuleStore();

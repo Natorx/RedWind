@@ -1,4 +1,5 @@
-// src/store/requestStore.ts
+/*stores/reuqests.ts
+@Detail:保存的请求的本地存储*/
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

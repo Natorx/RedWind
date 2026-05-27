@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import sidebarItems from '../config/sidebar.config';
 import { labelSourceConfig } from '../config/module.config';
-import { useModuleStore } from '../stores/moduleItemsStore';
+import { useModuleStore } from '../stores/module';
 
 interface SidebarItem {
   id: string;

@@ -3,8 +3,8 @@ import { useActiveItem } from '../context/activeItemContext.tsx';
 import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
 import { useEffect, useState } from 'react';
 import { sourceConfig } from '../config/module.config.ts';
-import { useModuleStore } from '../stores/moduleItemsStore.ts';
-import { useUiStore } from '../stores/useUiStore.ts';
+import { useModuleStore } from '../stores/module.ts';
+import { useUiStore } from '../stores/ui.ts';
 import { useAccountStore } from '../stores/account.ts'; // 替换为 account store
 import iconSrc from '../assets/icon.png';
 import avatar from '../mock/pics/avatar.jpg';

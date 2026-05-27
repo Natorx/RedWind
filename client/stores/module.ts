@@ -1,4 +1,5 @@
-// src/stores/sidebarStore.ts
+/*stores/moidule.ts
+@Detail:模块的全局管理*/
 import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
 

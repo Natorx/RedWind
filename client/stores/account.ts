@@ -1,3 +1,5 @@
+/*stores/account.ts
+@Detail:用户数据的本地存储，以及调用一些请求的函数*/
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import useAppStore from './appStore'; // 引入 AppStore

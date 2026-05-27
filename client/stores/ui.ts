@@ -1,3 +1,5 @@
+/*stores/ui.ts
+@Detail:侧栏展示方式的存储管理*/
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

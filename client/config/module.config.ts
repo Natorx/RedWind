@@ -5,7 +5,7 @@ export const sourceConfig = {
   local: {
     label: '本地功能',
   },
-  coming_soon: {
+  coming: {
     label: '即将推出',
   },
   incomplete: {
@@ -29,8 +29,8 @@ export const labelSourceConfig = {
   server: {
     label: 'server',
   },
-  coming_soon: {
-    label: 'coming_soon',
+  coming: {
+    label: 'coming',
   },
   incomplete: {
     label: 'incomplete',

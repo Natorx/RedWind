@@ -8,7 +8,7 @@ interface SidebarItem {
   label: string;
   icon: string;
   order: number;
-  source: 'server' | 'local' | 'coming_soon' | 'incomplete' | 'external' | 'basic' | 'others';
+  source: 'server' | 'local' | 'coming' | 'incomplete' | 'external' | 'basic' | 'others';
 }
 
 interface SidebarStore {

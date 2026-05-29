@@ -11,7 +11,7 @@ interface SidebarItem {
   source:
     | 'server'
     | 'local'
-    | 'coming_soon'
+    | 'coming'
     | 'incomplete'
     | 'external'
     | 'basic'
@@ -123,21 +123,21 @@ const SidebarModuleManager: React.FC = () => {
 
         {/* 可用模块库（一排四个） */}
         <div>
+          {/* 标题 */}
           <h2 className="text-lg font-semibold text-neutral-200 mb-3">
             可用模块库
             <span className="ml-2 text-sm font-normal text-neutral-400">
               ({allAvailableItems.length} 个可用)
             </span>
           </h2>
-
+          {/* 模块列表 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {allAvailableItems.map((item) => {
               const imported = isItemImported(item.id);
-
               return (
                 <div
                   key={item.id}
-                  className={`relative overflow-hidden bg-neutral-900/80 rounded-lg border p-4 flex flex-col items-center justify-between transition-all backdrop-blur-sm ${
+                  className={`relative overflow-hidden bg-neutral-900/80 rounded-lg border p-4 flex items-center justify-between transition-all backdrop-blur-sm ${
                     imported
                       ? 'border-green-500/30 bg-green-500/5'
                       : 'border-red-500/20 hover:border-red-500/40 hover:bg-red-500/5'
@@ -149,53 +149,50 @@ const SidebarModuleManager: React.FC = () => {
                   </div>
 
                   {/* 图标 */}
+
                   <div className="relative z-10 w-12 h-12 flex items-center justify-center mb-2 text-2xl bg-gradient-to-br from-red-500/20 to-red-700/20 rounded-xl">
                     {item.icon || '📦'}
                   </div>
 
-                  {/* 标签与来源 */}
-                  <div className="relative z-10 text-center">
-                    <div className="font-medium text-neutral-200 text-sm mb-1">
-                      {item.label}
-                    </div>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded`}
-                    >
-                      {labelSourceConfig[item.source]?.label || item.source}
-                    </span>
-                  </div>
-
-                  {/* 导入按钮 */}
-                  <button
-                    onClick={() => !imported && handleImport(item)}
-                    disabled={imported}
-                    className={`relative z-10 mt-3 px-3 py-1.5 text-sm rounded transition-all w-full ${
-                      imported
-                        ? 'bg-green-500/20 text-green-400 cursor-default'
-                        : 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 shadow-lg shadow-red-500/25'
-                    }`}
-                  >
-                    {imported ? (
-                      <span className="flex items-center justify-center gap-1">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        已导入
+                  <div className="flex flex-col justify-center items-center w-60%">
+                    <div className="flex items-center justify-around mb-1">
+                      <span className='text-13px text-neutral-200'>{item.label}</span>
+                      <span className={`text-xs ml-1 text-neutral-500 rounded`}>
+                        {labelSourceConfig[item.source]?.label || item.source}
                       </span>
-                    ) : (
-                      '导入'
-                    )}
-                  </button>
+                    </div>
+                    {/* 导入按钮 */}
+                    <button
+                      onClick={() => !imported && handleImport(item)}
+                      disabled={imported}
+                      className={`relative z-10 p-1 text-sm rounded transition-all cursor-pointer w-full ${
+                        imported
+                          ? 'bg-green-500/20 text-green-400 cursor-default'
+                          : 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 shadow-lg shadow-red-500/25'
+                      }`}
+                    >
+                      {imported ? (
+                        <span className="flex items-center justify-center gap-1">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          已导入
+                        </span>
+                      ) : (
+                        '导入'
+                      )}
+                    </button>
+                  </div>
                 </div>
               );
             })}

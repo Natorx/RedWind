@@ -6,7 +6,7 @@ type SidebarItem = {
   source:
     | 'server'
     | 'local'
-    | 'coming_soon'
+    | 'coming'
     | 'incomplete'
     | 'external'
     | 'basic'
@@ -22,7 +22,7 @@ export const startPage_latestFeatures = [
 export const sidebarItems: SidebarItem[] = [
   // ========== server (优先级最高) ==========
   { id: 'server-chat', label: '聊天室', icon: '💬', order: 13, source: 'server' },
-  { id: 'agent', label: 'Deepseek Agent', icon: '🤖', order: 14, source: 'server' },
+  { id: 'agent', label: 'AI智能体', icon: '🤖', order: 14, source: 'server' },
   { id: 'community', label: '社区', icon: '🏠', order: 24, source: 'server' },
 
   // ========== local ==========
@@ -38,11 +38,11 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'todo', label: '待办事项', icon: '📝', order: 25, source: 'local' },
   // 如果有 'others' 或 'basic' 的项，按 order 插入此处
 
-  // ========== 未开发 (coming_soon / incomplete) ==========
-  // 注意：incomplete 优先级略高于 coming_soon？按 order 混合排序即可
-  { id: 'drill-ground', label: '演练场', icon: '🏟️', order: 15, source: 'coming_soon' },
-  { id: 'music-player', label: '音乐播放器', icon: '🎧', order: 20, source: 'coming_soon' },
-  { id: 'plugins', label: '插件扩展', icon: '🔌', order: 22, source: 'coming_soon' },
+  // ========== 未开发 (coming / incomplete) ==========
+  // 注意：incomplete 优先级略高于 coming？按 order 混合排序即可
+  { id: 'drill-ground', label: '演练场', icon: '🏟️', order: 15, source: 'coming' },
+  { id: 'music-player', label: '音乐播放器', icon: '🎧', order: 20, source: 'coming' },
+  { id: 'plugins', label: '插件扩展', icon: '🔌', order: 22, source: 'coming' },
 ];
 
 

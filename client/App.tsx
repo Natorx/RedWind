@@ -10,7 +10,7 @@ function App() {
   const { activeItem } = useActiveItem();
   
   return (
-    <div className="app-container flex h-100vh overflow-hidden">
+    <div className="app-container flex h-100vh overflow-hidden rounded-xl">
       {/* 左侧侧边栏 */}
       <Sidebar />
       {/* 右侧主内容区 */}

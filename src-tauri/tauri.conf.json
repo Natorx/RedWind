@@ -14,7 +14,9 @@
       {
         "title": "Red Wind",
         "width": 1140,
-        "height": 760
+        "height": 760,
+        "decorations": true,
+        "transparent": true
       }
     ],
     "security": {

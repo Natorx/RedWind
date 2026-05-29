@@ -36,18 +36,33 @@ const QRCodePage: React.FC<QRCodeGeneratorProps> = ({
   };
 
   // 复制二维码数据URL
-  const copyQRCode = async () => {
-    const canvas = document.querySelector('canvas');
-    if (!canvas) return;
+const copyQRCode = async () => {
+  const canvas = document.querySelector('canvas');
+  if (!canvas) return;
 
-    try {
-      const dataUrl = canvas.toDataURL('image/png');
-      await navigator.clipboard.writeText(dataUrl);
-      alert('二维码已复制到剪贴板！');
-    } catch (err) {
-      console.error('复制失败:', err);
+  try {
+    // 1. 将 canvas 转为 Blob（PNG 格式）
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), 'image/png')
+    );
+    if (!blob) {
+      alert('无法生成图片');
+      return;
     }
-  };
+
+    // 2. 创建 ClipboardItem 并写入剪贴板
+    const clipboardItem = new ClipboardItem({
+      'image/png': blob,
+    });
+    await navigator.clipboard.write([clipboardItem]);
+
+    alert('二维码图片已复制到剪贴板！');
+  } catch (err) {
+    console.error('复制失败:', err);
+    alert('复制失败，请尝试使用下载按钮');
+  }
+};
+
 
   // 重置为默认值
   const resetToDefaults = () => {
@@ -162,7 +177,7 @@ const QRCodePage: React.FC<QRCodeGeneratorProps> = ({
           </div>
         </div>
 
-        <QRCode.QRCodeSVG
+        <QRCode.QRCodeCanvas
           value={text}
           size={qrSize}
           fgColor={qrFgColor}

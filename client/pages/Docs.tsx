@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Upload, FileText, X, AlertCircle, Save } from 'lucide-react';
+import { Upload, FileText, X, AlertCircle, Save, Menu } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { useDocStore } from '../stores/doc';
 import { invoke } from '@tauri-apps/api/core';
@@ -14,11 +14,14 @@ const DocReader: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showIntro, setShowIntro] = useState<boolean>(true);
   const [docFiles, setDocFiles] = useState<string[]>([]);
-  const [_, setCopyMessage] = useState<string | null>(null); // 用于显示提示
+  const [_, setCopyMessage] = useState<string | null>(null);
   const [fileInfo, setFileInfo] = useState<{
     name: string;
     size: number;
   } | null>(null);
+
+  // ===== 新增：左侧面板显隐状态 =====
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   // 保存到 docs 目录
   const handleSaveToDocs = async () => {
@@ -27,7 +30,6 @@ const DocReader: React.FC = () => {
     try {
       await invoke<string>('copy_file_to_docs', { sourcePath: path });
       setCopyMessage('已保存到文档目录！');
-      // 刷新文档列表
       const files = await invoke<string[]>('list_markdown_files');
       setDocFiles(files);
     } catch (err) {
@@ -37,14 +39,12 @@ const DocReader: React.FC = () => {
   };
 
   // ===== 所有 Hooks 必须放在 return 之前 =====
-  // 获取 docs 目录下的 .md 文件列表（只执行一次）
   useEffect(() => {
     invoke<string[]>('list_markdown_files')
       .then((files) => setDocFiles(files))
       .catch((err) => console.error('读取文档列表失败', err));
-  }, []); // 依赖于空数组，仅挂载时执行
+  }, []);
 
-  // 当 path 变化时自动读取文件
   useEffect(() => {
     if (path) {
       readFileFromPath(path);
@@ -56,7 +56,6 @@ const DocReader: React.FC = () => {
     }
   }, [path]);
 
-  // 读取文件（通过路径）
   const readFileFromPath = async (filePath: string) => {
     setLoading(true);
     setError(null);
@@ -77,7 +76,6 @@ const DocReader: React.FC = () => {
     }
   };
 
-  // 选择文件（系统对话框）
   const handleOpenFile = async () => {
     const selectedPath = await open({
       multiple: false,
@@ -85,14 +83,7 @@ const DocReader: React.FC = () => {
         {
           name: 'Documents',
           extensions: [
-            'md',
-            'txt',
-            'html',
-            'json',
-            'csv',
-            'xml',
-            'yml',
-            'yaml',
+            'md', 'txt', 'html', 'json', 'csv', 'xml', 'yml', 'yaml',
           ],
         },
       ],
@@ -104,7 +95,7 @@ const DocReader: React.FC = () => {
 
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
-      {/* 加载遮罩（替代之前的提前 return） */}
+      {/* 加载遮罩 */}
       {loading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="text-center">
@@ -114,7 +105,7 @@ const DocReader: React.FC = () => {
         </div>
       )}
 
-      {/* 扫描动画 - 仅当无文件时显示 */}
+      {/* 扫描动画 */}
       <div
         className={`absolute inset-0 pointer-events-none z-20 transition-opacity duration-500 ${
           showIntro && !path ? 'opacity-100' : 'opacity-0'
@@ -130,8 +121,28 @@ const DocReader: React.FC = () => {
         <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-red-500/80 rounded-br-lg animate-pulse-glow" />
       </div>
 
-      {/* 左侧边栏 */}
-      <div className="w-64 flex flex-col justify-between bg-neutral-900/70 border-r border-red-500/20 overflow-y-auto p-4 relative z-10 shrink-0">
+      {/* ===== 新增：左上角浮动小球按钮 ===== */}
+      <button
+        onClick={() => setIsSidebarOpen(prev => !prev)}
+        className={`fixed top-3 left-50 z-50 w-8 h-8 rounded-full flex items-center justify-center
+          transition-all duration-300 shadow-lg shadow-red-500/40
+          ${isSidebarOpen
+            ? 'bg-red-600 hover:bg-red-700 rotate-90'
+            : 'bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800'
+          }`}
+        title={isSidebarOpen ? '收起侧边栏' : '展开侧边栏'}
+      >
+        <Menu className="w-5 h-5 text-white" />
+      </button>
+
+      {/* ===== 左侧面板（固定定位，滑入滑出） ===== */}
+      <div
+        className={`fixed left-0 top-0 h-full w-64 flex flex-col justify-between
+          bg-neutral-900/95 border-r border-red-500/20 overflow-y-auto p-4
+          z-40 backdrop-blur-sm
+          transform transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
         <div>
           <h2 className="text-sm font-semibold text-red-400 mb-4 flex items-center gap-2">
             <FileText className="w-4 h-4" />
@@ -194,7 +205,7 @@ const DocReader: React.FC = () => {
         </div>
       </div>
 
-      {/* 主内容区域 */}
+      {/* 主内容区域（移除原来的 left-panel，只保留右侧内容） */}
       <div className="flex-1 flex flex-col overflow-y-auto relative z-10 p-8">
         {/* 文件信息标签 */}
         {fileInfo && (
@@ -217,7 +228,8 @@ const DocReader: React.FC = () => {
             </div>
           </div>
         )}
-        {/* 未选择文件时显示 */}
+
+        {/* 未选择文件时的欢迎界面 */}
         {!path && !error && (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex gap-8 w-full max-w-4xl">

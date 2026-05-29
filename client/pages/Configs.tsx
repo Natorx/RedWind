@@ -154,7 +154,7 @@ const SidebarModuleManager: React.FC = () => {
                     {item.icon || '📦'}
                   </div>
 
-                  <div className="flex flex-col justify-center items-center w-60%">
+                  <div className="flex flex-col justify-center items-center w-65%">
                     <div className="flex items-center justify-around mb-1">
                       <span className='text-13px text-neutral-200'>{item.label}</span>
                       <span className={`text-xs ml-1 text-neutral-500 rounded`}>
@@ -162,10 +162,11 @@ const SidebarModuleManager: React.FC = () => {
                       </span>
                     </div>
                     {/* 导入按钮 */}
+                    <div className='w-full px-2'>
                     <button
                       onClick={() => !imported && handleImport(item)}
                       disabled={imported}
-                      className={`relative z-10 p-1 text-sm rounded transition-all cursor-pointer w-full ${
+                      className={`w-full relative z-10 py-1 text-sm rounded transition-all cursor-pointer w-full ${
                         imported
                           ? 'bg-green-500/20 text-green-400 cursor-default'
                           : 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 shadow-lg shadow-red-500/25'
@@ -192,6 +193,7 @@ const SidebarModuleManager: React.FC = () => {
                         '导入'
                       )}
                     </button>
+                    </div>
                   </div>
                 </div>
               );

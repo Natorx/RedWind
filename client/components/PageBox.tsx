@@ -6,7 +6,7 @@ type PageBoxProps = {
 };
 const PageBox: React.FC<PageBoxProps> = ({ children }) => {
   return (
-    <div className="h-screen bg-gradient-to-br from-red-950 to-neutral-900">
+    <div className="h-screen bg-gradient-to-br from-red-950 to-neutral-900 overflow-y-scroll scroll-none">
       {children}
     </div>
   );

@@ -15,7 +15,6 @@ import FileHandler from '../pages/Filehandler';
 import TodoList from '../pages/TodoList';
 import Audio from '../pages/Audio';
 import Agent from '../pages/Agent';
-import Personalization from '../pages/Personalization';
 import Subscribe from '../pages/Subscribe';
 
 const contentMap: Record<string, JSX.Element> = {
@@ -34,7 +33,6 @@ const contentMap: Record<string, JSX.Element> = {
   community: <Community />,
   todo: <TodoList />,
   agent: <Agent />,
-  personalization: <Personalization />,
   subscribe: <Subscribe />,
 };
 export default contentMap;

@@ -21,7 +21,7 @@ export const startPage_latestFeatures = [
 
 export const sidebarItems: SidebarItem[] = [
   // ========== server (优先级最高) ==========
-  { id:'subscribe', label:'我的订阅', icon:'',order:11,source:'server'},
+  { id:'subscribe', label:'我的订阅', icon:'⚙️',order:11,source:'server'},
   { id: 'server-chat', label: '聊天室', icon: '💬', order: 13, source: 'server' },
   { id: 'agent', label: 'AI智能体', icon: '🤖', order: 14, source: 'server' },
   { id: 'community', label: '社区', icon: '🏠', order: 24, source: 'server' },
@@ -34,7 +34,6 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'api-debug', label: 'API调试', icon: '🛠️', order: 7, source: 'local' },
   { id: 'file-hander', label: '文件处理', icon: '🔄', order: 9, source: 'local' },
   { id: 'qrcode', label: '二维码生成', icon: '📱', order: 10, source: 'local' },
-  { id:'personalization',label:'个性化设置',icon:'⚙️',order:12,source:'local'},
   { id: 'doc-reader', label: '文档阅读器', icon: '📖', order: 23, source: 'local' },
   { id: 'todo', label: '待办事项', icon: '📝', order: 25, source: 'local' },
   // 如果有 'others' 或 'basic' 的项，按 order 插入此处

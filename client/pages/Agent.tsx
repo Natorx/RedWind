@@ -1,6 +1,7 @@
 // src/pages/Agent.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { agentApi, FileOperation } from '../apis/agent';
+import { agentApi } from '../apis/agent';
+import { FileOperation } from '../interface/agent';
 
 interface Message {
   id: string;

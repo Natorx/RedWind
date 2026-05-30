@@ -21,6 +21,7 @@ export const startPage_latestFeatures = [
 
 export const sidebarItems: SidebarItem[] = [
   // ========== server (优先级最高) ==========
+  { id:'subscribe', label:'我的订阅', icon:'',order:11,source:'server'},
   { id: 'server-chat', label: '聊天室', icon: '💬', order: 13, source: 'server' },
   { id: 'agent', label: 'AI智能体', icon: '🤖', order: 14, source: 'server' },
   { id: 'community', label: '社区', icon: '🏠', order: 24, source: 'server' },

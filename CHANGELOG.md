@@ -1,7 +1,12 @@
+### 0.4.5
+1. dialog component
+2. "server subscribe page"
+
 ### 0.4.4
 1. better module config page
 2. better docs page
 3. start to "task page"
+
 ### 0.4.3
 1. feature: Account(include server and client)
 2. Auth

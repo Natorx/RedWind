@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import Drawer from '../components/Drawer';
 import Modal from '../components/Modal';
-import { useSettingDrawer } from '../context/drawerSettingContext';
 import { useUiStore } from '../stores/ui';
 import { useAccountStore } from '../stores/account'; // 引入账号 store
 import avatar from '../assets/avatar.jpg';
+import useAppStore from '../stores/appStore';
 
 export const DrawerPage: React.FC = () => {
-  const { isSettingsOpen, setIsSettingsOpen } = useSettingDrawer();
+  const isSettingsOpen = useAppStore((state) => state.settingOpen);
+  const setSettingOpen = useAppStore((state) => state.setSettingOpen);
 
   // 账号状态
   const { user, isLoggedIn, login, logout } = useAccountStore();
@@ -50,7 +51,7 @@ export const DrawerPage: React.FC = () => {
     <>
       <Drawer
         isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        onClose={() => setSettingOpen(false)}
         title="用户设置"
         position="right"
         width="w-80"

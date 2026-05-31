@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import iconSrc from '../assets/icon.png';
-import { useActiveItem } from '../context/activeItemContext';
 import { useModuleStore } from '../stores/module';
 import { startPage_latestFeatures } from '../config/sidebar.config';
+import useAppStore from '../stores/appStore';
 
 const StartPage: React.FC = () => {
   const { sidebarItems } = useModuleStore();
-  const { setActiveItem } = useActiveItem();
+  const setActiveItem = useAppStore((state) => state.setActiveItem);
   const [showIntro, setShowIntro] = useState(false);
 
   // 快速开始：前3个已导入的模块

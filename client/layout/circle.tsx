@@ -1,17 +1,17 @@
 // circle.tsx
 import React, { useState, useEffect } from 'react';
-import { useActiveItem } from '../context/activeItemContext';
 import iconSrc from '../assets/icon.png';
-import { useSettingDrawer } from '../context/drawerSettingContext';
 import { useModuleStore } from '../stores/module';
 import { useUiStore } from '../stores/ui';
+import useAppStore from '../stores/appStore';
 
 const Circle: React.FC = () => {
   const { sidebarItems, loadItems } = useModuleStore();
   const [showCircle, setShowCircle] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
-  const { activeItem, setActiveItem } = useActiveItem();
-  const { setIsSettingsOpen } = useSettingDrawer();
+  const activeItem = useAppStore((state) => state.activeItem);
+  const setActiveItem = useAppStore((state) => state.setActiveItem);
+  const setIsSettingsOpen = useAppStore((state) => state.setSettingOpen);
 
   const activeUi = useUiStore((state) => state.activeUi);
 

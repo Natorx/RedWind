@@ -1,6 +1,4 @@
 // sidebar.tsx
-import { useActiveItem } from '../context/activeItemContext.tsx';
-import { useSettingDrawer } from '../context/drawerSettingContext.tsx';
 import { useEffect, useState } from 'react';
 import { sourceConfig } from '../config/module.config.ts';
 import { useModuleStore } from '../stores/module.ts';
@@ -8,11 +6,13 @@ import { useUiStore } from '../stores/ui.ts';
 import { useAccountStore } from '../stores/account.ts'; // 替换为 account store
 import iconSrc from '../assets/icon.png';
 import avatar from '../assets/avatar.jpg';
+import useAppStore from '../stores/appStore.ts';
 
 const Sidebar: React.FC = () => {
+  const activeItem = useAppStore((state) => state.activeItem);
+  const setActiveItem = useAppStore((state) => state.setActiveItem);
+  const setSettingOpen = useAppStore((state) => state.setSettingOpen);
   const { sidebarItems, loadItems } = useModuleStore();
-  const { activeItem, setActiveItem } = useActiveItem();
-  const { setIsSettingsOpen } = useSettingDrawer();
   const [showSidebar, setShowSidebar] = useState(false);
   const activeUi = useUiStore((state) => state.activeUi);
 
@@ -93,7 +93,7 @@ const Sidebar: React.FC = () => {
       <div className="sidebar-footer px-5 py-4 border-t border-red-500/20">
         <div
           className="user-card p-3 hover:bg-neutral-800/50 transition-all rounded-lg cursor-pointer"
-          onClick={() => setIsSettingsOpen(true)}
+          onClick={() => setSettingOpen(true)}
         >
           <div className="user-info flex items-center">
             <div className="user-avatar w-9 h-9 bg-gradient-to-br from-red-500/20 to-red-700/20 rounded-full flex items-center justify-center mr-3 overflow-hidden">

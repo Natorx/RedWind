@@ -1,11 +1,11 @@
 import { AnimatePresence, motion, Variants } from 'framer-motion';
 import './styles/main.css';
-import { useActiveItem } from './context/activeItemContext';
 import Sidebar from './layout/sidebar';
 import contentMap from './config/contentMap.config';
 import { DrawerPage } from './layout/drawer';
 import Circle from './layout/circle';
 import { MsgContainer } from './components/Msg';
+import useAppStore from './stores/appStore';
 
 // 定义切换动画
 const pageTransition: Variants = {
@@ -15,7 +15,7 @@ const pageTransition: Variants = {
 };
 
 function App() {
-  const { activeItem } = useActiveItem();
+  const activeItem = useAppStore((state) => state.activeItem);
 
   return (
     <>

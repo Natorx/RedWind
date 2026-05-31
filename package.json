@@ -16,9 +16,9 @@
     "dp": "cd client && pnpm dev",
     "dlinux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
     "fmt": "cd src-tauri && cargo fmt",
-    "updater": "cmd /c commands\\version_update.bat",
-    "get_build": "cmd /c commands\\extract_release.bat",
-    "agent": "cd agent && python server.py"
+    "agent": "cd agent && python server.py",
+    "updater": "bash commands/version_up.sh",
+    "get_build": "bash commands/extract_release.sh"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

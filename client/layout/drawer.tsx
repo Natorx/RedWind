@@ -4,7 +4,7 @@ import Modal from '../components/Modal';
 import { useUiStore } from '../stores/ui';
 import { useAccountStore } from '../stores/account'; // 引入账号 store
 import avatar from '../assets/avatar.jpg';
-import useAppStore from '../stores/appStore';
+import useAppStore from '../stores/app';
 
 export const DrawerPage: React.FC = () => {
   const isSettingsOpen = useAppStore((state) => state.settingOpen);

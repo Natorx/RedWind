@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import { io, Socket } from 'socket.io-client';
-import useAppStore from '../stores/appStore';
+import useAppStore from '../stores/app';
 
 interface ChatMessage {
   username: string;

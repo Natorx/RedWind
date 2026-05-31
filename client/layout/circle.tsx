@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import iconSrc from '../assets/icon.png';
 import { useModuleStore } from '../stores/module';
 import { useUiStore } from '../stores/ui';
-import useAppStore from '../stores/appStore';
+import useAppStore from '../stores/app';
 
 const Circle: React.FC = () => {
   const { sidebarItems, loadItems } = useModuleStore();

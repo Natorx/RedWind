@@ -6,7 +6,7 @@ import { useUiStore } from '../stores/ui.ts';
 import { useAccountStore } from '../stores/account.ts'; // 替换为 account store
 import iconSrc from '../assets/icon.png';
 import avatar from '../assets/avatar.jpg';
-import useAppStore from '../stores/appStore.ts';
+import useAppStore from '../stores/app.ts';
 
 const Sidebar: React.FC = () => {
   const activeItem = useAppStore((state) => state.activeItem);

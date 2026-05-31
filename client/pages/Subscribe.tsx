@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PageBox from '../components/PageBox';
-import useAppStore from '../stores/appStore';
+import useAppStore from '../stores/app';
 import { useMsg } from '../components/Msg';
 
 // 订阅条目类型（仅用于用户自定义项）

@@ -1,6 +1,7 @@
 ### 0.4.5
 1. dialog component
 2. "server subscribe page"
+3. use zustand to replace context
 
 ### 0.4.4
 1. better module config page

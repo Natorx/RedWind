@@ -11,4 +11,5 @@ export default async function router(fastify: FastifyInstance) {
   fastify.register(postModule,{prefix:'/post'})
   fastify.register(accountModule,{prefix:'/account'})
   fastify.register(taskModule,{prefix:'/task'})
+  
 }

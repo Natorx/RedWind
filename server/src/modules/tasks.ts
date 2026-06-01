@@ -1,6 +1,6 @@
 // modules/task.module.ts
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { DataSource } from '../config/orm.js';
+import { DataSources } from '../config/orm.js';
 import { Task } from '../tables/tasks.js';
 import { Account } from '../tables/accounts.js';
 import { authenticate } from '../hooks/auth.js';
@@ -35,8 +35,8 @@ interface GetTaskParams {
 
 export default async function taskModule(fastify: FastifyInstance) {
   // 获取任务仓库
-  const taskRepository = DataSource.getRepository(Task);
-  const accountRepository = DataSource.getRepository(Account);
+  const taskRepository = DataSources.getRepository(Task);
+  const accountRepository = DataSources.getRepository(Account);
 
   // ========== 1. 创建任务 (Create) ==========
   fastify.post<{ Body: Omit<CreateTaskBody, 'account_id'> }>(

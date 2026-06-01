@@ -4,7 +4,7 @@ import { Post } from "../tables/posts.js";
 import { Account } from "../tables/accounts.js";
 import { Task } from "../tables/tasks.js";
 
-export const DataSource = new DataSource({
+export const DataSources = new DataSource({
   type: "postgres",
   host: "localhost",
   port: 5432,

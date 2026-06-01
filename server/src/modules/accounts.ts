@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { TypeORMConfig } from '../config/orm.js';
+import { DataSource } from '../config/orm.js';
 import { Account } from '../tables/accounts.js';
 
 export default async function accountModule(fastify: FastifyInstance) {
@@ -19,7 +19,7 @@ export default async function accountModule(fastify: FastifyInstance) {
           return reply.status(400).send({ message: '用户名和密码不能为空' });
         }
 
-        const accountRepository = TypeORMConfig.getRepository(Account);
+        const accountRepository = DataSource.getRepository(Account);
 
         // 检查用户名是否已存在
         const existing = await accountRepository.findOneBy({ username });
@@ -52,7 +52,7 @@ export default async function accountModule(fastify: FastifyInstance) {
   fastify.get<{ Params: { id: string } }>('/:id', async (request, reply) => {
     try {
       const { id } = request.params;
-      const accountRepository = TypeORMConfig.getRepository(Account);
+      const accountRepository = DataSource.getRepository(Account);
       const account = await accountRepository.findOneBy({ id });
       if (!account) {
         return reply.status(404).send({ message: '用户不存在' });
@@ -79,7 +79,7 @@ export default async function accountModule(fastify: FastifyInstance) {
           return reply.status(400).send({ message: '用户名和密码不能为空' });
         }
 
-        const accountRepository = TypeORMConfig.getRepository(Account);
+        const accountRepository = DataSource.getRepository(Account);
 
         // 查找用户（需要拿到密码用于比对）
         const account = await accountRepository.findOne({

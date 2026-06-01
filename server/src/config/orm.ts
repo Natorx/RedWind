@@ -4,7 +4,7 @@ import { Post } from "../tables/posts.js";
 import { Account } from "../tables/accounts.js";
 import { Task } from "../tables/tasks.js";
 
-export const TypeORMConfig = new DataSource({
+export const DataSource = new DataSource({
   type: "postgres",
   host: "localhost",
   port: 5432,

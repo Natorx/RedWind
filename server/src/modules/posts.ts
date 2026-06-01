@@ -2,9 +2,10 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import path from 'path';
-import { TypeORMConfig } from '../config/orm.js';
+import { DataSource } from '../config/orm.js';
 import { Post } from '../tables/posts.js';
 import { authenticate } from '../hooks/auth.js';
+import { post } from '../interface/posts.js';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
@@ -20,14 +21,14 @@ export default async function postModule(fastify: FastifyInstance) {
   // 获取所有帖子（公开，无需登录）
   fastify.get('/', async function (_request: FastifyRequest, reply: FastifyReply) {
     try {
-      const postRepository = TypeORMConfig.getRepository(Post);
+      const postRepository = DataSource.getRepository(Post);
       const posts = await postRepository.find({
         order: { createdAt: 'DESC' },
         relations: ['author'], // 加载作者信息
       });
 
       const prefix = process.env.FILE_PREFIX || '';
-      const postsWithPrefix = posts.map((post) => ({
+      const postsWithPrefix = posts.map((post:post) => ({
         ...post,
         images: post.images ? post.images.map((url) => `${prefix}${url}`) : [],
         // 返回安全的作者信息（只暴露 id 和 username）
@@ -69,7 +70,7 @@ export default async function postModule(fastify: FastifyInstance) {
         }
       }
 
-      const postRepository = TypeORMConfig.getRepository(Post);
+      const postRepository = DataSource.getRepository(Post);
       const newPost = postRepository.create({
         title: body.title,
         content: body.content,
@@ -111,7 +112,7 @@ export default async function postModule(fastify: FastifyInstance) {
         }
       }
 
-      const postRepository = TypeORMConfig.getRepository(Post);
+      const postRepository = DataSource.getRepository(Post);
       const post = await postRepository.findOneBy({ id });
       if (!post) {
         return reply.status(404).send({ message: '帖子不存在' });
@@ -141,7 +142,7 @@ export default async function postModule(fastify: FastifyInstance) {
     const { id } = request.params;
     const userId = request.user!.id;
     try {
-      const postRepository = TypeORMConfig.getRepository(Post);
+      const postRepository = DataSource.getRepository(Post);
       const post = await postRepository.findOneBy({ id });
       if (!post) {
         return reply.status(404).send({ message: '帖子不存在' });

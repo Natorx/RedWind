@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import fastify from 'fastify';
 import cors from '@fastify/cors';
-import { TypeORMConfig } from './config/orm.js';
+import { DataSource } from './config/orm.js';
 import path from 'path';
 import router from './router.js';
 
@@ -24,7 +24,7 @@ await server.register(router);
 
 // 修改这部分
 try {
-  await TypeORMConfig.initialize();
+  await DataSource.initialize();
   console.log('✅ PGSql Connected!');
   
   await server.listen({

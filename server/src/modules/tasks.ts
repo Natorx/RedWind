@@ -1,9 +1,10 @@
 // modules/task.module.ts
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { TypeORMConfig } from '../config/orm.js';
+import { DataSource } from '../config/orm.js';
 import { Task } from '../tables/tasks.js';
 import { Account } from '../tables/accounts.js';
 import { authenticate } from '../hooks/auth.js';
+import { task } from '../interface/tasks.js';
 
 interface CreateTaskBody {
   title: string;
@@ -34,8 +35,8 @@ interface GetTaskParams {
 
 export default async function taskModule(fastify: FastifyInstance) {
   // 获取任务仓库
-  const taskRepository = TypeORMConfig.getRepository(Task);
-  const accountRepository = TypeORMConfig.getRepository(Account);
+  const taskRepository = DataSource.getRepository(Task);
+  const accountRepository = DataSource.getRepository(Account);
 
   // ========== 1. 创建任务 (Create) ==========
   fastify.post<{ Body: Omit<CreateTaskBody, 'account_id'> }>(
@@ -154,7 +155,7 @@ export default async function taskModule(fastify: FastifyInstance) {
           .orderBy('task.createdAt', 'DESC')
           .getManyAndCount();
 
-        const formattedTasks = tasks.map((task) => ({
+        const formattedTasks = tasks.map((task: task) => ({
           id: task.id,
           title: task.title,
           content: task.content,
@@ -192,7 +193,7 @@ export default async function taskModule(fastify: FastifyInstance) {
   // ========== 3. 查询单个任务 (Read - One) ==========
   fastify.get<{ Params: GetTaskParams }>(
     '/tasks/:id',
-  
+
     async (request, reply) => {
       try {
         const { id } = request.params;

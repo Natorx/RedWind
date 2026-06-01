@@ -17,28 +17,8 @@ const Subscribe: React.FC = () => {
   const setServerpush = useAppStore((s) => s.setServerpush);
   const { showMsg } = useMsg();
 
-  // 表单状态
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [newEnabled, setNewEnabled] = useState(true);
-
   // 本地订阅列表（不含服务推送）
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-
-  // 添加订阅
-  const handleAdd = () => {
-    if (!name.trim() || !description.trim()) return;
-    const newItem: Subscription = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      description: description.trim(),
-      enabled: newEnabled,
-    };
-    setSubscriptions([...subscriptions, newItem]);
-    setName('');
-    setDescription('');
-    setNewEnabled(true);
-  };
 
   // 切换用户自定义项的启用状态
   const handleToggle = (id: string) => {
@@ -52,71 +32,6 @@ const Subscribe: React.FC = () => {
   return (
     <PageBox>
       <div className="flex flex-col justify-center items-start w-full p-6 relative">
-        {/* 背景动画装饰线（与 StartPage 风格匹配） */}
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
-          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-top"></div>
-          <div className="absolute top-0 right-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-right"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-bottom"></div>
-          <div className="absolute top-0 left-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-left"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-red-500/60 rounded-tl-lg animate-pulse-glow"></div>
-          <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-red-500/60 rounded-tr-lg animate-pulse-glow"></div>
-          <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-red-500/60 rounded-bl-lg animate-pulse-glow"></div>
-          <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-red-500/60 rounded-br-lg animate-pulse-glow"></div>
-        </div>
-
-        {/* 添加表单区域 */}
-        <div className="w-full z-10 bg-neutral-800/40 backdrop-blur-sm rounded-xl p-5 mb-6 border border-neutral-700/50 shadow-lg">
-          <h3 className="text-sm font-semibold text-neutral-300 mb-4 tracking-wider uppercase">
-            添加新订阅
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">
-                订阅名称
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="例如：科技早报"
-                className="w-full px-3 py-2 bg-neutral-900/70 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">
-                订阅 URL
-              </label>
-              <input
-                type="url"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="https://example.com/feed.xml"
-                className="w-full px-3 py-2 bg-neutral-900/70 border border-neutral-600 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
-              />
-            </div>
-            <div className="flex items-center gap-3 pt-5">
-              <label className="text-neutral-300 text-sm">启用</label>
-              <button
-                onClick={() => setNewEnabled(!newEnabled)}
-                className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${
-                  newEnabled ? 'bg-red-600' : 'bg-neutral-600'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
-                    newEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-            <button
-              onClick={handleAdd}
-              className="px-5 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-medium rounded-lg shadow-lg transition-all hover:scale-105 active:scale-95"
-            >
-              添加订阅
-            </button>
-          </div>
-        </div>
 
         {/* 订阅列表表格 */}
         <div className="w-full z-10 bg-neutral-800/30 rounded-xl overflow-hidden border border-neutral-700/40 shadow-lg">

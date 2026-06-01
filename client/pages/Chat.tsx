@@ -90,7 +90,7 @@ const ServerChat: React.FC = () => {
   const [__, setOnlineUsers] = useState<string[]>([]);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [___, setError] = useState('');
-  const [showIntro, setShowIntro] = useState(true);
+  const [_, setShowIntro] = useState(true);
 
   const [systemMessages, setSystemMessages] = useState<{ text: string; timestamp: number }[]>([]);
   const [toastMessage, setToastMessage] = useState('');
@@ -226,16 +226,6 @@ const ServerChat: React.FC = () => {
 
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
-      <div className={`absolute inset-0 pointer-events-none z-20 ${showIntro ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-top"></div>
-        <div className="absolute top-0 right-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-right"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scan-bottom"></div>
-        <div className="absolute top-0 left-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-red-500 to-transparent animate-scan-left"></div>
-        <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-red-500/80 rounded-tl-lg animate-pulse-glow"></div>
-        <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-red-500/80 rounded-tr-lg animate-pulse-glow"></div>
-        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-red-500/80 rounded-bl-lg animate-pulse-glow"></div>
-        <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-red-500/80 rounded-br-lg animate-pulse-glow"></div>
-      </div>
 
       <ToastMessage message={toastMessage} visible={toastVisible} />
       <SystemDrawer
@@ -256,21 +246,10 @@ const ServerChat: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsSystemDrawerOpen(true)}
-              className="px-2 py-1 text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md transition-all border border-neutral-700 hover:border-red-500/50 flex items-center gap-1"
+              className="cursor-pointer px-2 py-1 text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md transition-all border border-neutral-700 hover:border-red-500/50 flex items-center gap-1"
             >
               📋
-              <span className="hidden sm:inline">系统</span>
-            </button>
-            <button
-              onClick={() => {
-                if (socket) {
-                  socket.disconnect();
-                  setSocket(null);
-                }
-              }}
-              className="px-3 py-1 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-md transition-all border border-red-500/50 hover:border-red-500"
-            >
-              断开连接
+              <span className="hidden sm:inline">系统信息</span>
             </button>
           </div>
         </div>
@@ -320,7 +299,7 @@ const ServerChat: React.FC = () => {
               }}
               placeholder="输入消息..."
               maxLength={500}
-              className="flex-1 px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-white placeholder-neutral-500 transition-all"
+              className="flex-1 px-4 py-2 border-none bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-white placeholder-neutral-500 transition-all"
             />
             <button
               type="submit"
@@ -333,6 +312,21 @@ const ServerChat: React.FC = () => {
           <div className="mt-2 text-xs text-neutral-600 text-right">按 Enter 发送，最多 500 字符</div>
         </div>
       </div>
+
+      {/* ========== 右侧聊天目标列表 ========== */}
+    <div className="w-60 bg-neutral-900/70 backdrop-blur-sm border-l border-red-500/30 p-4 relative z-10 h-full">
+      <h3 className="text-sm font-bold text-neutral-300 mb-4 flex items-center gap-2">
+        <span className="text-red-400">💬</span>
+        聊天目标
+      </h3>
+      <ul className="space-y-1">
+        <li className="px-3 py-2 bg-red-500/20 text-red-400 rounded-md text-sm font-medium border border-red-500/30 cursor-default flex items-center gap-2">
+          <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+          大厅
+        </li>
+      </ul>
+      <div className="mt-4 text-xs text-neutral-600">已连接 1 个频道</div>
+    </div>
 
       <style>{`
         @keyframes scan-top {

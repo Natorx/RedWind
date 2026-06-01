@@ -8,7 +8,7 @@ import QRCodePage from '../pages/QRCode';
 import FuncConfig from '../pages/Configs';
 import StartPage from '../pages/Start';
 import DrillGround from '../pages/DrillGround';
-import ServerChat from '../pages/Chat_Server';
+import ServerChat from '../pages/Chat';
 import DocReader from '../pages/Docs';
 import Community from '../pages/Communnity';
 import FileHandler from '../pages/Filehandler';

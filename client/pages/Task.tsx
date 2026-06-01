@@ -1,3 +1,4 @@
+// Task.tsx
 import { useEffect, useState } from 'react';
 import PageBox from '../components/PageBox';
 import { taskApi } from '../apis/task';
@@ -14,6 +15,7 @@ interface TaskItem {
     content: string;
     price: string;
     type: string;
+    progress: '未开始' | '进行中' | '已完成';
     user: User;
     createdAt: string;
     updatedAt: string;
@@ -30,6 +32,22 @@ interface ApiResponse {
     };
 }
 
+// 进度状态对应的样式和文本
+const progressConfig = {
+    '未开始': { 
+        color: 'bg-neutral-600 text-neutral-300',
+        icon: '⚪'
+    },
+    '进行中': { 
+        color: 'bg-blue-600/70 text-blue-200',
+        icon: '🔵'
+    },
+    '已完成': { 
+        color: 'bg-green-600/70 text-green-200',
+        icon: '✅'
+    }
+};
+
 const Task: React.FC = () => {
     const [tasks, setTasks] = useState<TaskItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -43,7 +61,6 @@ const Task: React.FC = () => {
         try {
             setLoading(true);
             const response = await taskApi.get();
-            // 根据你的数据结构，response.data 包含完整的响应
             const apiResponse: ApiResponse = response.data;
             
             if (apiResponse.success) {
@@ -59,11 +76,21 @@ const Task: React.FC = () => {
         }
     };
 
+    // 获取进度显示文本和样式
+    const getProgressDisplay = (progress: TaskItem['progress']) => {
+        const config = progressConfig[progress];
+        return {
+            text: progress,
+            color: config.color,
+            icon: config.icon
+        };
+    };
+
     if (loading) {
         return (
             <PageBox>
                 <div className="flex justify-center items-center h-64">
-                    <div className="text-gray-500">加载中...</div>
+                    <div className="text-neutral-400">加载中...</div>
                 </div>
             </PageBox>
         );
@@ -79,41 +106,49 @@ const Task: React.FC = () => {
 
     return (
         <PageBox>
-            <div className="p-4">
-                <h1 className="text-2xl font-bold mb-4">任务列表</h1>
-                <div className="space-y-4">
-                    {tasks.map((task) => (
-                        <div key={task.id} className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-2">
-                              <div className='flex items-center'>
-                                <h2 className="text-xl font-semibold mr-2">{task.title}</h2>
-                                <span className="text-red-500 font-bold">¥{task.price}</span>
-                              </div>
-                                <span className={`px-2 py-1 rounded text-sm ${
-                                    task.type === '线下' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                                }`}>
-                                    {task.type}
-                                </span>
-                            </div>
-                            <p className="text-gray-600 mb-2">{task.content}</p>
-                            <div className="flex justify-between items-center text-sm text-gray-500">
-                                <div>
-                                    <span className="font-medium">发布者：</span>
-                                    {task.user.username}
+            <div className="flex flex-col justify-center items-start w-full p-6 relative">
+                
+                <div className="w-full z-10 space-y-4">
+                    {tasks.map((task) => {
+                        const progressDisplay = getProgressDisplay(task.progress);
+                        return (
+                            <div key={task.id} className="bg-neutral-800/30 backdrop-blur-sm rounded-xl p-4 border border-neutral-700/50 shadow-lg hover:border-red-500/30 transition-all duration-300">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className='flex items-center gap-3 flex-wrap'>
+                                        <h2 className="text-xl font-semibold text-white">{task.title}</h2>
+                                        <span className="text-red-400 font-bold bg-red-500/10 px-2 py-1 rounded">
+                                            ¥{task.price}
+                                        </span>
+                                        <span className={`px-2 py-1 rounded text-sm ${progressDisplay.color}`}>
+                                            {progressDisplay.icon} {progressDisplay.text}
+                                        </span>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded text-sm ${
+                                        task.type === '线下' ? 'bg-orange-600/70 text-orange-200' : 'bg-purple-600/70 text-purple-200'
+                                    }`}>
+                                        {task.type === '线下' ? '📍 线下' : '🌐 线上'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <span className="font-medium">发布时间：</span>
-                                    {new Date(task.createdAt).toLocaleString()}
+                                <p className="text-neutral-300 mb-3 leading-relaxed">{task.content}</p>
+                                <div className="flex justify-between items-center text-sm text-neutral-400">
+                                    <div>
+                                        <span className="font-medium">发布者：</span>
+                                        {task.user.username}
+                                    </div>
+                                    <div>
+                                        <span className="font-medium">发布时间：</span>
+                                        {new Date(task.createdAt).toLocaleString()}
+                                    </div>
                                 </div>
                             </div>
+                        );
+                    })}
+                    {tasks.length === 0 && (
+                        <div className="bg-neutral-800/30 backdrop-blur-sm rounded-xl p-8 text-center text-neutral-500 border border-neutral-700/50">
+                            暂无任务数据
                         </div>
-                    ))}
+                    )}
                 </div>
-                {tasks.length === 0 && (
-                    <div className="text-center text-gray-500 py-8">
-                        暂无任务数据
-                    </div>
-                )}
             </div>
         </PageBox>
     );

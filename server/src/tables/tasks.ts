@@ -26,6 +26,9 @@ export class Task {
   @Column({ type: 'varchar', length: 8 })
   type: string;
 
+  @Column({ type: 'varchar', default: '未开始' })
+  progress: '未开始' | '进行中' | '已完成';
+
   // 外键关联account表
   @Column({ type: 'uuid' })
   account_id: string;

@@ -36,7 +36,6 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'file-hander', label: '文件处理', icon: '🔄', order: 9, source: 'local' },
   { id: 'qrcode', label: '二维码生成', icon: '📱', order: 10, source: 'local' },
   { id: 'doc-reader', label: '文档阅读器', icon: '📖', order: 23, source: 'local' },
-  { id: 'todo', label: '待办事项', icon: '📝', order: 25, source: 'local' },
   // 如果有 'others' 或 'basic' 的项，按 order 插入此处
 
   // ========== 未开发 (coming / incomplete) ==========

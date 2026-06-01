@@ -25,6 +25,7 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'server-chat', label: '聊天室', icon: '💬', order: 13, source: 'server' },
   { id: 'agent', label: 'AI智能体', icon: '🤖', order: 14, source: 'server' },
   { id: 'community', label: '社区', icon: '🏠', order: 24, source: 'server' },
+  { id:'task', label:'委托中心', icon:'📋', order: 26, source:'server' },
 
   // ========== local ==========
   { id: 'dashboard', label: '仪表盘', icon: '📊', order: 1, source: 'local' },

@@ -16,6 +16,7 @@ import TodoList from '../pages/TodoList';
 import Audio from '../pages/Audio';
 import Agent from '../pages/Agent';
 import Subscribe from '../pages/Subscribe';
+import Task from '../pages/Task';
 
 const contentMap: Record<string, JSX.Element> = {
   start: <StartPage />,
@@ -34,5 +35,6 @@ const contentMap: Record<string, JSX.Element> = {
   todo: <TodoList />,
   agent: <Agent />,
   subscribe: <Subscribe />,
+  task:<Task/>
 };
 export default contentMap;

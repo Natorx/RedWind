@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { TypeORMConfig } from '../config/orm.js';
-import { Account } from '../tables/account.js';
+import { Account } from '../tables/accounts.js';
 
 export default async function accountModule(fastify: FastifyInstance) {
   // 注册用户

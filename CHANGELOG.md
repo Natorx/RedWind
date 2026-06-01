@@ -1,3 +1,8 @@
+### 0.4.6
+1. design and add Task module into server
+2. Task page
+3. fix: 
+
 ### 0.4.5
 1. dialog component
 2. "server subscribe page"

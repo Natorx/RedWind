@@ -8,7 +8,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Account } from './account.js'; // 假设已存在 Account 实体
+import { Account } from './accounts.js'; // 假设已存在 Account 实体
 
 @Entity('posts')
 export class Post {

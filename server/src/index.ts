@@ -6,7 +6,7 @@ import path from 'path';
 import router from './router.js';
 
 const server = fastify({
-  logger: false,
+  logger: true,
 });
 
 await server.register(cors, {

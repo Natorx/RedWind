@@ -1,7 +1,7 @@
 /** src/components/RequestTool.tsx */
 import React, { useState } from 'react';
 import { request } from '../apis/requests';
-import { useRequestStore, SavedRequest } from '../stores/requests'
+import { useRequestStore, SavedRequest } from '../stores/requests';
 
 interface ParamItem {
   key: string;
@@ -28,12 +28,14 @@ const RequestTool: React.FC = () => {
     { key: 'Content-Type', value: 'application/json', enabled: true },
   ]);
   const [body, setBody] = useState('');
-  const [note, setNote] = useState('');                // 备注
+  const [note, setNote] = useState(''); // 备注
 
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'params' | 'headers' | 'body'>('params');
+  const [activeTab, setActiveTab] = useState<'params' | 'headers' | 'body'>(
+    'params',
+  );
 
   // ------------------ Zustand Store ------------------
   const { savedRequests, addRequest, removeRequest } = useRequestStore();
@@ -56,11 +58,15 @@ const RequestTool: React.FC = () => {
   ) => {
     if (type === 'params') {
       setParams((prev) =>
-        prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+        prev.map((item, i) =>
+          i === index ? { ...item, [field]: value } : item,
+        ),
       );
     } else {
       setHeaders((prev) =>
-        prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+        prev.map((item, i) =>
+          i === index ? { ...item, [field]: value } : item,
+        ),
       );
     }
   };
@@ -139,16 +145,16 @@ const RequestTool: React.FC = () => {
   };
 
   // ------------------ 加载已保存的请求（填充并发送） ------------------
-  const loadAndSendRequest = (saved: SavedRequest) => {
+  const loadRequestConfig = (saved: SavedRequest) => {
     setMethod(saved.method);
     setUrl(saved.url);
     setParams(saved.params);
     setHeaders(saved.headers);
     setBody(saved.body);
-    // 备注保持当前输入框内容不变（或可以选择填充备注）
     setNote(saved.note);
-    // 自动发送请求
-    setTimeout(() => sendRequest(), 0); // 等待状态更新
+    // 清除之前的响应和错误
+    setResponse(null);
+    setError(null);
   };
 
   // ------------------ 格式化响应 ------------------
@@ -182,11 +188,21 @@ const RequestTool: React.FC = () => {
             onChange={(e) => setMethod(e.target.value as HttpMethod)}
             className="px-3 py-2 border border-red-500/30 rounded-lg bg-neutral-800 text-neutral-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
-            <option value="GET" className="text-green-400">GET</option>
-            <option value="POST" className="text-yellow-400">POST</option>
-            <option value="PUT" className="text-blue-400">PUT</option>
-            <option value="DELETE" className="text-red-400">DELETE</option>
-            <option value="PATCH" className="text-purple-400">PATCH</option>
+            <option value="GET" className="text-green-400">
+              GET
+            </option>
+            <option value="POST" className="text-yellow-400">
+              POST
+            </option>
+            <option value="PUT" className="text-blue-400">
+              PUT
+            </option>
+            <option value="DELETE" className="text-red-400">
+              DELETE
+            </option>
+            <option value="PATCH" className="text-purple-400">
+              PATCH
+            </option>
           </select>
 
           {/* URL 输入框 */}
@@ -281,7 +297,12 @@ const RequestTool: React.FC = () => {
                       type="checkbox"
                       checked={param.enabled}
                       onChange={(e) =>
-                        updateParam('params', index, 'enabled', e.target.checked)
+                        updateParam(
+                          'params',
+                          index,
+                          'enabled',
+                          e.target.checked,
+                        )
                       }
                       className="w-4 h-4 rounded border-red-500/30 bg-neutral-800 text-red-500 focus:ring-red-500 focus:ring-offset-0"
                     />
@@ -333,7 +354,12 @@ const RequestTool: React.FC = () => {
                       type="checkbox"
                       checked={header.enabled}
                       onChange={(e) =>
-                        updateParam('headers', index, 'enabled', e.target.checked)
+                        updateParam(
+                          'headers',
+                          index,
+                          'enabled',
+                          e.target.checked,
+                        )
                       }
                       className="w-4 h-4 rounded border-red-500/30 bg-neutral-800 text-red-500 focus:ring-red-500 focus:ring-offset-0"
                     />
@@ -383,109 +409,148 @@ const RequestTool: React.FC = () => {
         </div>
       </div>
 
-      <div className='flex gap-4'>
-      {/* ========== 响应区域（保持不变） ========== */}
-      <div className="flex-[7] overflow-auto p-4">
-        <div className="mb-2 flex justify-between items-center">
-          <span className="text-sm font-medium text-neutral-300">响应结果</span>
-          {response && (
-            <button
-              onClick={() => navigator.clipboard.writeText(formatResponse())}
-              className="py-1 px-2 bg-red-600 rounded cursor-pointer text-sm text-white hover:text-red-300 transition-colors"
-            >
-              复制
-            </button>
-          )}
-        </div>
-
-        {loading && (
-          <div className="bg-neutral-800/50 rounded-lg p-8 text-center">
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce"></div>
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-              <span className="text-neutral-400 ml-2">请求发送中...</span>
-            </div>
-          </div>
-        )}
-
-        {error && !loading && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-            <div className="text-red-400 text-sm font-medium mb-1">请求失败</div>
-            <pre className="text-red-400 text-sm whitespace-pre-wrap">{error}</pre>
+      <div className="flex gap-4">
+        {/* ========== 响应区域（保持不变） ========== */}
+        <div className="flex-[7] overflow-auto p-4">
+          <div className="mb-2 flex justify-between items-center">
+            <span className="text-sm font-medium text-neutral-300">
+              响应结果
+            </span>
             {response && (
-              <pre className="text-red-400 text-sm whitespace-pre-wrap mt-2">{formatResponse()}</pre>
+              <button
+                onClick={() => navigator.clipboard.writeText(formatResponse())}
+                className="py-1 px-2 bg-red-600 rounded cursor-pointer text-sm text-white hover:text-red-300 transition-colors"
+              >
+                复制
+              </button>
             )}
           </div>
-        )}
 
-        {response && !loading && !error && (
-          <div className="bg-neutral-900 rounded-lg p-4 overflow-auto max-h-60vh border border-red-500/20">
-            <pre className="text-green-400 text-sm font-mono whitespace-pre-wrap">{formatResponse()}</pre>
-          </div>
-        )}
+          {loading && (
+            <div className="bg-neutral-800/50 rounded-lg p-8 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-bounce"></div>
+                <div
+                  className="w-3 h-3 bg-red-500 rounded-full animate-bounce"
+                  style={{ animationDelay: '0.2s' }}
+                ></div>
+                <div
+                  className="w-3 h-3 bg-red-500 rounded-full animate-bounce"
+                  style={{ animationDelay: '0.4s' }}
+                ></div>
+                <span className="text-neutral-400 ml-2">请求发送中...</span>
+              </div>
+            </div>
+          )}
 
-        {!response && !loading && !error && (
-          <div className="bg-neutral-800/30 rounded-lg p-8 text-center text-neutral-500 border border-red-500/20">
-            <svg className="w-12 h-12 mx-auto mb-3 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-            </svg>
-            点击发送按钮查看响应结果
-          </div>
-        )}
-      </div>
-      <div className='flex-[3] overflow-y-scroll max-h-65vh scroll-none p-4'>
-                {savedRequests.length === 0 ? (
-          <div className="text-neutral-500 text-center mt-8">暂无保存的请求</div>
-        ) : (
-          <ul className="space-y-3">
-            {savedRequests.map((saved) => (
-              <li
-                key={saved.id}
-                className="p-3 bg-neutral-800/50 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-colors"
+          {error && !loading && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+              <div className="text-red-400 text-sm font-medium mb-1">
+                请求失败
+              </div>
+              <pre className="text-red-400 text-sm whitespace-pre-wrap">
+                {error}
+              </pre>
+              {response && (
+                <pre className="text-red-400 text-sm whitespace-pre-wrap mt-2">
+                  {formatResponse()}
+                </pre>
+              )}
+            </div>
+          )}
+
+          {response && !loading && !error && (
+            <div className="bg-neutral-900 rounded-lg p-4 overflow-auto max-h-60vh border border-red-500/20">
+              <pre className="text-green-400 text-sm font-mono whitespace-pre-wrap">
+                {formatResponse()}
+              </pre>
+            </div>
+          )}
+
+          {!response && !loading && !error && (
+            <div className="bg-neutral-800/30 rounded-lg p-8 text-center text-neutral-500 border border-red-500/20">
+              <svg
+                className="w-12 h-12 mx-auto mb-3 text-neutral-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                {/* 备注名 */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-neutral-200 truncate max-w-[180px]">
-                    {saved.note}
-                  </span>
-                  <span className="text-xs text-neutral-500">{formatTime(saved.timestamp)}</span>
-                </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                />
+              </svg>
+              点击发送按钮查看响应结果
+            </div>
+          )}
+        </div>
+        <div className="flex-[3] overflow-y-scroll max-h-65vh scroll-none p-4">
+          {savedRequests.length === 0 ? (
+            <div className="text-neutral-500 text-center mt-8">
+              暂无保存的请求
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {savedRequests.map((saved) => (
+                <li
+                  key={saved.id}
+                  className="p-3 bg-neutral-800/50 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-colors"
+                >
+                  {/* 备注名 */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-neutral-200 truncate max-w-[180px]">
+                      {saved.note}
+                    </span>
+                    <span className="text-xs text-neutral-500">
+                      {formatTime(saved.timestamp)}
+                    </span>
+                  </div>
 
-                {/* 请求详情（方法 + 简短 URL） */}
-                <div className="flex items-center gap-2 mb-3 text-xs">
-                  <span className={`px-2 py-0.5 rounded font-bold ${
-                    saved.method === 'GET'    ? 'bg-green-500/20 text-green-400' :
-                    saved.method === 'POST'   ? 'bg-yellow-500/20 text-yellow-400' :
-                    saved.method === 'PUT'    ? 'bg-blue-500/20 text-blue-400' :
-                    saved.method === 'DELETE' ? 'bg-red-500/20 text-red-400' :
-                    'bg-purple-500/20 text-purple-400'
-                  }`}>
-                    {saved.method}
-                  </span>
-                  <span className="text-neutral-400 truncate max-w-[200px]">{saved.url}</span>
-                </div>
+                  {/* 请求详情 */}
+                  <div className="flex items-center gap-2 mb-3 text-xs">
+                    <span
+                      className={`px-2 py-0.5 rounded font-bold ${
+                        saved.method === 'GET'
+                          ? 'bg-green-500/20 text-green-400'
+                          : saved.method === 'POST'
+                            ? 'bg-yellow-500/20 text-yellow-400'
+                            : saved.method === 'PUT'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : saved.method === 'DELETE'
+                                ? 'bg-red-500/20 text-red-400'
+                                : 'bg-purple-500/20 text-purple-400'
+                      }`}
+                    >
+                      {saved.method}
+                    </span>
+                    <span className="text-neutral-400 truncate max-w-[200px]">
+                      {saved.url}
+                    </span>
+                  </div>
 
-                {/* 操作按钮 */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => loadAndSendRequest(saved)}
-                    className="flex-1 px-2 py-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-xs rounded font-medium transition-all shadow"
-                  >
-                    🚀 发送
-                  </button>
-                  <button
-                    onClick={() => removeRequest(saved.id)}
-                    className="px-2 py-1 bg-transparent border border-red-500/40 text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs rounded transition-all"
-                  >
-                    🗑️ 删除
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                  {/* 操作按钮 */}
+                  <div className="flex gap-2">
+                    {/* 修改：填充配置按钮 */}
+                    <button
+                      onClick={() => loadRequestConfig(saved)}
+                      className="flex-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-xs rounded font-medium transition-all shadow"
+                    >
+                      📋 填充配置
+                    </button>
+                    <button
+                      onClick={() => removeRequest(saved.id)}
+                      className="px-2 py-1 bg-transparent border border-red-500/40 text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs rounded transition-all"
+                    >
+                      🗑️ 删除
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

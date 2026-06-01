@@ -6,7 +6,7 @@ import path from 'path';
 import router from './router.js';
 
 const server = fastify({
-  logger: true,
+  logger: false,
 });
 
 await server.register(cors, {
@@ -22,17 +22,19 @@ await server.register(import('@fastify/static'), {
 });
 await server.register(router);
 
-await TypeORMConfig.initialize()
-  .then(() => {
-    console.log('✅ PGSql Connected!');
-    return server.listen({
-      host: '0.0.0.0',
-      port: Number(process.env.PORT) || 3007,
-    });
-  })
-  .then(() => {
-    console.log(
-      `🚀 Redwind Fastify server running on port http://localhost:${process.env.PORT}`,
-    );
+// 修改这部分
+try {
+  await TypeORMConfig.initialize();
+  console.log('✅ PGSql Connected!');
+  
+  await server.listen({
+    host: '0.0.0.0',
+    port: Number(process.env.PORT) || 3007,
   });
   
+  // 这里会在服务器真正启动后打印
+  console.log(`🚀 Redwind Fastify server running on port http://localhost:${process.env.PORT || 3007}`);
+} catch (err) {
+  console.error('❌ Server startup failed:', err);
+  process.exit(1);
+}

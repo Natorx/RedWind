@@ -19,6 +19,8 @@ interface AppState {
   setSocket: (socket: Socket | null) => void;
   serverpush: boolean;
   setServerpush: (value: boolean) => void;
+  msgTips: boolean;
+  setMsgTips: (value: boolean) => void;
   activeItem: string;
   setActiveItem: (item: string) => void;
   settingOpen: boolean;
@@ -42,6 +44,8 @@ const useAppStore = create<AppState>()(
       setSocket: (socket) => set({ socket }),
       serverpush: false,
       setServerpush: (value) => set({ serverpush: value }),
+      msgTips: true,
+      setMsgTips: (value) => set({ msgTips: value }),
       activeItem: 'start',
       setActiveItem: (item) => set({ activeItem: item }),
       settingOpen: false,
@@ -76,8 +80,8 @@ const useAppStore = create<AppState>()(
         activeItem: state.activeItem,
         settingOpen: state.settingOpen,
       }),
-    }
-  )
+    },
+  ),
 );
 
 export default useAppStore;

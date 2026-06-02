@@ -14,7 +14,7 @@ type SidebarItem = {
 };
 
 export const startPage_latestFeatures = [
-  { id:'dashboard', label:'仪表盘', icon:'📊', date:'2025-05-27' },
+  { id:'dashboard', label:'系统信息', icon:'📊', date:'2025-05-27' },
   { id:'agent', label:'Deepseek Agent', icon:'🤖', date:'2025-05-25' },
   { id: 'audio-control', label: '音频控制', icon: '🎵', date: '2025-05-01' },
 ];
@@ -28,7 +28,7 @@ export const sidebarItems: SidebarItem[] = [
   { id:'task', label:'委托中心', icon:'📋', order: 26, source:'server' },
 
   // ========== local ==========
-  { id: 'dashboard', label: '仪表盘', icon: '📊', order: 1, source: 'local' },
+  { id: 'dashboard', label: '系统信息', icon: '📊', order: 1, source: 'local' },
   { id: 'typing-practice', label: '打字练习', icon: '⌨️', order: 2, source: 'local' },
   { id: 'audio-control', label: '音频控制', icon: '🎵', order: 3, source: 'local' },
   { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },

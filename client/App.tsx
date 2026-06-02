@@ -1,3 +1,4 @@
+// App.tsx
 import { AnimatePresence, motion, Variants } from 'framer-motion';
 import './styles/main.css';
 import Sidebar from './layout/sidebar';
@@ -25,15 +26,20 @@ function App() {
   const setSocket = useAppStore((state) => state.setSocket);
   const { showMsg } = useMsg();
 
-  // 使用 ref 存储 showMsg 以避免依赖变化
+  // 新增：获取 msgTips 开关状态（控制聊天消息通知）
+  const msgTips = useAppStore((state) => state.msgTips);
+
+  // 使用 ref 存储 showMsg 和 msgTips，避免依赖变化导致 useEffect 重复执行
   const showMsgRef = useRef(showMsg);
-  showMsgRef.current = showMsg; // 始终保持最新引用
+  showMsgRef.current = showMsg;
+  const msgTipsRef = useRef(msgTips);
+  msgTipsRef.current = msgTips;
 
   const socketRef = useRef<Socket | null>(null);
   const usernameRef = useRef(username);
   usernameRef.current = username;
 
-  // ---------- SSE 连接（保持原有逻辑） ----------
+  // ---------- SSE 连接（保持原有逻辑）----------
   useEffect(() => {
     if (!serverpush) return;
     const eventSource = new EventSource('http://127.0.0.1:3007/notice/sse');
@@ -51,7 +57,7 @@ function App() {
     return () => eventSource.close();
   }, [serverpush]);
 
-  // ---------- Socket 连接（只在 username 变化时重建） ----------
+  // ---------- Socket 连接（只在 username 变化时重建）----------
   useEffect(() => {
     if (!username) return;
 
@@ -76,27 +82,34 @@ function App() {
 
     // 接收历史消息（仅一次，在 join 后触发）
     socketInstance.on('history', (history: ChatMessage[]) => {
-      setPublicMessages(history); // 直接覆盖（服务端返回完整历史）
+      setPublicMessages(history);
     });
 
     // 实时公共消息
     socketInstance.on('message', (msg: ChatMessage) => {
       addPublicMessage(msg);
-      // 系统消息或普通消息都显示通知
-      showMsgRef.current(
-        msg.username === '系统' ? `📢 ${msg.message}` : `💬 ${msg.username}: ${msg.message}`,
-        'info',
-        4000
-      );
+      // 根据 msgTips 决定是否显示弹窗通知
+      if (msgTipsRef.current) {
+        showMsgRef.current(
+          msg.username === '系统' ? `📢 ${msg.message}` : `💬 ${msg.username}: ${msg.message}`,
+          'info',
+          4000
+        );
+      }
     });
 
     // 实时私聊消息
     socketInstance.on('privateMessage', (msg: ChatMessage) => {
       addPrivateMessage(msg);
-      showMsgRef.current(`🔒 [私聊] ${msg.username}: ${msg.message}`, 'info', 4000);
+      if (msgTipsRef.current) {
+        showMsgRef.current(`🔒 [私聊] ${msg.username}: ${msg.message}`, 'info', 4000);
+      }
     });
 
-    // ... 其他 SSE 相关代码保持不变 ...
+    socketInstance.on('connect_error', (err) => {
+      console.error('Connection error:', err);
+      showMsgRef.current('聊天连接失败，请重试', 'error', 5000);
+    });
 
     return () => {
       console.log('Disconnecting socket (username changed or unmount)');
@@ -104,8 +117,10 @@ function App() {
       socketRef.current = null;
       setSocket(null);
     };
+    // 只依赖 username，避免其他状态导致重建
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
+
   return (
     <>
       <div className="app-container flex h-100vh overflow-hidden rounded-xl">

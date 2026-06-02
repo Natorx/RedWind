@@ -166,7 +166,7 @@ const ServerChat: React.FC = () => {
     // 私聊消息
     socketInstance.on('privateMessage', (message: ChatMessage) => {
       // 判断是发给自己的还是自己发送的
-      const chatKey = message.target || message.username; // 私聊双方，用对方的用户名作为key
+      const chatKey = message.username === username ? message.target! : message.username;
       setPrivateMessages((prev) => {
         const newMap = new Map(prev);
         const existing = newMap.get(chatKey) || [];

@@ -6,6 +6,7 @@
 5. better chat page
 6. global chat page
 7. better QRCode page
+8. more subscribe component
 
 ### 0.4.5
 1. dialog component

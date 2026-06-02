@@ -22,11 +22,16 @@ interface FriendRequest {
   timestamp: number;
 }
 
-const ToastMessage: React.FC<{ message: string; visible: boolean }> = ({ message, visible }) => {
+const ToastMessage: React.FC<{ message: string; visible: boolean }> = ({
+  message,
+  visible,
+}) => {
   return (
     <div
       className={`fixed top-4 right-4 z-50 transition-all duration-300 ${
-        visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'
+        visible
+          ? 'opacity-100 translate-x-0'
+          : 'opacity-0 translate-x-full pointer-events-none'
       }`}
     >
       <div className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg shadow-2xl border border-red-400/50 backdrop-blur-sm">
@@ -63,21 +68,41 @@ const SystemDrawer: React.FC<{
             <span className="text-red-500">📋</span>
             系统信息
           </h3>
-          <button onClick={onClose} className="p-1 hover:bg-red-500/20 rounded-md transition-all">
-            <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-red-500/20 rounded-md transition-all"
+          >
+            <svg
+              className="w-5 h-5 text-neutral-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
         <div className="p-4 space-y-2 overflow-y-auto h-full pb-20">
           {messages.length === 0 ? (
-            <p className="text-neutral-500 text-sm text-center mt-8">暂无系统消息</p>
+            <p className="text-neutral-500 text-sm text-center mt-8">
+              暂无系统消息
+            </p>
           ) : (
             messages.map((item, idx) => (
-              <div key={idx} className="bg-neutral-800/50 border border-red-500/20 rounded-lg p-3 text-sm text-neutral-300">
+              <div
+                key={idx}
+                className="bg-neutral-800/50 border border-red-500/20 rounded-lg p-3 text-sm text-neutral-300"
+              >
                 <div className="flex justify-between items-start">
                   <span>{item.text}</span>
-                  <span className="text-xs text-neutral-500 ml-2 whitespace-nowrap">{formatTime(item.timestamp)}</span>
+                  <span className="text-xs text-neutral-500 ml-2 whitespace-nowrap">
+                    {formatTime(item.timestamp)}
+                  </span>
                 </div>
               </div>
             ))
@@ -108,7 +133,9 @@ const ServerChat: React.FC = () => {
   const [addFriendInput, setAddFriendInput] = useState('');
 
   // 系统消息依然本地维护（从 Socket 事件获取），因为需要在抽屉中展示
-  const [systemMessages, setSystemMessages] = useState<{ text: string; timestamp: number }[]>([]);
+  const [systemMessages, setSystemMessages] = useState<
+    { text: string; timestamp: number }[]
+  >([]);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const [isSystemDrawerOpen, setIsSystemDrawerOpen] = useState(false);
@@ -148,7 +175,8 @@ const ServerChat: React.FC = () => {
       setTimeout(() => setError(''), 3000);
     };
     const handleFriendList = (friends: string[]) => setFriendList(friends);
-    const handleFriendRequests = (requests: FriendRequest[]) => setFriendRequests(requests);
+    const handleFriendRequests = (requests: FriendRequest[]) =>
+      setFriendRequests(requests);
     const handleNewFriendRequest = (request: FriendRequest) => {
       setFriendRequests((prev) => [...prev, request]);
       showToast(`${request.from} 请求添加你为好友`);
@@ -157,7 +185,10 @@ const ServerChat: React.FC = () => {
     // 仅处理系统消息（用于本地系统抽屉和 toast）
     const handleSystemMessage = (message: ChatMessage) => {
       if (message.username === '系统') {
-        setSystemMessages((prev) => [...prev, { text: message.message, timestamp: message.timestamp }]);
+        setSystemMessages((prev) => [
+          ...prev,
+          { text: message.message, timestamp: message.timestamp },
+        ]);
         showToast(message.message);
       }
     };
@@ -195,7 +226,10 @@ const ServerChat: React.FC = () => {
     if (currentTarget === '大厅') {
       socket.emit('sendMessage', inputMessage.trim());
     } else {
-      socket.emit('privateMessage', { target: currentTarget, message: inputMessage.trim() });
+      socket.emit('privateMessage', {
+        target: currentTarget,
+        message: inputMessage.trim(),
+      });
     }
     setInputMessage('');
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -227,7 +261,10 @@ const ServerChat: React.FC = () => {
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   // 获取当前会话的消息（从 Store 读取）
@@ -249,14 +286,16 @@ const ServerChat: React.FC = () => {
         formatTime={formatTime}
       />
 
-      <div className="flex-1 flex flex-col relative z-10">
+      <div className="h-full flex-1 flex flex-col relative z-10">
         {/* 顶部栏 */}
         <div className="bg-neutral-900/50 backdrop-blur-sm border-b border-red-500/30 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-xs font-bold shadow-md">
               {username ? username.charAt(0).toUpperCase() : '?'}
             </div>
-            <span className="text-sm font-semibold text-neutral-200">{username || '未设置'}</span>
+            <span className="text-sm font-semibold text-neutral-200">
+              {username || '未设置'}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -269,7 +308,7 @@ const ServerChat: React.FC = () => {
         </div>
 
         {/* 聊天消息区域 */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 max-h-80% overflow-y-auto p-6 space-y-4 chat-scroll">
           {getCurrentMessages().map((msg, index) => (
             <div
               key={index}
@@ -284,21 +323,30 @@ const ServerChat: React.FC = () => {
                 }`}
               >
                 {msg.username !== username && (
-                  <div className="text-xs font-bold text-red-400 mb-1">{msg.username}</div>
+                  <div className="text-xs font-bold text-red-400 mb-1">
+                    {msg.username}
+                  </div>
                 )}
                 <div className="break-words text-sm">{msg.message}</div>
-                <div className={`text-xs mt-1 ${msg.username === username ? 'text-red-200' : 'text-neutral-500'}`}>
+                <div
+                  className={`text-xs mt-1 ${msg.username === username ? 'text-red-200' : 'text-neutral-500'}`}
+                >
                   {formatTime(msg.timestamp)}
                 </div>
               </div>
             </div>
           ))}
 
-          {currentTarget === '大厅' && Array.from(typingUsers).filter((u) => u !== username).length > 0 && (
-            <div className="text-sm text-red-400 italic animate-pulse ml-2">
-              {Array.from(typingUsers).filter((u) => u !== username).join(', ')} 正在输入...
-            </div>
-          )}
+          {currentTarget === '大厅' &&
+            Array.from(typingUsers).filter((u) => u !== username).length >
+              0 && (
+              <div className="text-sm text-red-400 italic animate-pulse ml-2">
+                {Array.from(typingUsers)
+                  .filter((u) => u !== username)
+                  .join(', ')}{' '}
+                正在输入...
+              </div>
+            )}
 
           <div ref={messagesEndRef} />
         </div>
@@ -313,7 +361,11 @@ const ServerChat: React.FC = () => {
                 setInputMessage(e.target.value);
                 handleTyping();
               }}
-              placeholder={currentTarget === '大厅' ? '输入消息...' : `私聊 ${currentTarget}...`}
+              placeholder={
+                currentTarget === '大厅'
+                  ? '输入消息...'
+                  : `私聊 ${currentTarget}...`
+              }
               maxLength={500}
               className="flex-1 px-4 py-2 border-none bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-white placeholder-neutral-500 transition-all"
             />
@@ -325,7 +377,9 @@ const ServerChat: React.FC = () => {
               发送
             </button>
           </form>
-          <div className="mt-2 text-xs text-neutral-600 text-right">按 Enter 发送，最多 500 字符</div>
+          <div className="mt-2 text-xs text-neutral-600 text-right">
+            按 Enter 发送，最多 500 字符
+          </div>
         </div>
       </div>
 
@@ -361,7 +415,9 @@ const ServerChat: React.FC = () => {
             </li>
           ))}
         </ul>
-        <div className="mt-2 text-xs text-neutral-600">已连接 {friendList.length + 1} 个频道</div>
+        <div className="mt-2 text-xs text-neutral-600">
+          已连接 {friendList.length + 1} 个频道
+        </div>
 
         <hr className="my-4 border-red-500/20" />
 
@@ -391,17 +447,28 @@ const ServerChat: React.FC = () => {
             <h3 className="text-sm font-bold text-neutral-300 mb-2 flex items-center gap-2">
               <span className="text-yellow-400">📩</span>
               好友请求{' '}
-              <span className="bg-yellow-500 text-black text-xs rounded-full px-1.5 py-0.5">{friendRequests.length}</span>
+              <span className="bg-yellow-500 text-black text-xs rounded-full px-1.5 py-0.5">
+                {friendRequests.length}
+              </span>
             </h3>
             <div className="space-y-2">
               {friendRequests.map((req, idx) => (
-                <div key={idx} className="bg-neutral-800 rounded p-2 text-sm flex items-center justify-between">
+                <div
+                  key={idx}
+                  className="bg-neutral-800 rounded p-2 text-sm flex items-center justify-between"
+                >
                   <span className="text-neutral-200">{req.from}</span>
                   <div className="flex gap-1">
-                    <button onClick={() => handleFriendRequest(req.from, true)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs">
+                    <button
+                      onClick={() => handleFriendRequest(req.from, true)}
+                      className="px-2 py-0.5 bg-green-600 text-white rounded text-xs"
+                    >
                       接受
                     </button>
-                    <button onClick={() => handleFriendRequest(req.from, false)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs">
+                    <button
+                      onClick={() => handleFriendRequest(req.from, false)}
+                      className="px-2 py-0.5 bg-red-600 text-white rounded text-xs"
+                    >
                       拒绝
                     </button>
                   </div>
@@ -413,17 +480,45 @@ const ServerChat: React.FC = () => {
 
         <hr className="my-4 border-red-500/20" />
         <h3 className="text-sm font-bold text-neutral-300 mb-2 flex items-center gap-2">
-          <span className="text-blue-400">👥</span>在线用户 ({onlineUsers.length})
+          <span className="text-blue-400">👥</span>在线用户 (
+          {onlineUsers.length})
         </h3>
         <ul className="space-y-1">
           {onlineUsers.map((user) => (
-            <li key={user} className="text-sm text-neutral-400 flex items-center gap-2">
+            <li
+              key={user}
+              className="text-sm text-neutral-400 flex items-center gap-2"
+            >
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-              {user} {user === username && <span className="text-xs text-red-400">(我)</span>}
+              {user}{' '}
+              {user === username && (
+                <span className="text-xs text-red-400">(我)</span>
+              )}
             </li>
           ))}
         </ul>
       </div>
+      <style>{`
+      .chat-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .chat-scroll::-webkit-scrollbar-track {
+        background: #2d2d2d;  /* 深色轨道 */
+        border-radius: 3px;
+      }
+      .chat-scroll::-webkit-scrollbar-thumb {
+        background: #ef4444;  /* 红色滑块（与主题色一致） */
+        border-radius: 3px;
+      }
+      .chat-scroll::-webkit-scrollbar-thumb:hover {
+        background: #dc2626;  /* 悬停时更暗的红色 */
+      }
+      /* 支持 Firefox */
+      .chat-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #ef4444 #2d2d2d;
+      }
+`}</style>
     </div>
   );
 };

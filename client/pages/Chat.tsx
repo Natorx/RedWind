@@ -6,11 +6,20 @@ interface ChatMessage {
   username: string;
   message: string;
   timestamp: number;
+  type: 'public' | 'private';
+  target?: string; // 私聊目标
 }
 
 interface UserTyping {
   username: string;
   isTyping: boolean;
+}
+
+interface FriendRequest {
+  from: string;
+  to: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  timestamp: number;
 }
 
 const ToastMessage: React.FC<{ message: string; visible: boolean }> = ({ message, visible }) => {
@@ -85,13 +94,23 @@ const SystemDrawer: React.FC<{
 const ServerChat: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const username = useAppStore((state) => state.username);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  
+  // 聊天相关状态
+  const [publicMessages, setPublicMessages] = useState<ChatMessage[]>([]);
+  const [privateMessages, setPrivateMessages] = useState<Map<string, ChatMessage[]>>(new Map()); // target -> messages
+  const [currentTarget, setCurrentTarget] = useState<string>('大厅'); // 当前聊天目标
   const [inputMessage, setInputMessage] = useState('');
-  const [__, setOnlineUsers] = useState<string[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
-  const [___, setError] = useState('');
-  const [_, setShowIntro] = useState(true);
+  const [_, setError] = useState('');
+  const [__, setShowIntro] = useState(true);
 
+  // 好友系统状态
+  const [friendList, setFriendList] = useState<string[]>([]);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [addFriendInput, setAddFriendInput] = useState('');
+
+  // 系统消息
   const [systemMessages, setSystemMessages] = useState<{ text: string; timestamp: number }[]>([]);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
@@ -105,9 +124,7 @@ const ServerChat: React.FC = () => {
     setToastMessage(msg);
     setToastVisible(true);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => {
-      setToastVisible(false);
-    }, 3000);
+    toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
   };
 
   useEffect(() => {
@@ -134,15 +151,32 @@ const ServerChat: React.FC = () => {
       setError('无法连接到聊天服务器');
     });
 
+    // 公共消息
     socketInstance.on('message', (message: ChatMessage) => {
       if (message.username === '系统') {
         setSystemMessages((prev) => [...prev, { text: message.message, timestamp: message.timestamp }]);
         showToast(message.message);
       } else {
-        setMessages((prev) => [...prev, message]);
+        if (message.type === 'public') {
+          setPublicMessages((prev) => [...prev, message]);
+        }
       }
     });
 
+    // 私聊消息
+    socketInstance.on('privateMessage', (message: ChatMessage) => {
+      // 判断是发给自己的还是自己发送的
+      const chatKey = message.target || message.username; // 私聊双方，用对方的用户名作为key
+      setPrivateMessages((prev) => {
+        const newMap = new Map(prev);
+        const existing = newMap.get(chatKey) || [];
+        existing.push(message);
+        newMap.set(chatKey, existing);
+        return newMap;
+      });
+    });
+
+    // 历史消息
     socketInstance.on('history', (history: ChatMessage[]) => {
       const sysMessages: { text: string; timestamp: number }[] = [];
       const chatMessages: ChatMessage[] = [];
@@ -154,29 +188,45 @@ const ServerChat: React.FC = () => {
         }
       });
       setSystemMessages(sysMessages);
-      setMessages(chatMessages);
+      setPublicMessages(chatMessages);
     });
 
+    // 在线用户
     socketInstance.on('userList', (users: string[]) => {
       setOnlineUsers(users);
     });
 
+    // 输入状态
     socketInstance.on('userTyping', ({ username, isTyping }: UserTyping) => {
       setTypingUsers((prev) => {
         const newSet = new Set(prev);
-        if (isTyping) {
-          newSet.add(username);
-        } else {
-          newSet.delete(username);
-        }
+        if (isTyping) newSet.add(username);
+        else newSet.delete(username);
         return newSet;
       });
     });
 
+    // 错误
     socketInstance.on('error', (errorMsg: string) => {
       setError(errorMsg);
       showToast(errorMsg);
       setTimeout(() => setError(''), 3000);
+    });
+
+    // 好友列表
+    socketInstance.on('friendList', (friends: string[]) => {
+      setFriendList(friends);
+    });
+
+    // 好友请求列表
+    socketInstance.on('friendRequests', (requests: FriendRequest[]) => {
+      setFriendRequests(requests);
+    });
+
+    // 新的好友请求
+    socketInstance.on('newFriendRequest', (request: FriendRequest) => {
+      setFriendRequests((prev) => [...prev, request]);
+      showToast(`${request.from} 请求添加你为好友`);
     });
 
     setSocket(socketInstance);
@@ -186,21 +236,27 @@ const ServerChat: React.FC = () => {
     };
   }, [username]);
 
+  // 发送消息
   const handleSendMessage = (e: FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim() || !socket) return;
 
-    socket.emit('sendMessage', inputMessage.trim());
+    if (currentTarget === '大厅') {
+      socket.emit('sendMessage', inputMessage.trim());
+    } else {
+      // 私聊
+      socket.emit('privateMessage', { target: currentTarget, message: inputMessage.trim() });
+    }
     setInputMessage('');
-
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
     socket.emit('typing', false);
   };
 
+  // 输入状态（仅对公共聊天有效）
   const handleTyping = () => {
-    if (!socket) return;
+    if (!socket || currentTarget !== '大厅') return;
     socket.emit('typing', true);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
@@ -208,25 +264,45 @@ const ServerChat: React.FC = () => {
     }, 1000);
   };
 
+  // 添加好友
+  const handleAddFriend = () => {
+    if (!addFriendInput.trim() || !socket) return;
+    socket.emit('addFriend', addFriendInput.trim());
+    setAddFriendInput('');
+  };
+
+  // 处理好友请求
+  const handleFriendRequest = (from: string, accepted: boolean) => {
+    if (!socket) return;
+    socket.emit('handleFriendRequest', { from, accepted });
+  };
+
   useEffect(() => {
     return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+      if (socket) socket.disconnect();
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
-  }, []);
+  }, [socket]);
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
   };
 
+  // 获取当前会话的消息
+  const getCurrentMessages = (): ChatMessage[] => {
+    if (currentTarget === '大厅') {
+      return publicMessages;
+    } else {
+      // 私聊：双方的消息，key 通常为对方用户名（发送时 target 是对方，接收时 target 是自己？）
+      // 我们约定私聊消息的 target 字段为接收方用户名
+      // 对于当前用户，私聊会话 key 为对方用户名
+      return privateMessages.get(currentTarget) || [];
+    }
+  };
+
   return (
     <div className="flex h-full min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 relative overflow-hidden">
-
       <ToastMessage message={toastMessage} visible={toastVisible} />
       <SystemDrawer
         isOpen={isSystemDrawerOpen}
@@ -236,6 +312,7 @@ const ServerChat: React.FC = () => {
       />
 
       <div className="flex-1 flex flex-col relative z-10">
+        {/* 顶部栏 */}
         <div className="bg-neutral-900/50 backdrop-blur-sm border-b border-red-500/30 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-xs font-bold shadow-md">
@@ -248,14 +325,14 @@ const ServerChat: React.FC = () => {
               onClick={() => setIsSystemDrawerOpen(true)}
               className="cursor-pointer px-2 py-1 text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md transition-all border border-neutral-700 hover:border-red-500/50 flex items-center gap-1"
             >
-              📋
-              <span className="hidden sm:inline">系统信息</span>
+              📋<span className="hidden sm:inline">系统信息</span>
             </button>
           </div>
         </div>
 
+        {/* 聊天消息区域 */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((msg, index) => (
+          {getCurrentMessages().map((msg, index) => (
             <div
               key={index}
               className={`flex ${msg.username === username ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
@@ -279,7 +356,8 @@ const ServerChat: React.FC = () => {
             </div>
           ))}
 
-          {Array.from(typingUsers).filter(u => u !== username).length > 0 && (
+          {/* 输入提示（仅大厅） */}
+          {currentTarget === '大厅' && Array.from(typingUsers).filter(u => u !== username).length > 0 && (
             <div className="text-sm text-red-400 italic animate-pulse ml-2">
               {Array.from(typingUsers).filter(u => u !== username).join(', ')} 正在输入...
             </div>
@@ -288,6 +366,7 @@ const ServerChat: React.FC = () => {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* 输入框 */}
         <div className="bg-neutral-900/50 backdrop-blur-sm border-t border-red-500/30 p-4">
           <form onSubmit={handleSendMessage} className="flex gap-2">
             <input
@@ -297,7 +376,7 @@ const ServerChat: React.FC = () => {
                 setInputMessage(e.target.value);
                 handleTyping();
               }}
-              placeholder="输入消息..."
+              placeholder={currentTarget === '大厅' ? '输入消息...' : `私聊 ${currentTarget}...`}
               maxLength={500}
               className="flex-1 px-4 py-2 border-none bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-white placeholder-neutral-500 transition-all"
             />
@@ -313,52 +392,117 @@ const ServerChat: React.FC = () => {
         </div>
       </div>
 
-      {/* ========== 右侧聊天目标列表 ========== */}
-    <div className="w-60 bg-neutral-900/70 backdrop-blur-sm border-l border-red-500/30 p-4 relative z-10 h-full">
-      <h3 className="text-sm font-bold text-neutral-300 mb-4 flex items-center gap-2">
-        <span className="text-red-400">💬</span>
-        聊天目标
-      </h3>
-      <ul className="space-y-1">
-        <li className="px-3 py-2 bg-red-500/20 text-red-400 rounded-md text-sm font-medium border border-red-500/30 cursor-default flex items-center gap-2">
-          <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-          大厅
-        </li>
-      </ul>
-      <div className="mt-4 text-xs text-neutral-600">已连接 1 个频道</div>
-    </div>
+      {/* 右侧面板：聊天目标 + 好友管理 */}
+      <div className="w-72 bg-neutral-900/70 backdrop-blur-sm border-l border-red-500/30 p-4 relative z-10 h-full overflow-y-auto">
+        {/* 聊天目标 */}
+        <h3 className="text-sm font-bold text-neutral-300 mb-4 flex items-center gap-2">
+          <span className="text-red-400">💬</span>
+          聊天目标
+        </h3>
+        <ul className="space-y-1">
+          <li
+            className={`px-3 py-2 rounded-md text-sm font-medium cursor-pointer flex items-center gap-2 ${
+              currentTarget === '大厅'
+                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                : 'bg-neutral-800 text-neutral-400 border border-neutral-700 hover:border-red-500/30'
+            }`}
+            onClick={() => setCurrentTarget('大厅')}
+          >
+            <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+            大厅
+          </li>
+          {friendList.map((friend) => (
+            <li
+              key={friend}
+              className={`px-3 py-2 rounded-md text-sm font-medium cursor-pointer flex items-center gap-2 ${
+                currentTarget === friend
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  : 'bg-neutral-800 text-neutral-400 border border-neutral-700 hover:border-red-500/30'
+              }`}
+              onClick={() => setCurrentTarget(friend)}
+            >
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+              {friend}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-2 text-xs text-neutral-600">已连接 {friendList.length + 1} 个频道</div>
 
-      <style>{`
-        @keyframes scan-top {
-          0% { transform: translateX(-100%); opacity: 0; }
-          50% { transform: translateX(0); opacity: 1; }
-          100% { transform: translateX(100%); opacity: 0; }
-        }
-        @keyframes scan-right {
-          0% { transform: translateY(-100%); opacity: 0; }
-          50% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(100%); opacity: 0; }
-        }
-        @keyframes scan-bottom {
-          0% { transform: translateX(100%); opacity: 0; }
-          50% { transform: translateX(0); opacity: 1; }
-          100% { transform: translateX(-100%); opacity: 0; }
-        }
-        @keyframes scan-left {
-          0% { transform: translateY(100%); opacity: 0; }
-          50% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(-100%); opacity: 0; }
-        }
-        @keyframes pulse-glow {
-          0%, 100% { opacity: 0.3; box-shadow: 0 0 0px rgba(239, 68, 68, 0); }
-          50% { opacity: 1; box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
-        }
-        .animate-scan-top { animation: scan-top 1.25s ease-in-out infinite; }
-        .animate-scan-right { animation: scan-right 1.25s ease-in-out infinite; }
-        .animate-scan-bottom { animation: scan-bottom 1.25s ease-in-out infinite; }
-        .animate-scan-left { animation: scan-left 1.25s ease-in-out infinite; }
-        .animate-pulse-glow { animation: pulse-glow 1.25s ease-in-out infinite; }
-      `}</style>
+        {/* 分割线 */}
+        <hr className="my-4 border-red-500/20" />
+
+        {/* 添加好友 */}
+        <h3 className="text-sm font-bold text-neutral-300 mb-2 flex items-center gap-2">
+          <span className="text-green-400">➕</span>
+          添加好友
+        </h3>
+        <div className="flex gap-1">
+          <input
+            type="text"
+            value={addFriendInput}
+            onChange={(e) => setAddFriendInput(e.target.value)}
+            placeholder="输入用户名"
+            className="flex-1 px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-green-500"
+          />
+          <button
+            onClick={handleAddFriend}
+            disabled={!addFriendInput.trim()}
+            className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm disabled:opacity-50"
+          >
+            添加
+          </button>
+        </div>
+
+        {/* 好友请求 */}
+        {friendRequests.length > 0 && (
+          <>
+            <hr className="my-4 border-red-500/20" />
+            <h3 className="text-sm font-bold text-neutral-300 mb-2 flex items-center gap-2">
+              <span className="text-yellow-400">📩</span>
+              好友请求{' '}
+              <span className="bg-yellow-500 text-black text-xs rounded-full px-1.5 py-0.5">
+                {friendRequests.length}
+              </span>
+            </h3>
+            <div className="space-y-2">
+              {friendRequests.map((req, idx) => (
+                <div key={idx} className="bg-neutral-800 rounded p-2 text-sm flex items-center justify-between">
+                  <span className="text-neutral-200">{req.from}</span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleFriendRequest(req.from, true)}
+                      className="px-2 py-0.5 bg-green-600 text-white rounded text-xs"
+                    >
+                      接受
+                    </button>
+                    <button
+                      onClick={() => handleFriendRequest(req.from, false)}
+                      className="px-2 py-0.5 bg-red-600 text-white rounded text-xs"
+                    >
+                      拒绝
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* 在线用户（仅用于参考） */}
+        <hr className="my-4 border-red-500/20" />
+        <h3 className="text-sm font-bold text-neutral-300 mb-2 flex items-center gap-2">
+          <span className="text-blue-400">👥</span>
+          在线用户 ({onlineUsers.length})
+        </h3>
+        <ul className="space-y-1">
+          {onlineUsers.map((user) => (
+            <li key={user} className="text-sm text-neutral-400 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+              {user} {user === username && <span className="text-xs text-red-400">(我)</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

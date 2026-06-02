@@ -308,7 +308,7 @@ const ServerChat: React.FC = () => {
         </div>
 
         {/* 聊天消息区域 */}
-        <div className="flex-1 max-h-80% overflow-y-auto p-6 space-y-4 chat-scroll">
+        <div className="flex-1 max-h-80vh overflow-y-auto p-6 space-y-4 chat-scroll">
           {getCurrentMessages().map((msg, index) => (
             <div
               key={index}

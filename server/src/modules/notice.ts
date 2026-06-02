@@ -28,7 +28,7 @@ export default async function noticeModule(fastify: FastifyInstance) {
 
   // 每分钟推送消息
   setInterval(() => {
-    const message = `data: ${JSON.stringify({ message: '过了一分钟', timestamp: Date.now() })}\n\n`;
+    const message = `data: ${JSON.stringify({ message: '一分钟过去了', timestamp: Date.now() })}\n\n`;
 
     console.log(`推送消息给 ${clients.size} 个客户端`);
 

@@ -197,6 +197,26 @@ export default async function chatModule(fastify: FastifyInstance) {
       });
     });
 
+    // 获取当前在线用户列表
+socket.on('getUsers', () => {
+  socket.emit('userList', Array.from(onlineUsers.values()));
+});
+
+// 获取公共消息历史
+socket.on('getHistory', () => {
+  socket.emit('history', messageHistory);
+});
+
+// 获取自己的好友请求
+socket.on('getFriendRequests', () => {
+  const username = onlineUsers.get(socket.id);
+  if (username) {
+    const requests = pendingRequests.get(username) || [];
+    socket.emit('friendRequests', requests);
+  }
+});
+
+
     // === 处理好友请求（接受/拒绝） ===
     socket.on(
       'handleFriendRequest',

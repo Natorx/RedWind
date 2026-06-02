@@ -1,5 +1,5 @@
+// Chat.tsx
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
-import { io, Socket } from 'socket.io-client';
 import useAppStore from '../stores/app';
 
 interface ChatMessage {
@@ -7,7 +7,7 @@ interface ChatMessage {
   message: string;
   timestamp: number;
   type: 'public' | 'private';
-  target?: string; // 私聊目标
+  target?: string;
 }
 
 interface UserTyping {
@@ -63,10 +63,7 @@ const SystemDrawer: React.FC<{
             <span className="text-red-500">📋</span>
             系统信息
           </h3>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-red-500/20 rounded-md transition-all"
-          >
+          <button onClick={onClose} className="p-1 hover:bg-red-500/20 rounded-md transition-all">
             <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -92,25 +89,25 @@ const SystemDrawer: React.FC<{
 };
 
 const ServerChat: React.FC = () => {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const socket = useAppStore((state) => state.socket);
   const username = useAppStore((state) => state.username);
-  
-  // 聊天相关状态
-  const [publicMessages, setPublicMessages] = useState<ChatMessage[]>([]);
-  const [privateMessages, setPrivateMessages] = useState<Map<string, ChatMessage[]>>(new Map()); // target -> messages
-  const [currentTarget, setCurrentTarget] = useState<string>('大厅'); // 当前聊天目标
+
+  // 从全局 Store 读取消息（公共和私聊）
+  const publicMessages = useAppStore((state) => state.publicMessages);
+  const privateMessagesObj = useAppStore((state) => state.privateMessages);
+
+  const [currentTarget, setCurrentTarget] = useState<string>('大厅');
   const [inputMessage, setInputMessage] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [_, setError] = useState('');
   const [__, setShowIntro] = useState(true);
 
-  // 好友系统状态
   const [friendList, setFriendList] = useState<string[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [addFriendInput, setAddFriendInput] = useState('');
 
-  // 系统消息
+  // 系统消息依然本地维护（从 Socket 事件获取），因为需要在抽屉中展示
   const [systemMessages, setSystemMessages] = useState<{ text: string; timestamp: number }[]>([]);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
@@ -132,109 +129,63 @@ const ServerChat: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // 挂载 Socket 非消息事件监听（用户列表、打字、好友等）
   useEffect(() => {
-    if (!username) return;
+    if (!socket || !username) return;
 
-    const socketInstance = io(import.meta.env.VITE_SERVER_URL, {
-      path: '/socket.io',
-      transports: ['websocket', 'polling'],
-    });
-
-    socketInstance.on('connect', () => {
-      console.log('Socket connected');
-      setError('');
-      socketInstance.emit('join', username);
-    });
-
-    socketInstance.on('connect_error', (err) => {
-      console.error('Connection error:', err);
-      setError('无法连接到聊天服务器');
-    });
-
-    // 公共消息
-    socketInstance.on('message', (message: ChatMessage) => {
-      if (message.username === '系统') {
-        setSystemMessages((prev) => [...prev, { text: message.message, timestamp: message.timestamp }]);
-        showToast(message.message);
-      } else {
-        if (message.type === 'public') {
-          setPublicMessages((prev) => [...prev, message]);
-        }
-      }
-    });
-
-    // 私聊消息
-    socketInstance.on('privateMessage', (message: ChatMessage) => {
-      // 判断是发给自己的还是自己发送的
-      const chatKey = message.username === username ? message.target! : message.username;
-      setPrivateMessages((prev) => {
-        const newMap = new Map(prev);
-        const existing = newMap.get(chatKey) || [];
-        existing.push(message);
-        newMap.set(chatKey, existing);
-        return newMap;
-      });
-    });
-
-    // 历史消息
-    socketInstance.on('history', (history: ChatMessage[]) => {
-      const sysMessages: { text: string; timestamp: number }[] = [];
-      const chatMessages: ChatMessage[] = [];
-      history.forEach((msg) => {
-        if (msg.username === '系统') {
-          sysMessages.push({ text: msg.message, timestamp: msg.timestamp });
-        } else {
-          chatMessages.push(msg);
-        }
-      });
-      setSystemMessages(sysMessages);
-      setPublicMessages(chatMessages);
-    });
-
-    // 在线用户
-    socketInstance.on('userList', (users: string[]) => {
-      setOnlineUsers(users);
-    });
-
-    // 输入状态
-    socketInstance.on('userTyping', ({ username, isTyping }: UserTyping) => {
+    const handleUserList = (users: string[]) => setOnlineUsers(users);
+    const handleUserTyping = ({ username: user, isTyping }: UserTyping) => {
       setTypingUsers((prev) => {
         const newSet = new Set(prev);
-        if (isTyping) newSet.add(username);
-        else newSet.delete(username);
+        if (isTyping) newSet.add(user);
+        else newSet.delete(user);
         return newSet;
       });
-    });
-
-    // 错误
-    socketInstance.on('error', (errorMsg: string) => {
+    };
+    const handleError = (errorMsg: string) => {
       setError(errorMsg);
       showToast(errorMsg);
       setTimeout(() => setError(''), 3000);
-    });
-
-    // 好友列表
-    socketInstance.on('friendList', (friends: string[]) => {
-      setFriendList(friends);
-    });
-
-    // 好友请求列表
-    socketInstance.on('friendRequests', (requests: FriendRequest[]) => {
-      setFriendRequests(requests);
-    });
-
-    // 新的好友请求
-    socketInstance.on('newFriendRequest', (request: FriendRequest) => {
+    };
+    const handleFriendList = (friends: string[]) => setFriendList(friends);
+    const handleFriendRequests = (requests: FriendRequest[]) => setFriendRequests(requests);
+    const handleNewFriendRequest = (request: FriendRequest) => {
       setFriendRequests((prev) => [...prev, request]);
       showToast(`${request.from} 请求添加你为好友`);
-    });
+    };
 
-    setSocket(socketInstance);
+    // 仅处理系统消息（用于本地系统抽屉和 toast）
+    const handleSystemMessage = (message: ChatMessage) => {
+      if (message.username === '系统') {
+        setSystemMessages((prev) => [...prev, { text: message.message, timestamp: message.timestamp }]);
+        showToast(message.message);
+      }
+    };
+
+    socket.on('message', handleSystemMessage);
+    socket.on('userList', handleUserList);
+    socket.on('userTyping', handleUserTyping);
+    socket.on('error', handleError);
+    socket.on('friendList', handleFriendList);
+    socket.on('friendRequests', handleFriendRequests);
+    socket.on('newFriendRequest', handleNewFriendRequest);
+
+    // 组件挂载时请求当前状态（仅非消息数据）
+    socket.emit('getUsers');
+    socket.emit('getFriendList');
+    socket.emit('getFriendRequests');
 
     return () => {
-      socketInstance.disconnect();
+      socket.off('message', handleSystemMessage);
+      socket.off('userList', handleUserList);
+      socket.off('userTyping', handleUserTyping);
+      socket.off('error', handleError);
+      socket.off('friendList', handleFriendList);
+      socket.off('friendRequests', handleFriendRequests);
+      socket.off('newFriendRequest', handleNewFriendRequest);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
-  }, [username]);
+  }, [socket, username]);
 
   // 发送消息
   const handleSendMessage = (e: FormEvent) => {
@@ -244,17 +195,14 @@ const ServerChat: React.FC = () => {
     if (currentTarget === '大厅') {
       socket.emit('sendMessage', inputMessage.trim());
     } else {
-      // 私聊
       socket.emit('privateMessage', { target: currentTarget, message: inputMessage.trim() });
     }
     setInputMessage('');
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     socket.emit('typing', false);
   };
 
-  // 输入状态（仅对公共聊天有效）
+  // 输入状态（仅公共聊天）
   const handleTyping = () => {
     if (!socket || currentTarget !== '大厅') return;
     socket.emit('typing', true);
@@ -277,27 +225,17 @@ const ServerChat: React.FC = () => {
     socket.emit('handleFriendRequest', { from, accepted });
   };
 
-  useEffect(() => {
-    return () => {
-      if (socket) socket.disconnect();
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    };
-  }, [socket]);
-
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
   };
 
-  // 获取当前会话的消息
+  // 获取当前会话的消息（从 Store 读取）
   const getCurrentMessages = (): ChatMessage[] => {
     if (currentTarget === '大厅') {
       return publicMessages;
     } else {
-      // 私聊：双方的消息，key 通常为对方用户名（发送时 target 是对方，接收时 target 是自己？）
-      // 我们约定私聊消息的 target 字段为接收方用户名
-      // 对于当前用户，私聊会话 key 为对方用户名
-      return privateMessages.get(currentTarget) || [];
+      return privateMessagesObj[currentTarget] || [];
     }
   };
 
@@ -356,10 +294,9 @@ const ServerChat: React.FC = () => {
             </div>
           ))}
 
-          {/* 输入提示（仅大厅） */}
-          {currentTarget === '大厅' && Array.from(typingUsers).filter(u => u !== username).length > 0 && (
+          {currentTarget === '大厅' && Array.from(typingUsers).filter((u) => u !== username).length > 0 && (
             <div className="text-sm text-red-400 italic animate-pulse ml-2">
-              {Array.from(typingUsers).filter(u => u !== username).join(', ')} 正在输入...
+              {Array.from(typingUsers).filter((u) => u !== username).join(', ')} 正在输入...
             </div>
           )}
 
@@ -392,12 +329,10 @@ const ServerChat: React.FC = () => {
         </div>
       </div>
 
-      {/* 右侧面板：聊天目标 + 好友管理 */}
+      {/* 右侧面板 */}
       <div className="w-72 bg-neutral-900/70 backdrop-blur-sm border-l border-red-500/30 p-4 relative z-10 h-full overflow-y-auto">
-        {/* 聊天目标 */}
         <h3 className="text-sm font-bold text-neutral-300 mb-4 flex items-center gap-2">
-          <span className="text-red-400">💬</span>
-          聊天目标
+          <span className="text-red-400">💬</span>聊天目标
         </h3>
         <ul className="space-y-1">
           <li
@@ -428,13 +363,10 @@ const ServerChat: React.FC = () => {
         </ul>
         <div className="mt-2 text-xs text-neutral-600">已连接 {friendList.length + 1} 个频道</div>
 
-        {/* 分割线 */}
         <hr className="my-4 border-red-500/20" />
 
-        {/* 添加好友 */}
         <h3 className="text-sm font-bold text-neutral-300 mb-2 flex items-center gap-2">
-          <span className="text-green-400">➕</span>
-          添加好友
+          <span className="text-green-400">➕</span>添加好友
         </h3>
         <div className="flex gap-1">
           <input
@@ -453,32 +385,23 @@ const ServerChat: React.FC = () => {
           </button>
         </div>
 
-        {/* 好友请求 */}
         {friendRequests.length > 0 && (
           <>
             <hr className="my-4 border-red-500/20" />
             <h3 className="text-sm font-bold text-neutral-300 mb-2 flex items-center gap-2">
               <span className="text-yellow-400">📩</span>
               好友请求{' '}
-              <span className="bg-yellow-500 text-black text-xs rounded-full px-1.5 py-0.5">
-                {friendRequests.length}
-              </span>
+              <span className="bg-yellow-500 text-black text-xs rounded-full px-1.5 py-0.5">{friendRequests.length}</span>
             </h3>
             <div className="space-y-2">
               {friendRequests.map((req, idx) => (
                 <div key={idx} className="bg-neutral-800 rounded p-2 text-sm flex items-center justify-between">
                   <span className="text-neutral-200">{req.from}</span>
                   <div className="flex gap-1">
-                    <button
-                      onClick={() => handleFriendRequest(req.from, true)}
-                      className="px-2 py-0.5 bg-green-600 text-white rounded text-xs"
-                    >
+                    <button onClick={() => handleFriendRequest(req.from, true)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs">
                       接受
                     </button>
-                    <button
-                      onClick={() => handleFriendRequest(req.from, false)}
-                      className="px-2 py-0.5 bg-red-600 text-white rounded text-xs"
-                    >
+                    <button onClick={() => handleFriendRequest(req.from, false)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs">
                       拒绝
                     </button>
                   </div>
@@ -488,11 +411,9 @@ const ServerChat: React.FC = () => {
           </>
         )}
 
-        {/* 在线用户（仅用于参考） */}
         <hr className="my-4 border-red-500/20" />
         <h3 className="text-sm font-bold text-neutral-300 mb-2 flex items-center gap-2">
-          <span className="text-blue-400">👥</span>
-          在线用户 ({onlineUsers.length})
+          <span className="text-blue-400">👥</span>在线用户 ({onlineUsers.length})
         </h3>
         <ul className="space-y-1">
           {onlineUsers.map((user) => (

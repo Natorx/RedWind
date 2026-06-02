@@ -3,6 +3,9 @@
 2. Task page
 3. fix: the save function in API page
 4. delete todo list
+5. better chat page
+6. global chat page
+7. better QRCode page
 
 ### 0.4.5
 1. dialog component

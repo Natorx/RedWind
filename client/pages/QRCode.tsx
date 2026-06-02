@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as QRCode from 'qrcode.react';
 import PageBox from '../components/PageBox';
+import { useMsg } from '../components/Msg';
 
 interface QRCodeGeneratorProps {
   defaultText?: string;
@@ -23,6 +24,7 @@ const QRCodePage: React.FC<QRCodeGeneratorProps> = ({
   const [qrSize, setQrSize] = useState<number>(size);
   const [qrFgColor, setQrFgColor] = useState<string>(fgColor);
   const [qrBgColor, setQrBgColor] = useState<string>(bgColor);
+  const {showMsg} = useMsg();
 
   // 下载二维码为PNG
   const downloadQRCode = () => {
@@ -33,6 +35,7 @@ const QRCodePage: React.FC<QRCodeGeneratorProps> = ({
     link.download = `qrcode-${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
+    showMsg('二维码已保存到<下载>目录！','success')
   };
 
   // 复制二维码数据URL
@@ -108,7 +111,7 @@ const copyQRCode = async () => {
         <div className="flex flex-col flex-wrap gap-3 pt-2">
           <button
             onClick={downloadQRCode}
-            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg 
+            className="cursor-pointer px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg 
                          hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/25
                          flex items-center"
           >
@@ -130,7 +133,7 @@ const copyQRCode = async () => {
 
           <button
             onClick={copyQRCode}
-            className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg 
+            className="cursor-pointer px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg 
                          hover:from-green-700 hover:to-green-800 transition-all shadow-lg shadow-green-500/25
                          flex items-center"
           >
@@ -152,7 +155,7 @@ const copyQRCode = async () => {
 
           <button
             onClick={resetToDefaults}
-            className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg 
+            className="cursor-pointer px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg 
                          hover:from-red-700 hover:to-red-800 transition-all shadow-lg shadow-red-500/25"
           >
             重置

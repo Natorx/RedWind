@@ -12,11 +12,116 @@ interface AudioSessionInfo {
   icon_path: string;
 }
 
-const WAudioController: React.FC = () => {
+const SystemVolumeCard: React.FC = () => {
+  const [systemVolume, setSystemVolume] = useState<number>(1.0);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+
+  const fetchSystemVolume = async () => {
+    try {
+      const volume = await invoke<number>('get_system_volume_cmd');
+      setSystemVolume(volume);
+    } catch (err) {
+      console.error('获取系统音量失败:', err);
+    }
+  };
+
+  const fetchSystemMute = async () => {
+    try {
+      const muted = await invoke<boolean>('get_system_mute_cmd');
+      setIsMuted(muted);
+    } catch (err) {
+      console.error('获取系统静音状态失败:', err);
+    }
+  };
+
+  const setSystemVolumeHandler = async (volume: number) => {
+    try {
+      await invoke('set_system_volume_cmd', { volume });
+      setSystemVolume(volume);
+    } catch (err) {
+      console.error('设置系统音量失败:', err);
+    }
+  };
+
+  const toggleSystemMute = async () => {
+    const next = !isMuted;
+    try {
+      await invoke('set_system_mute_cmd', { mute: next });
+      setIsMuted(next);
+    } catch (err) {
+      console.error('切换系统静音失败:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSystemVolume();
+    fetchSystemMute();
+  }, []);
+
+  const getVolumeIcon = (volume: number, isMuted: boolean) => {
+    if (isMuted || volume === 0) return '🔇';
+    if (volume < 0.3) return '🔈';
+    if (volume < 0.7) return '🔉';
+    return '🔊';
+  };
+
+  return (
+      <div className="bg-[rgba(30,30,35,0.8)] backdrop-blur-[10px] rounded-2xl p-5 pb-6 border bg-neutral-900/80 shrink-0">
+        <div className="flex items-center justify-between flex-wrap gap-5">
+          <div className="flex items-center gap-4">
+            <span className="text-[1.75rem]">
+              {getVolumeIcon(systemVolume, isMuted)}
+            </span>
+            <div>
+              <h2 className="text-xs font-medium text-gray-300 mb-0.5">
+                系统主音量
+              </h2>
+            </div>
+          </div>
+          <div className="flex-1 min-w-[200px] max-w-[320px]">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500">0%</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={Math.round(systemVolume * 100)}
+                onChange={(e) =>
+                  setSystemVolumeHandler(parseInt(e.target.value) / 100)
+                }
+                className="flex-1 h-1 rounded-full bg-gray-700 cursor-pointer appearance-none 
+                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
+                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:cursor-pointer
+                    hover:bg-red-500 transition-colors"
+              />
+              <span className="text-xs text-gray-500">100%</span>
+              <span className="text-sm font-medium text-red-500 w-12 text-right tabular-nums shrink-0">
+                {Math.round(systemVolume * 100)}%
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={toggleSystemMute}
+            className={`px-3.5 py-1.5 text-[0.688rem] font-medium cursor-pointer
+                border-none rounded-md transition-all hover:bg-red-500 shrink-0
+                ${
+                  isMuted
+                    ? 'bg-red-500 text-white'
+                    : 'bg-gray-700/80 text-gray-300 hover:text-white'
+                }`}
+          >
+            {isMuted ? '解除静音' : '静音'}
+          </button>
+        </div>
+      </div>
+  );
+};
+
+// 应用音量合成器（标题已移除，供与「资源占用」左右并排）
+const AppVolumeMixer: React.FC = () => {
   const [sessions, setSessions] = useState<AudioSessionInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [systemVolume, setSystemVolume] = useState<number>(1.0);
 
   const fetchAudioSessions = async () => {
     setLoading(true);
@@ -31,24 +136,6 @@ const WAudioController: React.FC = () => {
       console.error('获取音频会话失败:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchSystemVolume = async () => {
-    try {
-      const volume = await invoke<number>('get_system_volume_cmd');
-      setSystemVolume(volume);
-    } catch (err) {
-      console.error('获取系统音量失败:', err);
-    }
-  };
-
-  const setSystemVolumeHandler = async (volume: number) => {
-    try {
-      await invoke('set_system_volume_cmd', { volume });
-      setSystemVolume(volume);
-    } catch (err) {
-      console.error('设置系统音量失败:', err);
     }
   };
 
@@ -72,7 +159,6 @@ const WAudioController: React.FC = () => {
 
   useEffect(() => {
     fetchAudioSessions();
-    fetchSystemVolume();
   }, []);
 
   const getVolumeIcon = (volume: number, isMuted: boolean) => {
@@ -83,76 +169,7 @@ const WAudioController: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto mt-4">
-      {/* 系统音量 */}
-      <div className="bg-[rgba(30,30,35,0.8)] backdrop-blur-[10px] rounded-2xl p-5 pb-6 mb-8 border bg-neutral-900/80">
-        <div className="flex items-center justify-between flex-wrap gap-5">
-          <div className="flex items-center gap-4">
-            <span className="text-[1.75rem]">
-              {getVolumeIcon(systemVolume, false)}
-            </span>
-            <div>
-              <h2 className="text-xs font-medium text-gray-300 mb-0.5">
-                系统主音量
-              </h2>
-              <p className="text-xs text-gray-500">控制整个系统的输出音量</p>
-            </div>
-          </div>
-          <div className="flex-1 min-w-[240px]">
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-500">0%</span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={Math.round(systemVolume * 100)}
-                onChange={(e) =>
-                  setSystemVolumeHandler(parseInt(e.target.value) / 100)
-                }
-                className="flex-1 h-1 rounded-full bg-gray-700 cursor-pointer appearance-none 
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
-                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:cursor-pointer
-                    hover:bg-red-500 transition-colors"
-              />
-              <span className="text-xs text-gray-500">100%</span>
-            </div>
-            <div className="mt-2 text-right">
-              <span className="text-sm font-medium text-red-500">
-                {Math.round(systemVolume * 100)}%
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={fetchSystemVolume}
-            className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-1.5 text-sm text-red-500 
-                cursor-pointer transition-all hover:bg-red-500/20 hover:border-red-500/50"
-          >
-            🔄 刷新
-          </button>
-        </div>
-      </div>
-
-      {/* 应用列表头部 */}
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
-        <div>
-          <h2 className="text-base font-medium text-white mb-1">
-            应用音量合成器
-          </h2>
-          <p className="text-xs text-gray-500">
-            {sessions.length} 个应用正在播放音频
-          </p>
-        </div>
-        <button
-          onClick={fetchAudioSessions}
-          disabled={loading}
-          className="bg-gradient-to-br from-red-500 to-red-600 text-white border-none rounded-lg px-4 py-2 
-              text-xs font-medium cursor-pointer transition-all hover:scale-[1.02] disabled:opacity-60 
-              disabled:cursor-not-allowed disabled:hover:scale-100"
-        >
-          {loading ? '刷新中...' : '刷新列表'}
-        </button>
-      </div>
-
+    <div className="flex flex-col shrink-0">
       {/* 错误提示 */}
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-5 text-xs text-red-500">
@@ -414,8 +431,8 @@ const Recorder: React.FC = () => {
     setAudioDuration(0);
   };
   return (
-    <div className="w-full bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-red-500/20 overflow-hidden">
-      <div className="flex">
+    <div className="w-full bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-red-500/20 overflow-hidden shrink-0">
+      <div className="flex min-h-[170px]">
         {/* 左侧 - 红色麦克风区域 */}
         <div className="relative w-32 bg-gradient-to-br from-red-500 to-red-700 flex flex-col items-center justify-center py-4">
           {/* 麦克风图标 */}
@@ -445,7 +462,7 @@ const Recorder: React.FC = () => {
         </div>
 
         {/* 右侧 - 内容区域 */}
-        <div className="flex-1 py-3 pr-5 pl-4">
+        <div className="flex-1 py-3 pr-5 pl-4 flex flex-col min-h-0 overflow-y-auto">
           {/* 标题和计时器行 */}
           <div className="flex items-center justify-between mb-2">
             <div>
@@ -594,13 +611,15 @@ const Recorder: React.FC = () => {
   );
 };
 
-const Audio: React.FC = () => {
+const AudioPanel: React.FC = () => {
   return (
-    <div className="bg-gradient-to-br from-[#0a0a0a] via-[#1a0a0a] to-[#0f0f0f] min-h-screen py-8 px-6">
+    <div className="flex flex-col gap-6">
       <Recorder />
-      <WAudioController />
+      <SystemVolumeCard />
     </div>
   );
 };
 
-export default Audio;
+export default AudioPanel;
+
+export { Recorder, SystemVolumeCard, AppVolumeMixer };

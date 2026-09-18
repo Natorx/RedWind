@@ -1,8 +1,6 @@
 // data-source.ts
 import { DataSource } from "typeorm";
-import { Post } from "../tables/posts.js";
 import { Account } from "../tables/accounts.js";
-import { Task } from "../tables/tasks.js";
 
 export const DataSources = new DataSource({
   type: "postgres",
@@ -12,5 +10,5 @@ export const DataSources = new DataSource({
   password: process.env.PG_PASSWORD || "nn20142026",
   database: "wind_db",
   synchronize: true, // 开发时自动建表，生产环境需修改 migrations
-  entities: [Post,Account,Task],
+  entities: [Account],
 });

@@ -16,10 +16,6 @@ const Subscribe: React.FC = () => {
   const serverpush = useAppStore((s) => s.serverpush);
   const setServerpush = useAppStore((s) => s.setServerpush);
 
-  // 新增：获取 msgTips 状态及 setter
-  const msgTips = useAppStore((s) => s.msgTips);
-  const setMsgTips = useAppStore((s) => s.setMsgTips);
-
   const { showMsg } = useMsg();
 
   // 本地订阅列表（不含服务推送）
@@ -79,36 +75,6 @@ const Subscribe: React.FC = () => {
                 </td>
               </tr>
 
-              {/* 新增固定行：聊天消息通知 */}
-              <tr className="border-b border-neutral-700/30 hover:bg-neutral-700/20 transition">
-                <td className="px-4 py-3 text-white font-medium">聊天消息通知</td>
-                <td className="px-4 py-3 text-neutral-300 text-sm truncate max-w-xs">
-                  收到聊天室消息时是否弹出通知提示
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button
-                    onClick={() => {
-                      const newVal = !msgTips;
-                      setMsgTips(newVal);
-                      if (newVal) {
-                        showMsg('聊天消息通知已开启', 'success', 3000, 500);
-                      } else {
-                        showMsg('聊天消息通知已关闭', 'info', 3000);
-                      }
-                    }}
-                    className={`relative cursor-pointer inline-block w-9 h-4 rounded-full transition-colors duration-200 ${
-                      msgTips ? 'bg-red-500' : 'bg-neutral-500'
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ${
-                        msgTips ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </td>
-              </tr>
-
               {/* 用户自定义订阅项 */}
               {subscriptions.length === 0 ? (
                 <tr>
@@ -154,7 +120,7 @@ const Subscribe: React.FC = () => {
 
         {/* 底部统计 */}
         <div className="mt-4 text-xs text-neutral-500 z-10">
-          共 {subscriptions.length + 2} 条订阅（含服务推送和聊天消息通知）
+          共 {subscriptions.length + 1} 条订阅（含服务推送）
         </div>
       </div>
     </PageBox>

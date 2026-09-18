@@ -1,5 +1,4 @@
 pub mod conversion;
-pub mod docs;
 pub mod file_handler;
 pub mod hardinfo;
 pub mod node_server;

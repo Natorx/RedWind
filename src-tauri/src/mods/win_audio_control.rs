@@ -193,6 +193,73 @@ pub async fn set_system_volume_cmd(volume: f32) -> std::result::Result<(), Strin
     }
 }
 
+// 获取系统主音量静音状态
+pub fn get_system_mute() -> windows::core::Result<bool> {
+    unsafe {
+        let hr = CoInitializeEx(None, COINIT_MULTITHREADED);
+        if hr.is_err() {
+            return Err(hr.into());
+        }
+
+        let device_enumerator: IMMDeviceEnumerator =
+            CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
+
+        let device = device_enumerator.GetDefaultAudioEndpoint(eRender, eConsole)?;
+
+        let endpoint_volume: IAudioEndpointVolume = device.Activate(CLSCTX_ALL, None)?;
+
+        let muted = endpoint_volume.GetMute()?;
+
+        CoUninitialize();
+        Ok(muted.as_bool())
+    }
+}
+
+#[tauri::command]
+pub async fn get_system_mute_cmd() -> std::result::Result<bool, String> {
+    let result = tauri::async_runtime::spawn_blocking(|| get_system_mute()).await;
+
+    match result {
+        Ok(Ok(muted)) => Ok(muted),
+        Ok(Err(e)) => Err(e.to_string()),
+        Err(join_error) => Err(format!("线程任务失败: {}", join_error)),
+    }
+}
+
+// 设置系统主音量静音
+pub fn set_system_mute(mute: bool) -> windows::core::Result<()> {
+    unsafe {
+        let hr = CoInitializeEx(None, COINIT_MULTITHREADED);
+        if hr.is_err() {
+            return Err(hr.into());
+        }
+
+        let device_enumerator: IMMDeviceEnumerator =
+            CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
+
+        let device = device_enumerator.GetDefaultAudioEndpoint(eRender, eConsole)?;
+
+        let endpoint_volume: IAudioEndpointVolume = device.Activate(CLSCTX_ALL, None)?;
+
+        endpoint_volume.SetMute(mute.into(), std::ptr::null())?;
+
+        CoUninitialize();
+        Ok(())
+    }
+}
+
+#[tauri::command]
+pub async fn set_system_mute_cmd(mute: bool) -> std::result::Result<(), String> {
+    let result: std::result::Result<std::result::Result<(), Error>, tauri::Error> =
+        tauri::async_runtime::spawn_blocking(move || set_system_mute(mute)).await;
+
+    match result {
+        Ok(Ok(())) => Ok(()),
+        Ok(Err(e)) => Err(e.to_string()),
+        Err(join_error) => Err(format!("线程任务失败: {}", join_error)),
+    }
+}
+
 // 设置单个应用音量
 pub fn set_app_volume(pid: u32, volume: f32) -> windows::core::Result<()> {
     let volume = volume.clamp(0.0, 1.0);

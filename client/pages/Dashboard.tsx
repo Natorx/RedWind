@@ -5,20 +5,8 @@
  */
 import { useState, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { getModuleNum } from '../utils/project';
-import { useAccountStore } from '../stores/account';
-import {
-
-  Activity,
-  TrendingUp,
-  TrendingDown,
-  HardDrive,
-  Cpu,
-  LucideIcon,
-  ShoppingCart,
-  Users,
-} from 'lucide-react';
-import { useStatsStore } from '../stores/dashboard';
+import { Activity, HardDrive, Cpu } from 'lucide-react';
+import { Recorder, SystemVolumeCard, AppVolumeMixer } from './Audio';
 
 // ---------- 工具函数 ----------
 const formatBytes = (bytes: number): string => {
@@ -77,60 +65,6 @@ interface ProcessInfo {
 }
 
 type SortKey = 'pid' | 'name' | 'memoryKb' | 'totalWrittenBytes' | 'totalReadBytes';
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: string;
-  trend?: 'up' | 'down';
-  trendValue?: string;
-  color: string;
-}
-
-const iconMap: Record<string, LucideIcon> = {
-  Activity: Activity,
-  ShoppingCart: ShoppingCart,
-  Users: Users,
-};
-
-const getIconComponent = (iconName: string): LucideIcon => {
-  return iconMap[iconName] || Activity;
-};
-
-// ==========================================
-//           统计卡片组件（未修改）
-// ==========================================
-const StatCard = ({ title, value, icon, trend, trendValue, color }: StatCardProps) => {
-  const isPositive = trend === 'up';
-  const IconComponent = getIconComponent(icon);
-  
-  return (
-    <div className="bg-neutral-900/80 rounded-xl shadow-lg p-6 border border-red-500/20 backdrop-blur-sm transition-all hover:shadow-xl hover:border-red-500/40">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-sm font-medium text-neutral-400 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-neutral-100">{value}</p>
-          {trend && (
-            <div className="flex items-center mt-2">
-              {isPositive ? (
-                <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-              ) : (
-                <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
-              )}
-              <span className={`text-xs font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                {trendValue}
-              </span>
-              <span className="text-xs text-neutral-500 ml-1">vs last month</span>
-            </div>
-          )}
-        </div>
-        <div className={`p-3 rounded-lg ${color}`}>
-          <IconComponent className="w-6 h-6 text-white" />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // ==========================================
 //       系统资源卡片（CPU / 内存 / 硬盘 / 网络）
@@ -207,14 +141,14 @@ const SystemResourcesCard = ({ hardware }: { hardware: HardwareInfo | null }) =>
   }
 
   return (
-    <div className="bg-neutral-900/80 rounded-xl shadow-lg border border-red-500/20 backdrop-blur-sm">
+    <div className="w-full flex-1 min-h-0 flex flex-col bg-neutral-900/80 rounded-xl shadow-lg border border-red-500/20 backdrop-blur-sm">
       <div className="p-4 border-b border-red-500/20">
         <h3 className="text-lg font-semibold text-neutral-100 flex items-center gap-2">
           <Activity className="w-5 h-5 text-red-400" />
           资源占用
         </h3>
       </div>
-      <div className="divide-y divide-red-500/10 max-h-100 overflow-y-auto custom-scrollbar scroll-none">
+      <div className="divide-y divide-red-500/10 flex-1 min-h-0 overflow-y-auto custom-scrollbar scroll-none">
         {resources.map((res, idx) => {
           const IconComponent = res.icon;
           return (
@@ -431,37 +365,10 @@ const ProcessTable = () => {
 //             主仪表盘组件
 // ==========================================
 const Dashboard = () => {
-  const { stats } = useStatsStore();
   // 硬件信息
   const [hardware, setHardware] = useState<HardwareInfo | null>(null);
   const [_, setLoadingHw] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // ----- 登录用户信息 -----
-  const { user, isLoggedIn } = useAccountStore();
-
-  // ----- 当前日期时间 -----
-  const [currentDate, setCurrentDate] = useState('');
-  const [currentTime, setCurrentTime] = useState('');
-
-  // 时间更新
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setCurrentDate(
-        now.toLocaleDateString('zh-CN', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          weekday: 'long',
-        })
-      );
-      setCurrentTime(now.toLocaleTimeString('zh-CN', { hour12: false }));
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const loadHardware = async () => {
     try {
@@ -485,59 +392,22 @@ const Dashboard = () => {
 return (
     <div className="min-h-screen bg-gradient-to-br from-red-950 to-neutral-900 pt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ========== 欢迎卡片（新增） ========== */}
-        <div className="bg-gradient-to-r from-red-700/30 to-red-900/30 rounded-xl p-6 mb-8 border border-red-500/20 backdrop-blur-sm shadow-lg">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            {/* 左侧：头像 + 欢迎信息 */}
-            <div className="flex items-center gap-4">
-              {/* 用户头像（首字母或问号） */}
-              <div className="w-16 h-16 bg-gradient-to-br from-red-500/30 to-red-700/30 rounded-full flex items-center justify-center ring-2 ring-red-500/50">
-                <span className="text-2xl font-bold text-red-400">
-                  {isLoggedIn ? user?.username?.charAt(0).toUpperCase() : '?'}
-                </span>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-neutral-100">
-                  {isLoggedIn ? `欢迎回来，${user?.username}` : '欢迎，游客'}
-                </h2>
-                <p className="text-sm text-neutral-400 mt-1">{currentDate}</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <span className="text-xs bg-red-500/10 text-red-300 px-2 py-0.5 rounded-full border border-red-500/20">
-                    已开发模块: {getModuleNum()} 个
-                  </span>
-                  {isLoggedIn && (
-                    <span className="text-xs bg-green-500/10 text-green-300 px-2 py-0.5 rounded-full border border-green-500/20">
-                      已认证用户
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* 右侧：当前时间 + 面板标识 */}
-            <div className="text-right">
-              <p className="text-3xl font-bold text-red-400 font-mono">{currentTime}</p>
-              <p className="text-xs text-neutral-500 mt-1">RedWind 系统监控面板</p>
-            </div>
+        {/* ========== 左列：音频控制（录音机 + 系统音量 + 应用音量合成器） ========== */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-2">
+          <div className="flex flex-col gap-2 lg:col-span-2">
+            <Recorder />
+            <SystemVolumeCard />
+            <AppVolumeMixer />
           </div>
-        </div>
 
-        {/* ========== 统计卡片网格 ========== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
-        {stats.map((stat, index) => (
-          <StatCard key={index} {...stat} />
-        ))}
-      </div>
-
-        {/* ========== 进程列表 + 系统资源 ========== */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-          <div className="lg:col-span-2">
-            <ProcessTable />
-          </div>
-          <div className="lg:col-span-1">
+          {/* ========== 右列：资源占用 ========== */}
+          <div className="flex flex-col lg:col-span-1">
             <SystemResourcesCard hardware={hardware} />
           </div>
         </div>
+
+        {/* ========== 系统进程（独占整行） ========== */}
+        <ProcessTable />
       </div>
     </div>
   );

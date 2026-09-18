@@ -12,8 +12,7 @@
 ![alt text](assets/pics-doc/a_start.png)
 ![alt text](assets/pics-doc/audio_control.png)
 ![alt text](assets/pics-doc/chat_ai.png)
-![alt text](assets/pics-doc/chat_server.png)
-![alt text](assets/pics-doc/conversion.png)
+!![alt text](assets/pics-doc/conversion.png)
 ![alt text](assets/pics-doc/english.png)
 ![alt text](assets/pics-doc/printer.png)
 ![alt text](assets/pics-doc/qrcode.png)
@@ -22,7 +21,7 @@
 ### 系统架构
 - 页面：使用React+Unocss+Typescript开发页面
 - Agent：接入的模型是Deepseekv4，使用Python写了一个独立的接口服务（也有单独的cli/GUI）给应用程序调用
-- 服务：包括聊天室，帖子的功能都是用fastify(Nodejs)来完成的
+- 服务：服务端功能都是用fastify(Nodejs)来完成的
 - 系统：调用系统API以及程序进程都由Rust负责(Tauri)
 - 数据：本地数据使用SQLite进行存储，由Rust后端来控制，服务端数据使用PGSQL进行存储
 - 性能：使用Rust后端以及Rust的WASM来提供高性能
@@ -35,7 +34,7 @@
 
 `pnpm dc`: 这是运行客户端主进程的命令，成功启动后，程序就可以正常跑起来了
 
-`pnpm ds`：标有server标签的都依赖于Node服务，它提供聊天室，帖子等功能，你需要使用`pnpm ds`启动它
+`pnpm ds`：标有server标签的都依赖于Node服务，你需要使用`pnpm ds`启动它
 
 `pnpm agent`：关于Agent功能，需要用到Python，如果你想要本地调试，需要保证你的电脑中有Python，使用`pnpm agent`启动Agent接口服务
 
@@ -47,7 +46,7 @@ redwind/
 ├── client      客户端，所有的客户端渲染相关的页面和组件都在这个文件夹中
 ├── commands    一些指令，用来升级版本，快速启动项目等
 ├── release     软件各个版本的安装包
-├── server      使用Fastify构建的Node服务，提供了聊天室，帖子等功能
+├── server      使用Fastify构建的Node服务
 ├── src-tauri   Rust构建的后端，用来启动作为后端配合客户端页面启动进程，提供对接系统的一些功能
 └── wasm        用于优化客户端性能的Rust包，里面的内容并不多
 ```

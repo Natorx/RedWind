@@ -52,6 +52,8 @@ fn main() {
             mods::win_audio_control::get_all_audio_sessions_cmd,
             mods::win_audio_control::get_system_volume_cmd,
             mods::win_audio_control::set_system_volume_cmd,
+            mods::win_audio_control::get_system_mute_cmd,
+            mods::win_audio_control::set_system_mute_cmd,
             mods::win_audio_control::set_app_volume_cmd,
             mods::win_audio_control::set_app_mute_cmd,
             // printer
@@ -63,12 +65,6 @@ fn main() {
             mods::p2p_chat::send_p2p,
             mods::p2p_chat::stop_p2p,
             mods::p2p_chat::start_p2p,
-            // Docs
-            mods::docs::read_document,
-            mods::docs::export_markdown,
-            mods::docs::list_markdown_files,
-            mods::docs::read_markdown_file,
-            mods::docs::copy_file_to_docs,
             // file_handler
             mods::file_handler::export_json,
             mods::file_handler::save_file_bytes,

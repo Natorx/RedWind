@@ -11,8 +11,7 @@ After launching the program, you need to configure the required modules yourself
 ![alt text](assets/pics-doc/a_start.png)
 ![alt text](assets/pics-doc/audio_control.png)
 ![alt text](assets/pics-doc/chat_ai.png)
-![alt text](assets/pics-doc/chat_server.png)
-![alt text](assets/pics-doc/conversion.png)
+!![alt text](assets/pics-doc/conversion.png)
 ![alt text](assets/pics-doc/english.png)
 ![alt text](assets/pics-doc/printer.png)
 ![alt text](assets/pics-doc/qrcode.png)
@@ -21,7 +20,7 @@ After launching the program, you need to configure the required modules yourself
 ### System Architecture
 - Frontend: Developed using React + Unocss + Typescript
 - Agent: Integrated with the Deepseekv4 model, with an independent interface service (also includes a separate CLI/GUI) written in Python for the application to call.
-- Services: Including chat rooms and posts, all implemented with Fastify (Node.js).
+- Services: All implemented with Fastify (Node.js).
 - System: System API calls and program processes are handled by Rust (Tauri).
 - Data: Local data is stored using SQLite, managed by the Rust backend; server-side data is stored using PGSQL.
 - Performance: High performance is provided by the Rust backend and Rust's WASM.
@@ -35,7 +34,7 @@ First, ensure you have Node.js (24.0.0+) and Rust installed on your computer. If
 
 `pnpm dc`: This is the command to run the main client process. After a successful start, the program will run normally.
 
-`pnpm ds`: Features tagged with `server` all depend on the Node.js service, which provides functions like chat rooms and posts. You need to use `pnpm ds` to start it.
+`pnpm ds`: Features tagged with `server` all depend on the Node.js service. You need to use `pnpm ds` to start it.
 
 `pnpm agent`: The Agent functionality requires Python. If you want to debug locally, ensure you have Python installed on your computer. Use `pnpm agent` to start the Agent interface service.
 
@@ -47,6 +46,6 @@ redwind/
 ├── client         Client side; all pages and components related to client-side rendering are in this folder.
 ├── commands       Some commands used to upgrade versions, quickly start the project, etc.
 ├── release        Installation packages for various versions of the software.
-├── server         Node.js service built with Fastify, providing features like chat rooms and posts.
+├── server         Node.js service built with Fastify.
 ├── src-tauri      Backend built with Rust, used to launch processes and provide system integration functionalities as a backend for the client page.
 └── wasm           Rust package for optimizing client performance, with limited content inside.

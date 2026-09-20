@@ -19,6 +19,137 @@ use windows::{
 use windows::core::PSTR;
 use windows::Win32::System::Threading::PROCESS_NAME_FORMAT;
 
+use std::sync::{Mutex, OnceLock};
+use tauri::{AppHandle, Emitter};
+use windows::Win32::Media::Audio::AUDIO_VOLUME_NOTIFICATION_DATA;
+use windows::Win32::Media::Audio::Endpoints::{
+    IAudioEndpointVolumeCallback, IAudioEndpointVolumeCallback_Impl,
+};
+
+/// 系统主音量变化事件名（前端 `listen` 使用）
+pub const SYSTEM_VOLUME_CHANGED_EVENT: &str = "system-volume-changed";
+
+/// 推送给前端的音量快照
+#[derive(Debug, Clone, Serialize)]
+pub struct SystemVolumeSnapshot {
+    pub volume: f32,
+    pub is_muted: bool,
+}
+
+/// `IAudioEndpointVolumeCallback` 的实现：系统主音量/静音变化时由系统回调触发。
+///
+/// 回调里只做事件推送，不做任何阻塞 IO，避免拖慢音频引擎线程。
+#[windows::core::implement(IAudioEndpointVolumeCallback)]
+struct VolumeChangeNotifier {
+    app: AppHandle,
+}
+
+impl IAudioEndpointVolumeCallback_Impl for VolumeChangeNotifier_Impl {
+    fn OnNotify(&self, pnotify: *mut AUDIO_VOLUME_NOTIFICATION_DATA) -> windows::core::Result<()> {
+        if pnotify.is_null() {
+            return Ok(());
+        }
+
+        // SAFETY: 系统保证回调期间该指针有效，且 AUDIO_VOLUME_NOTIFICATION_DATA 是 POD。
+        let data = unsafe { *pnotify };
+
+        let snapshot = SystemVolumeSnapshot {
+            volume: data.fMasterVolume,
+            is_muted: data.bMuted.as_bool(),
+        };
+
+        // 通知失败不向上传播：音频引擎线程不应因为我们推送失败而受影响。
+        let _ = self.app.emit(SYSTEM_VOLUME_CHANGED_EVENT, snapshot);
+
+        Ok(())
+    }
+}
+
+/// 已注册的监听器，保持其存活；释放时会自动注销。
+struct VolumeListenerGuard {
+    endpoint: IAudioEndpointVolume,
+    notifier: IAudioEndpointVolumeCallback,
+}
+
+// COM 接口指针本身不是 Send/Sync，但本次使用全部在同一把锁内串行化，
+// 且接口按 MTA 创建，跨线程调用是安全的。
+unsafe impl Send for VolumeListenerGuard {}
+unsafe impl Sync for VolumeListenerGuard {}
+
+static VOLUME_LISTENER: OnceLock<Mutex<Option<VolumeListenerGuard>>> = OnceLock::new();
+
+fn volume_listener_slot() -> &'static Mutex<Option<VolumeListenerGuard>> {
+    VOLUME_LISTENER.get_or_init(|| Mutex::new(None))
+}
+
+/// 开始监听系统主音量变化，重复调用会先注销旧的监听器。
+#[tauri::command]
+pub async fn start_system_volume_listener_cmd(app: AppHandle) -> std::result::Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || start_system_volume_listener(app))
+        .await
+        .map_err(|e| format!("线程任务失败: {}", e))?
+        .map_err(|e| e.to_string())
+}
+
+/// 停止监听系统主音量变化。
+#[tauri::command]
+pub async fn stop_system_volume_listener_cmd() -> std::result::Result<(), String> {
+    tauri::async_runtime::spawn_blocking(stop_system_volume_listener)
+        .await
+        .map_err(|e| format!("线程任务失败: {}", e))?
+        .map_err(|e| e.to_string())
+}
+
+pub fn start_system_volume_listener(app: AppHandle) -> windows::core::Result<()> {
+    unsafe {
+        let hr = CoInitializeEx(None, COINIT_MULTITHREADED);
+        if hr.is_err() {
+            return Err(hr.into());
+        }
+
+        let device_enumerator: IMMDeviceEnumerator =
+            CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
+        let device = device_enumerator.GetDefaultAudioEndpoint(eRender, eConsole)?;
+        let endpoint_volume: IAudioEndpointVolume = device.Activate(CLSCTX_ALL, None)?;
+
+        // notifier 是带引用计数的 COM 对象，clone 出来的引用仍指向同一实现。
+        let notifier: IAudioEndpointVolumeCallback = VolumeChangeNotifier { app }.into();
+        endpoint_volume.RegisterControlChangeNotify(&notifier)?;
+
+        let mut slot = volume_listener_slot()
+            .lock()
+            .map_err(|_| windows::core::Error::new(E_FAIL, "音量监听锁已中毒".to_string()))?;
+
+        // 若已有监听器，先注销，避免重复注册导致回调叠加。
+        if let Some(old) = slot.take() {
+            let _ = old.endpoint.UnregisterControlChangeNotify(&old.notifier);
+        }
+
+        *slot = Some(VolumeListenerGuard {
+            endpoint: endpoint_volume,
+            notifier,
+        });
+
+        CoUninitialize();
+        Ok(())
+    }
+}
+
+pub fn stop_system_volume_listener() -> windows::core::Result<()> {
+    let mut slot = volume_listener_slot()
+        .lock()
+        .map_err(|_| windows::core::Error::new(E_FAIL, "音量监听锁已中毒".to_string()))?;
+
+    if let Some(guard) = slot.take() {
+        unsafe {
+            // 注销失败不视为致命错误：对象析构时系统最终会清理。
+            let _ = guard.endpoint.UnregisterControlChangeNotify(&guard.notifier);
+        }
+    }
+
+    Ok(())
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct AudioSessionInfo {
     pub pid: u32,

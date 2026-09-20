@@ -110,7 +110,7 @@ export const MsgContainer: React.FC = () => {
   const removeMsg = useMsgStore((s) => s.removeMsg);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+    <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
       {list.map((item) => (
         <div key={item.id} className="pointer-events-auto">
           <MsgItemComp item={item} onClose={removeMsg} />

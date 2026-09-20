@@ -22,3 +22,10 @@ pub fn get_prod_data_dir_typing() -> PathBuf {
 pub fn get_prod_data_dir_sidebar() -> PathBuf {
     std::env::temp_dir()
 }
+
+/// 频道模块的数据库目录（与打字练习共用应用数据目录）
+pub fn get_prod_data_dir_channel() -> PathBuf {
+    let dir = typing::get_app_data_dir();
+    std::fs::create_dir_all(&dir).expect("Failed to create app data dir");
+    dir
+}

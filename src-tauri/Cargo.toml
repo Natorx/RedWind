@@ -33,6 +33,9 @@ windows = { version = "0.62.2", features = [
     "Win32_System_Variant",
     "Win32_Media_Audio_Endpoints"
 ] }
+# windows 的 #[implement] 宏在展开代码里按 crate 名引用 windows_core，
+# 因此必须作为直接依赖声明（否则 E0433）。
+windows-core = "0.62.2"
 opener = "0.8.3"
 tokio = { version = "1", features = ["full"] }
 regex = "1.10"

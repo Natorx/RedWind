@@ -1,3 +1,4 @@
+pub mod channel;
 pub mod conversion;
 pub mod file_handler;
 pub mod hardinfo;

@@ -1,8 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import React, { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Play, Download, Trash2, Pause } from 'lucide-react';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
+import { useMsg } from '../components/Msg';
 interface AudioSessionInfo {
   pid: number;
   process_name: string;
@@ -11,6 +13,15 @@ interface AudioSessionInfo {
   is_muted: boolean;
   icon_path: string;
 }
+
+/** 后端 `system-volume-changed` 事件负载 */
+interface SystemVolumeSnapshot {
+  volume: number;
+  is_muted: boolean;
+}
+
+/** 轮询兜底间隔（毫秒）：未收到事件推送时的最大刷新延迟 */
+const AUDIO_POLL_INTERVAL_MS = 3000;
 
 const SystemVolumeCard: React.FC = () => {
   const [systemVolume, setSystemVolume] = useState<number>(1.0);
@@ -53,9 +64,53 @@ const SystemVolumeCard: React.FC = () => {
     }
   };
 
+  // 自动检测 + 定期兜底：
+  // - 事件驱动：后端注册 IAudioEndpointVolumeCallback，系统音量/静音变化时立即推送
+  // - 定时兜底：事件丢失（设备切换、监听注册失败）时仍能收敛到真实状态
   useEffect(() => {
-    fetchSystemVolume();
-    fetchSystemMute();
+    let disposed = false;
+    let unlisten: (() => void) | undefined;
+
+    const applySnapshot = (snapshot: SystemVolumeSnapshot) => {
+      if (disposed) return;
+      setSystemVolume(snapshot.volume);
+      setIsMuted(snapshot.is_muted);
+    };
+
+    const startListener = async () => {
+      try {
+        unlisten = await listen<SystemVolumeSnapshot>(
+          'system-volume-changed',
+          (event) => applySnapshot(event.payload),
+        );
+      } catch (err) {
+        console.error('监听系统音量变化失败:', err);
+      }
+
+      try {
+        await invoke('start_system_volume_listener_cmd');
+      } catch (err) {
+        // 监听注册失败不阻断轮询兜底
+        console.error('注册系统音量监听失败:', err);
+      }
+    };
+
+    startListener();
+
+    const pollTimer = setInterval(() => {
+      if (disposed) return;
+      fetchSystemVolume();
+      fetchSystemMute();
+    }, AUDIO_POLL_INTERVAL_MS);
+
+    return () => {
+      disposed = true;
+      clearInterval(pollTimer);
+      if (unlisten) unlisten();
+      invoke('stop_system_volume_listener_cmd').catch((err) =>
+        console.error('停止系统音量监听失败:', err),
+      );
+    };
   }, []);
 
   const getVolumeIcon = (volume: number, isMuted: boolean) => {
@@ -157,8 +212,24 @@ const AppVolumeMixer: React.FC = () => {
     }
   };
 
+  // 定期重新获取音频列表：
+  // 音频会话的新增/退出无法通过 IAudioEndpointVolume 回调感知，
+  // 因此这里以固定间隔重新枚举，保证列表与真实会话保持一致。
   useEffect(() => {
-    fetchAudioSessions();
+    let disposed = false;
+
+    const refresh = () => {
+      if (disposed) return;
+      fetchAudioSessions();
+    };
+
+    refresh();
+    const pollTimer = setInterval(refresh, AUDIO_POLL_INTERVAL_MS);
+
+    return () => {
+      disposed = true;
+      clearInterval(pollTimer);
+    };
   }, []);
 
   const getVolumeIcon = (volume: number, isMuted: boolean) => {
@@ -262,6 +333,7 @@ const AppVolumeMixer: React.FC = () => {
 };
 
 const Recorder: React.FC = () => {
+  const { showMsg } = useMsg();
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordedAudio, setRecordedAudio] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -273,6 +345,7 @@ const Recorder: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const micErrorNotifiedRef = useRef(false);
 
   // 录音计时
   useEffect(() => {
@@ -343,7 +416,10 @@ const Recorder: React.FC = () => {
         };
       } catch (error) {
         console.error('麦克风访问失败:', error);
-        alert('无法访问麦克风，请检查权限设置');
+        if (!micErrorNotifiedRef.current) {
+          micErrorNotifiedRef.current = true;
+          showMsg('无法访问麦克风，请检查权限设置', 'error', 4000);
+        }
       }
     };
 
@@ -432,7 +508,7 @@ const Recorder: React.FC = () => {
   };
   return (
     <div className="w-full bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-red-500/20 overflow-hidden shrink-0">
-      <div className="flex min-h-[170px]">
+      <div className="flex min-h-[120px]">
         {/* 左侧 - 红色麦克风区域 */}
         <div className="relative w-32 bg-gradient-to-br from-red-500 to-red-700 flex flex-col items-center justify-center py-4">
           {/* 麦克风图标 */}

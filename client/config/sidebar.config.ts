@@ -26,6 +26,7 @@ export const sidebarItems: SidebarItem[] = [
   // ========== local ==========
   { id: 'dashboard', label: '系统控制', icon: '📊', order: 1, source: 'local' },
   { id: 'typing-practice', label: '打字练习', icon: '⌨️', order: 2, source: 'local' },
+  { id: 'channel', label: '频道', icon: '📺', order: 3, source: 'local' },
   { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },
   { id: 'file-hander', label: '文件处理', icon: '🔄', order: 9, source: 'local' },
   { id: 'qrcode', label: '二维码生成', icon: '📱', order: 10, source: 'local' },

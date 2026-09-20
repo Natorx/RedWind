@@ -9,6 +9,7 @@ import StartPage from '../pages/Start';
 import FileHandler from '../pages/Filehandler';
 import Agent from '../pages/Agent';
 import Subscribe from '../pages/Subscribe';
+import ChannelPage from '../pages/Channel';
 
 const contentMap: Record<string, JSX.Element> = {
   start: <StartPage />,
@@ -20,5 +21,6 @@ const contentMap: Record<string, JSX.Element> = {
   qrcode: <QRCodePage />,
   agent: <Agent />,
   subscribe: <Subscribe />,
+  channel: <ChannelPage />,
 };
 export default contentMap;

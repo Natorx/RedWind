@@ -10,7 +10,9 @@ fn main() {
     dotenv::dotenv().ok();
     let db_state = mods::sidebar::init_db_state();
     let typing_db_state = mods::typing::init_typing_db_state();
+    let channel_db_state = mods::channel::init_channel_db_state();
     let p2p_state = mods::p2p_chat::P2PState::new();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
@@ -22,9 +24,11 @@ fn main() {
         .manage(db_state)
         .manage(p2p_state)
         .manage(typing_db_state)
+        .manage(channel_db_state)
         .invoke_handler(tauri::generate_handler![
             // Open模块
             mods::open::open_path,
+            mods::open::open_url,
             // 硬件信息
             mods::hardinfo::get_hardware_info,
             mods::hardinfo::get_process,
@@ -56,6 +60,8 @@ fn main() {
             mods::win_audio_control::set_system_mute_cmd,
             mods::win_audio_control::set_app_volume_cmd,
             mods::win_audio_control::set_app_mute_cmd,
+            mods::win_audio_control::start_system_volume_listener_cmd,
+            mods::win_audio_control::stop_system_volume_listener_cmd,
             // printer
             mods::printer::print_text,
             mods::printer::test_connection,
@@ -68,6 +74,14 @@ fn main() {
             // file_handler
             mods::file_handler::export_json,
             mods::file_handler::save_file_bytes,
+            // channel 频道模块
+            mods::channel::get_channels,
+            mods::channel::add_channel,
+            mods::channel::update_channel,
+            mods::channel::delete_channel,
+            mods::channel::add_channel_video,
+            mods::channel::update_channel_video,
+            mods::channel::delete_channel_video,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,7 +1,7 @@
 {
   "name": "red-wind-project",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "Fofow",
   "workspaces": [
     "client",
@@ -29,11 +29,9 @@
     "@tauri-apps/plugin-shell": "^2.3.5",
     "axios": "^1.14.0",
     "lucide-react": "^1.7.0",
-    "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "unocss": "^66.6.7",
-    "xlsx": "^0.18.5",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

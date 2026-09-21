@@ -1,12 +1,11 @@
-// circle.tsx
+// circle.tsx —— 固定侧栏的小球模式，与 sidebar.tsx 共用同一份固定模块清单
 import React, { useState, useEffect } from 'react';
 import iconSrc from '../assets/icon.png';
-import { useModuleStore } from '../stores/module';
+import sidebarItems from '../config/sidebar.config';
 import { useUiStore } from '../stores/ui';
 import useAppStore from '../stores/app';
 
 const Circle: React.FC = () => {
-  const { sidebarItems, loadItems } = useModuleStore();
   const [showCircle, setShowCircle] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const activeItem = useAppStore((state) => state.activeItem);
@@ -20,12 +19,7 @@ const Circle: React.FC = () => {
     if (activeUi !== 'circle') {
       setIsExpanded(false);
     }
-  }, [activeUi]); 
-
-  // 加载侧边栏项
-  useEffect(() => {
-    loadItems();
-  }, []);
+  }, [activeUi]);
 
   if (!showCircle) return null;
 
@@ -38,24 +32,16 @@ const Circle: React.FC = () => {
     setIsExpanded(false);
   };
 
-  // 所有菜单项（包括固定项和动态项）
-  const allMenuItems = [
-    {
-      id: 'module-config',
-      label: '模块配置',
-      icon: '🖥️',
-      source: 'local' as const,
-    },
-    ...sidebarItems,
-  ];
+  // 固定菜单项
+  const allMenuItems = sidebarItems;
 
   return (
     <>
       {/* 扩展的横向列表 - 只展示图标的小球样式 */}
       <div
         className={`fixed flex items-center gap-2 z-40 transition-all duration-300 ease-in-out ${
-          isExpanded 
-            ? 'opacity-100 translate-x-0 pointer-events-auto' 
+          isExpanded
+            ? 'opacity-100 translate-x-0 pointer-events-auto'
             : 'opacity-0 translate-x-20 pointer-events-none'
         }`}
         style={{
@@ -67,8 +53,8 @@ const Circle: React.FC = () => {
           <button
             key={item.id}
             className={`w-10 h-10 bg-gray-800 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg ${
-              activeItem === item.id 
-                ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-900 bg-gradient-to-br from-gray-700 to-gray-800' 
+              activeItem === item.id
+                ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-900 bg-gradient-to-br from-gray-700 to-gray-800'
                 : 'hover:bg-gray-700'
             }`}
             onClick={() => handleItemClick(item.id)}
@@ -78,11 +64,11 @@ const Circle: React.FC = () => {
           </button>
         ))}
         <button
-            className={`w-10 h-10 bg-gray-800 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg hover:bg-gray-700`}
-            onClick={() => setIsSettingsOpen(true)}
-          >
-            <span className="text-xl">⚙️</span>
-          </button>
+          className={`w-10 h-10 bg-gray-800 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 hover:shadow-lg hover:bg-gray-700`}
+          onClick={() => setIsSettingsOpen(true)}
+        >
+          <span className="text-xl">⚙️</span>
+        </button>
       </div>
 
       {/* 小圆标按钮 - 旋转360度 */}
@@ -91,13 +77,9 @@ const Circle: React.FC = () => {
           isExpanded ? 'rotate-360' : ''
         }`}
         onClick={handleCircleClick}
-        aria-label={isExpanded ? "关闭菜单" : "打开菜单"}
+        aria-label={isExpanded ? '关闭菜单' : '打开菜单'}
       >
-        <img 
-          className="w-8 h-8" 
-          src={iconSrc} 
-          alt="菜单" 
-        />
+        <img className="w-8 h-8" src={iconSrc} alt="菜单" />
       </button>
     </>
   );

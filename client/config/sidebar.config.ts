@@ -13,26 +13,32 @@ type SidebarItem = {
     | 'others';
 };
 
+// 首页“最新功能”入口（固定项，不再依赖模块仓库）
 export const startPage_latestFeatures = [
-  { id:'dashboard', label:'系统控制', icon:'📊', date:'2025-05-27' },
-  { id:'agent', label:'Deepseek Agent', icon:'🤖', date:'2025-05-25' },
+  { id: 'dashboard', label: '系统控制', icon: '📊', date: '2025-05-27' },
+  { id: 'typing-practice', label: '打字练习', icon: '⌨️', date: '2025-05-25' },
 ];
 
+// 固定侧栏（不再从数据库动态加载）
 export const sidebarItems: SidebarItem[] = [
-  // ========== server (优先级最高) ==========
-  { id:'subscribe', label:'我的订阅', icon:'⚙️',order:11,source:'server'},
-  { id: 'agent', label: 'AI智能体', icon: '🤖', order: 14, source: 'server' },
-
-  // ========== local ==========
   { id: 'dashboard', label: '系统控制', icon: '📊', order: 1, source: 'local' },
-  { id: 'typing-practice', label: '打字练习', icon: '⌨️', order: 2, source: 'local' },
-  { id: 'channel', label: '频道', icon: '📺', order: 3, source: 'local' },
+  { id: 'channel', label: '频道', icon: '📺', order: 2, source: 'local' },
+  {
+    id: 'typing-practice',
+    label: '打字练习',
+    icon: '⌨️',
+    order: 3,
+    source: 'local',
+  },
   { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },
-  { id: 'file-hander', label: '文件处理', icon: '🔄', order: 9, source: 'local' },
-  { id: 'qrcode', label: '二维码生成', icon: '📱', order: 10, source: 'local' },
-  // 如果有 'others' 或 'basic' 的项，按 order 插入此处
-
 ];
 
+/** 已下线模块的 id，启动时用于清理历史数据库残留记录 */
+export const REMOVED_MODULE_IDS = [
+  'subscribe',
+  'agent',
+  'file-hander',
+  'qrcode',
+];
 
 export default sidebarItems;

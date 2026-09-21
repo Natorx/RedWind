@@ -1,38 +1,27 @@
 // typing.interface.ts
-export interface WordSet {
-  id: number;
-  name: string;
-  isOfficial: boolean;
-  createdAt: string;
-  words?: string[];  // 单词列表（兼容旧代码）
-  items?: WordItem[]; // 完整的单词项（包含释义）
-}
+// 打字练习模块的数据结构：段落
 
-export interface WordItem {
+/** 一条练习段落（段落本身足够长，相当于小作文） */
+export interface Passage {
   id: number;
-  word_set_id: number;
-  word: string;
-  meaning: string;
+  /** 段落标题（可为空） */
+  title: string;
+  /** 段落正文，打字练习的目标文本 */
+  content: string;
+  /** 是否为内置段落 */
+  is_official: boolean;
   order_index: number;
+  created_at: string;
 }
 
-export interface TypingStats {
-  wpm: number;
-  accuracy: number;
-  correctChars: number;
-  incorrectChars: number;
-  totalChars: number;
-  startTime: number | null;
-  endTime: number | null;
+/** 划词翻译结果 */
+export interface TranslationResult {
+  source: string;
+  target: string;
+  to_lang: string;
 }
 
-export interface HistoryItem {
-  word: string;
-  correct: boolean;
-  time: number;
-}
-
-// 保留以兼容旧代码，但不再使用
+/** 保留以兼容旧代码，但不再使用 */
 export interface RawWordSet {
   id: number;
   name: string;

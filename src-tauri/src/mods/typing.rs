@@ -4,24 +4,30 @@ use std::sync::Mutex;
 use tauri::command;
 use crate::mods::path_set;
 
-// 词汇集结构
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct WordSet {
-    pub id: i32,
-    pub name: String,
-    pub is_official: bool,
-    pub created_at: String,
-}
+// ============================================================
+// 打字练习的数据单元：段落
+//
+// 演进说明：
+//   1) 早期：word_sets / word_set_items（词汇集 / 单词）
+//   2) 中期：passage_sets / passage_set_items（段落集 / 段落）
+//   3) 现在：passages（直接就是一条条段落，段落本身足够长，相当于小作文）
+//
+// 旧结构的数据会在启动时自动迁移到 passages 表。
+// ============================================================
 
-// 单词项结构
+/// 一条练习段落
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct WordSetItem {
+pub struct Passage {
     pub id: i32,
-    pub word_set_id: i32,
-    pub word: String,
-    pub meaning: String,
-    pub example_sentence: Option<String>,
+    /// 段落标题（可为空）
+    pub title: String,
+    /// 段落正文，打字练习的目标文本
+    pub content: String,
+    /// 是否为内置段落
+    pub is_official: bool,
+    /// 排序序号
     pub order_index: i32,
+    pub created_at: String,
 }
 
 // 数据库状态
@@ -47,331 +53,299 @@ pub(crate) fn get_app_data_dir() -> std::path::PathBuf {
     std::path::PathBuf::from(".")
 }
 
-// 初始化数据库表
+// ------------------------------------------------------------
+// 建表
+// ------------------------------------------------------------
 pub fn init_typing_table(conn: &Connection) -> SqliteResult<()> {
-    // 创建词汇集表
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS word_sets (
+        "CREATE TABLE IF NOT EXISTS passages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            title TEXT NOT NULL DEFAULT '',
+            content TEXT NOT NULL,
             is_official INTEGER NOT NULL DEFAULT 0,
+            order_index INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL
         )",
         [],
     )?;
 
-    // 创建单词表（关联词汇集ID）- 添加 example_sentence 字段
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS word_set_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            word_set_id INTEGER NOT NULL,
-            word TEXT NOT NULL,
-            meaning TEXT NOT NULL,
-            example_sentence TEXT,
-            order_index INTEGER NOT NULL,
-            FOREIGN KEY (word_set_id) REFERENCES word_sets(id) ON DELETE CASCADE
-        )",
-        [],
-    )?;
-
     Ok(())
 }
 
-// 初始化默认词汇集
-pub fn init_default_word_sets(conn: &Connection) -> SqliteResult<()> {
-    // 检查是否已有官方词库
-    let count: i64 = conn.query_row(
-        "SELECT COUNT(*) FROM word_sets WHERE is_official = 1",
-        [],
-        |row| row.get(0),
-    )?;
+/// 判断某张表是否存在
+fn table_exists(conn: &Connection, table: &str) -> bool {
+    conn.query_row(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+        params![table],
+        |row| row.get::<_, i64>(0),
+    )
+    .map(|c| c > 0)
+    .unwrap_or(false)
+}
 
-    if count == 0 {
-        // 插入第一个官方词库
-        conn.execute(
-            "INSERT INTO word_sets (name, is_official, created_at) VALUES (?1, 1, ?2)",
-            params![
-                "基础词汇 (50词)",
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
-            ],
-        )?;
-        let set1_id = conn.last_insert_rowid() as i32;
+// ------------------------------------------------------------
+// 迁移：把旧的「段落集 / 词汇集」结构摊平成一段一段的 passages
+//
+// 迁移规则：旧结构里的每一个条目（无论来自词汇集还是段落集）
+// 都对应新表里的一条段落。旧集合的名称作为该段落的标题前缀保留，
+// 避免同一批内容混淆。
+// ------------------------------------------------------------
+pub fn migrate_legacy_structures(conn: &Connection) -> SqliteResult<()> {
+    let has_new_content: i64 = conn.query_row("SELECT COUNT(*) FROM passages", [], |row| row.get(0))?;
+    if has_new_content > 0 {
+        return Ok(());
+    }
 
-        // 插入第一个词库的单词
-        let words1 = [
-            ("apple", "苹果", "I eat an apple every day."),
-            ("beautiful", "美丽的", "She has a beautiful smile."),
-            ("computer", "计算机", "My computer is very fast."),
-            ("developer", "开发者", "He is a software developer."),
-            ("experience", "经验", "I have 5 years of experience."),
-            ("fantastic", "极好的", "This is a fantastic movie!"),
-            ("github", "GitHub平台", "I host my code on GitHub."),
-            ("hello", "你好", "Hello, how are you?"),
-            ("internet", "互联网", "The internet connects the world."),
-            (
-                "javascript",
-                "JavaScript编程语言",
-                "JavaScript is used for web development.",
-            ),
-            ("knowledge", "知识", "Knowledge is power."),
-            ("learning", "学习", "Learning is a lifelong process."),
-            ("mountain", "山", "We climbed a high mountain."),
-            ("network", "网络", "The network is down."),
-            ("open source", "开源", "Linux is an open source project."),
-            ("programming", "编程", "Programming is fun."),
-            ("quality", "质量", "Quality is important."),
-            (
-                "react",
-                "React框架",
-                "React is a popular frontend framework.",
-            ),
-            ("software", "软件", "Software engineers write code."),
-            ("technology", "技术", "Technology changes quickly."),
-            ("unique", "独特的", "This is a unique opportunity."),
-            ("virtual", "虚拟的", "Virtual reality is amazing."),
-            ("website", "网站", "I built a website."),
-            ("xenial", "友好的", "He has a xenial personality."),
-            ("youtube", "YouTube视频平台", "I watch videos on YouTube."),
-            ("zealous", "热情的", "She is a zealous worker."),
-            ("algorithm", "算法", "This algorithm is efficient."),
-            (
-                "backend",
-                "后端",
-                "Backend development handles server logic.",
-            ),
-            ("cloud", "云", "Data is stored in the cloud."),
-            (
-                "database",
-                "数据库",
-                "The database stores user information.",
-            ),
-            ("frontend", "前端", "Frontend development deals with UI."),
-            ("git", "Git版本控制", "Git helps manage code versions."),
-            ("html", "HTML标记语言", "HTML structures web pages."),
-            ("css", "CSS样式表", "CSS styles web pages."),
-            (
-                "typescript",
-                "TypeScript编程语言",
-                "TypeScript adds types to JavaScript.",
-            ),
-            (
-                "python",
-                "Python编程语言",
-                "Python is great for data science.",
-            ),
-            (
-                "java",
-                "Java编程语言",
-                "Java is used for Android development.",
-            ),
-            (
-                "rust",
-                "Rust编程语言",
-                "Rust is a systems programming language.",
-            ),
-            ("go", "Go编程语言", "Go is known for concurrency."),
-            (
-                "swift",
-                "Swift编程语言",
-                "Swift is used for iOS development.",
-            ),
-            ("kotlin", "Kotlin编程语言", "Kotlin is modern and concise."),
-            ("ruby", "Ruby编程语言", "Ruby is elegant and productive."),
-            ("php", "PHP编程语言", "PHP powers many websites."),
-            (
-                "docker",
-                "Docker容器平台",
-                "Docker containerizes applications.",
-            ),
-            (
-                "kubernetes",
-                "Kubernetes编排平台",
-                "Kubernetes orchestrates containers.",
-            ),
-            ("aws", "亚马逊云服务", "AWS is a popular cloud provider."),
-            (
-                "azure",
-                "微软云平台",
-                "Azure is Microsoft's cloud platform.",
-            ),
-            ("mongodb", "MongoDB数据库", "MongoDB is a NoSQL database."),
-            (
-                "postgresql",
-                "PostgreSQL数据库",
-                "PostgreSQL is a powerful relational database.",
-            ),
-            (
-                "redis",
-                "Redis缓存数据库",
-                "Redis is an in-memory data store.",
-            ),
-        ];
+    let mut migrated = 0usize;
 
-        for (index, (word, meaning, example)) in words1.iter().enumerate() {
-            conn.execute(
-                "INSERT INTO word_set_items (word_set_id, word, meaning, example_sentence, order_index) VALUES (?1, ?2, ?3, ?4, ?5)",
-                params![set1_id, word, meaning, example, index as i32],
-            )?;
+    // ---- 来源 A：passage_sets / passage_set_items ----
+    if table_exists(conn, "passage_sets") && table_exists(conn, "passage_set_items") {
+        let sets: Vec<(i32, String)> = {
+            let mut stmt = conn.prepare("SELECT id, name FROM passage_sets ORDER BY id")?;
+            let rows = stmt.query_map([], |row| {
+                Ok((row.get::<_, i32>(0)?, row.get::<_, String>(1)?))
+            })?;
+            let mut out = Vec::new();
+            for r in rows {
+                out.push(r?);
+            }
+            out
+        };
+
+        for (set_id, set_name) in sets {
+            let items: Vec<(String, String)> = {
+                let mut stmt = conn.prepare(
+                    "SELECT title, content FROM passage_set_items
+                     WHERE passage_set_id = ?1 ORDER BY order_index",
+                )?;
+                let rows = stmt.query_map(params![set_id], |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+                })?;
+                let mut out = Vec::new();
+                for r in rows {
+                    out.push(r?);
+                }
+                out
+            };
+
+            for (old_title, content) in items {
+                if content.trim().is_empty() {
+                    continue;
+                }
+                let title = if old_title.trim().is_empty() {
+                    set_name.clone()
+                } else {
+                    format!("{} · {}", set_name, old_title.trim())
+                };
+                insert_passage(conn, &title, content.trim(), migrated)?;
+                migrated += 1;
+            }
         }
+    }
 
-        // 插入第二个官方词库
-        conn.execute(
-            "INSERT INTO word_sets (name, is_official, created_at) VALUES (?1, 1, ?2)",
-            params![
-                "编程术语 (40词)",
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
-            ],
-        )?;
-        let set2_id = conn.last_insert_rowid() as i32;
+    // ---- 来源 B：word_sets / word_set_items（更早的词汇集） ----
+    if table_exists(conn, "word_sets") && table_exists(conn, "word_set_items") {
+        let sets: Vec<(i32, String)> = {
+            let mut stmt = conn.prepare("SELECT id, name FROM word_sets ORDER BY id")?;
+            let rows = stmt.query_map([], |row| {
+                Ok((row.get::<_, i32>(0)?, row.get::<_, String>(1)?))
+            })?;
+            let mut out = Vec::new();
+            for r in rows {
+                out.push(r?);
+            }
+            out
+        };
 
-        // 插入第二个词库的单词
-        let words2 = [
-            (
-                "asynchronous",
-                "异步的",
-                "JavaScript is asynchronous by nature.",
-            ),
-            (
-                "callback",
-                "回调函数",
-                "The callback function runs after the task completes.",
-            ),
-            (
-                "closure",
-                "闭包",
-                "A closure captures variables from its outer scope.",
-            ),
-            (
-                "compiler",
-                "编译器",
-                "The compiler translates code to machine language.",
-            ),
-            ("dependency", "依赖", "This project has many dependencies."),
-            (
-                "encapsulation",
-                "封装",
-                "Encapsulation hides implementation details.",
-            ),
-            ("framework", "框架", "React is a JavaScript framework."),
-            (
-                "functional",
-                "函数式的",
-                "Functional programming uses pure functions.",
-            ),
-            (
-                "generics",
-                "泛型",
-                "Generics allow type-safe data structures.",
-            ),
-            ("immutable", "不可变的", "Strings in Java are immutable."),
-            ("inheritance", "继承", "Inheritance allows code reuse."),
-            ("interface", "接口", "An interface defines a contract."),
-            (
-                "lambda",
-                "Lambda表达式",
-                "Lambda expressions are concise functions.",
-            ),
-            (
-                "middleware",
-                "中间件",
-                "Middleware processes requests in order.",
-            ),
-            (
-                "namespace",
-                "命名空间",
-                "Namespaces prevent name conflicts.",
-            ),
-            (
-                "optimization",
-                "优化",
-                "Code optimization improves performance.",
-            ),
-            (
-                "polymorphism",
-                "多态",
-                "Polymorphism allows different types to be treated uniformly.",
-            ),
-            ("queue", "队列", "A queue processes items in FIFO order."),
-            (
-                "recursion",
-                "递归",
-                "Recursion solves problems by breaking them down.",
-            ),
-            (
-                "singleton",
-                "单例模式",
-                "The singleton pattern ensures a single instance.",
-            ),
-            ("thread", "线程", "Multiple threads can run concurrently."),
-            ("variable", "变量", "Variables store data in memory."),
-            (
-                "webpack",
-                "Webpack打包工具",
-                "Webpack bundles JavaScript files.",
-            ),
-            ("xml", "XML标记语言", "XML is used for data exchange."),
-            (
-                "yaml",
-                "YAML数据格式",
-                "YAML is human-readable data serialization.",
-            ),
-            ("zero", "零", "The array index starts at zero."),
-            ("boolean", "布尔值", "A boolean can be true or false."),
-            ("constant", "常量", "Constants cannot be reassigned."),
-            ("debugger", "调试器", "The debugger helps find bugs."),
-            (
-                "event loop",
-                "事件循环",
-                "The event loop handles asynchronous operations.",
-            ),
-            (
-                "factory",
-                "工厂模式",
-                "A factory creates objects without exposing logic.",
-            ),
-            (
-                "garbage",
-                "垃圾回收",
-                "Garbage collection frees unused memory.",
-            ),
-            (
-                "hoisting",
-                "变量提升",
-                "Hoisting moves declarations to the top.",
-            ),
-            ("iterator", "迭代器", "An iterator traverses collections."),
-            ("json", "JSON数据格式", "JSON is commonly used for APIs."),
-            (
-                "keyword",
-                "关键字",
-                "Keywords are reserved in programming languages.",
-            ),
-            (
-                "lexical",
-                "词法的",
-                "Lexical scoping determines variable visibility.",
-            ),
-            (
-                "memoization",
-                "记忆化",
-                "Memoization caches function results.",
-            ),
-            ("nullable", "可空的", "Nullable types can hold null values."),
-            ("object", "对象", "An object has properties and methods."),
-        ];
+        for (set_id, set_name) in sets {
+            let items: Vec<(String, String, Option<String>)> = {
+                let mut stmt = conn.prepare(
+                    "SELECT word, meaning, example_sentence FROM word_set_items
+                     WHERE word_set_id = ?1 ORDER BY order_index",
+                )?;
+                let rows = stmt.query_map(params![set_id], |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, String>(1)?,
+                        row.get::<_, Option<String>>(2)?,
+                    ))
+                })?;
+                let mut out = Vec::new();
+                for r in rows {
+                    out.push(r?);
+                }
+                out
+            };
 
-        for (index, (word, meaning, example)) in words2.iter().enumerate() {
-            conn.execute(
-                "INSERT INTO word_set_items (word_set_id, word, meaning, example_sentence, order_index) VALUES (?1, ?2, ?3, ?4, ?5)",
-                params![set2_id, word, meaning, example, index as i32],
-            )?;
+            for (word, meaning, example) in items {
+                // 旧单词条目：有例句用例句，否则退回单词本身
+                let content = match example {
+                    Some(ref s) if !s.trim().is_empty() => s.trim().to_string(),
+                    _ => word.clone(),
+                };
+                let title = if meaning.trim().is_empty() {
+                    format!("{} · {}", set_name, word)
+                } else {
+                    format!("{} · {} ({})", set_name, word, meaning.trim())
+                };
+                insert_passage(conn, &title, &content, migrated)?;
+                migrated += 1;
+            }
         }
+    }
+
+    if migrated > 0 {
+        println!("旧数据已迁移为 {} 条独立段落。", migrated);
     }
 
     Ok(())
 }
 
-// 初始化打字练习数据库
+fn insert_passage(conn: &Connection, title: &str, content: &str, order: usize) -> SqliteResult<()> {
+    let created_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    conn.execute(
+        "INSERT INTO passages (title, content, is_official, order_index, created_at)
+         VALUES (?1, ?2, 0, ?3, ?4)",
+        params![title, content, order as i32, created_at],
+    )?;
+    Ok(())
+}
+
+// ------------------------------------------------------------
+// 内置段落：只保留两条英文样例（小作文长度），其余内容由用户自行添加
+// ------------------------------------------------------------
+const DEFAULT_PASSAGES: [(&str, &str); 2] = [
+    (
+        "The Quiet Morning",
+        "The morning arrives without ceremony. Light moves slowly across the floor, inch by inch, until the whole room is awake. Outside, the street is still quiet enough to hear a bicycle passing, and somewhere a kettle begins to sing. I have learned to treat these first minutes carefully, because they set the tone for everything that follows. If I sit still and let the day come to me instead of chasing it, the hours tend to arrange themselves more kindly. There is no trick to this, no technique worth writing down. It is simply a matter of paying attention to what is already here, and being willing to begin again.",
+    ),
+    (
+        "On Reading Slowly",
+        "We are told constantly that we should read more, as though the number of books were the point. But a book read quickly is often a book not read at all. The sentences pass through us without leaving a mark, and we close the cover with the vague feeling that we have been busy rather than changed. Reading slowly is a form of respect, both for the writer and for ourselves. It means stopping at a paragraph that surprises us, going back to a sentence that seems too good to be true, and letting an idea sit in the mind long enough to disagree with it. Speed is useful for many things. Understanding is not one of them.",
+    ),
+];
+
+/// 让库中的内置段落与代码里的 DEFAULT_PASSAGES 保持一致。
+///
+/// 以「标题」为对齐键：
+///   - 代码里有、库里没有  -> 插入
+///   - 代码里有、库里也有  -> 更新正文与顺序
+///   - 代码里没有、库里有  -> 删除（仅限 is_official = 1）
+///
+/// 用户自己添加的段落（is_official = 0）永远不会被这个函数触碰。
+pub fn sync_default_passages(conn: &Connection) -> SqliteResult<()> {
+    let created_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+
+    // 库中现有的内置段落：title -> id
+    let existing: Vec<(i32, String)> = {
+        let mut stmt = conn.prepare("SELECT id, title FROM passages WHERE is_official = 1")?;
+        let rows = stmt.query_map([], |row| {
+            Ok((row.get::<_, i32>(0)?, row.get::<_, String>(1)?))
+        })?;
+        let mut out = Vec::new();
+        for r in rows {
+            out.push(r?);
+        }
+        out
+    };
+
+    let wanted: Vec<String> = DEFAULT_PASSAGES.iter().map(|(t, _)| t.to_string()).collect();
+    let mut inserted = 0usize;
+    let mut updated = 0usize;
+    let mut removed = 0usize;
+
+    // 先删除代码中已不存在（或不再内置）的条目
+    for (id, title) in &existing {
+        if !wanted.iter().any(|w| w == title) {
+            conn.execute(
+                "DELETE FROM passages WHERE id = ?1 AND is_official = 1",
+                params![id],
+            )?;
+            removed += 1;
+        }
+    }
+
+    // 再插入 / 更新
+    for (index, (title, content)) in DEFAULT_PASSAGES.iter().enumerate() {
+        match existing.iter().find(|(_, t)| t == title) {
+            Some((id, _)) => {
+                conn.execute(
+                    "UPDATE passages SET content = ?1, order_index = ?2 WHERE id = ?3 AND is_official = 1",
+                    params![content, index as i32, id],
+                )?;
+                updated += 1;
+            }
+            None => {
+                conn.execute(
+                    "INSERT INTO passages (title, content, is_official, order_index, created_at)
+                     VALUES (?1, ?2, 1, ?3, ?4)",
+                    params![title, content, index as i32, created_at],
+                )?;
+                inserted += 1;
+            }
+        }
+    }
+
+    if inserted + updated + removed > 0 {
+        println!(
+            "内置段落已同步：新增 {}，更新 {}，清理 {}。",
+            inserted, updated, removed
+        );
+    }
+
+    Ok(())
+}
+
+/// 一次性清理：早期版本把旧词库迁移成了一批「单词 + 释义」条目，
+/// 它们不是真正的段落（标题形如「基础词汇 (50词) · apple」，正文极短），
+/// 却以 is_official = 0 的形式混在自定义段落里。
+///
+/// 这里按特征识别并删除：标题含「 · 」且正文长度小于 100 字符。
+/// 清理完成后写入标记表，避免重复扫描。
+fn cleanup_migrated_word_residue(conn: &Connection) -> SqliteResult<()> {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS typing_migrations (
+            name TEXT PRIMARY KEY,
+            applied_at TEXT NOT NULL
+        )",
+        [],
+    )?;
+
+    let done: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM typing_migrations WHERE name = 'cleanup_word_residue'",
+        [],
+        |row| row.get(0),
+    )?;
+    if done > 0 {
+        return Ok(());
+    }
+
+    let affected = conn.execute(
+        "DELETE FROM passages
+         WHERE is_official = 0
+           AND title LIKE '% · %'
+           AND LENGTH(content) < 100",
+        [],
+    )?;
+
+    conn.execute(
+        "INSERT INTO typing_migrations (name, applied_at) VALUES (?1, ?2)",
+        params![
+            "cleanup_word_residue",
+            chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+        ],
+    )?;
+
+    if affected > 0 {
+        println!("已清理 {} 条旧词库迁移残留。", affected);
+    }
+
+    Ok(())
+}
+
+// ------------------------------------------------------------
+// 数据库初始化入口
+// ------------------------------------------------------------
 pub fn init_typing_database() -> Result<DbState, String> {
     let dev_mode = std::env::var("dev_mode")
         .map(|val| val.eq_ignore_ascii_case("true"))
@@ -387,7 +361,11 @@ pub fn init_typing_database() -> Result<DbState, String> {
     let conn = Connection::open(db_path).map_err(|e| e.to_string())?;
 
     init_typing_table(&conn).map_err(|e| e.to_string())?;
-    init_default_word_sets(&conn).map_err(|e| e.to_string())?;
+    migrate_legacy_structures(&conn).map_err(|e| e.to_string())?;
+    // 清理早期词库迁移留下的非段落数据（仅执行一次）
+    cleanup_migrated_word_residue(&conn).map_err(|e| e.to_string())?;
+    // 内置段落跟随代码同步：只影响 is_official = 1 的记录
+    sync_default_passages(&conn).map_err(|e| e.to_string())?;
 
     Ok(DbState::new(conn))
 }
@@ -400,364 +378,245 @@ pub fn init_typing_db_state() -> DbState {
             // 使用内存数据库作为后备
             let conn = Connection::open_in_memory().unwrap();
             let _ = init_typing_table(&conn);
-            let _ = init_default_word_sets(&conn);
+            let _ = sync_default_passages(&conn);
             DbState::new(conn)
         }
     }
 }
 
-// 获取所有词汇集（包含单词和释义）
+// ------------------------------------------------------------
+// Commands
+// ------------------------------------------------------------
+
+/// 获取全部段落（内置在前，自定义在后，各自按顺序）
 #[command]
-pub async fn get_all_word_sets(
-    state: tauri::State<'_, DbState>,
-) -> Result<Vec<(WordSet, Vec<WordSetItem>)>, String> {
+pub async fn get_all_passages(state: tauri::State<'_, DbState>) -> Result<Vec<Passage>, String> {
     let conn = state
         .conn
         .lock()
         .map_err(|e| format!("Failed to lock mutex: {}", e))?;
 
-    // 获取所有词汇集
     let mut stmt = conn
         .prepare(
-            "SELECT id, name, is_official, created_at FROM word_sets ORDER BY is_official DESC, created_at DESC",
+            "SELECT id, title, content, is_official, order_index, created_at FROM passages
+             ORDER BY is_official DESC, order_index ASC, id ASC",
         )
         .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
-    let word_sets = stmt
+    let rows = stmt
         .query_map([], |row| {
-            Ok(WordSet {
+            Ok(Passage {
                 id: row.get(0)?,
-                name: row.get(1)?,
-                is_official: row.get::<_, i32>(2)? != 0,
-                created_at: row.get(3)?,
+                title: row.get(1)?,
+                content: row.get(2)?,
+                is_official: row.get::<_, i32>(3)? != 0,
+                order_index: row.get(4)?,
+                created_at: row.get(5)?,
             })
         })
         .map_err(|e| format!("Failed to query: {}", e))?;
 
     let mut result = Vec::new();
-
-    for word_set in word_sets {
-        let word_set = word_set.map_err(|e| format!("Failed to get row: {}", e))?;
-
-        // 获取该词汇集的所有单词 - 修复：包含 example_sentence 字段
-        let mut item_stmt = conn
-            .prepare(
-                "SELECT id, word_set_id, word, meaning, example_sentence, order_index FROM word_set_items 
-                 WHERE word_set_id = ?1 ORDER BY order_index",
-            )
-            .map_err(|e| format!("Failed to prepare statement: {}", e))?;
-
-        let items = item_stmt
-            .query_map(params![word_set.id], |row| {
-                Ok(WordSetItem {
-                    id: row.get(0)?,
-                    word_set_id: row.get(1)?,
-                    word: row.get(2)?,
-                    meaning: row.get(3)?,
-                    example_sentence: row.get(4)?,
-                    order_index: row.get(5)?,
-                })
-            })
-            .map_err(|e| format!("Failed to query: {}", e))?;
-
-        let mut item_list = Vec::new();
-        for item in items {
-            item_list.push(item.map_err(|e| format!("Failed to get row: {}", e))?);
-        }
-
-        result.push((word_set, item_list));
+    for row in rows {
+        result.push(row.map_err(|e| format!("Failed to get row: {}", e))?);
     }
 
     Ok(result)
 }
 
-// 获取单个词汇集
+/// 新增一条段落
 #[command]
-pub async fn get_word_set(
+pub async fn add_passage(
     state: tauri::State<'_, DbState>,
-    id: i32,
-) -> Result<Option<(WordSet, Vec<WordSetItem>)>, String> {
+    title: String,
+    content: String,
+) -> Result<Passage, String> {
+    let content = content.trim().to_string();
+    if content.is_empty() {
+        return Err("段落内容不能为空".to_string());
+    }
+
+    let created_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     let conn = state
         .conn
         .lock()
         .map_err(|e| format!("Failed to lock mutex: {}", e))?;
 
-    // 获取词汇集信息
-    let mut stmt = conn
-        .prepare("SELECT id, name, is_official, created_at FROM word_sets WHERE id = ?1")
-        .map_err(|e| format!("Failed to prepare statement: {}", e))?;
-
-    let word_set_result = stmt.query_row(params![id], |row| {
-        Ok(WordSet {
-            id: row.get(0)?,
-            name: row.get(1)?,
-            is_official: row.get::<_, i32>(2)? != 0,
-            created_at: row.get(3)?,
-        })
-    });
-
-    match word_set_result {
-        Ok(word_set) => {
-            // 获取该词汇集的所有单词 - 修复：包含 example_sentence 字段
-            let mut item_stmt = conn
-                .prepare(
-                    "SELECT id, word_set_id, word, meaning, example_sentence, order_index FROM word_set_items 
-                     WHERE word_set_id = ?1 ORDER BY order_index",
-                )
-                .map_err(|e| format!("Failed to prepare statement: {}", e))?;
-
-            let items = item_stmt
-                .query_map(params![id], |row| {
-                    Ok(WordSetItem {
-                        id: row.get(0)?,
-                        word_set_id: row.get(1)?,
-                        word: row.get(2)?,
-                        meaning: row.get(3)?,
-                        example_sentence: row.get(4)?,
-                        order_index: row.get(5)?,
-                    })
-                })
-                .map_err(|e| format!("Failed to query: {}", e))?;
-
-            let mut item_list = Vec::new();
-            for item in items {
-                item_list.push(item.map_err(|e| format!("Failed to get row: {}", e))?);
-            }
-
-            Ok(Some((word_set, item_list)))
-        }
-        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-        Err(e) => Err(format!("Failed to query: {}", e)),
-    }
-}
-
-// 保存自定义词汇集 - 修复：包含 example_sentence 字段
-#[command]
-pub async fn save_custom_word_set(
-    state: tauri::State<'_, DbState>,
-    name: String,
-    words_with_meanings: String,
-) -> Result<WordSet, String> {
-    if name.trim().is_empty() {
-        return Err("词汇集名称不能为空".to_string());
-    }
-
-    // 解析 JSON: [{"word": "hello", "meaning": "你好", "example_sentence": "..."}, ...]
-    let items: Vec<serde_json::Value> =
-        serde_json::from_str(&words_with_meanings).map_err(|e| format!("无效的数据格式: {}", e))?;
-
-    if items.is_empty() {
-        return Err("至少需要一个单词".to_string());
-    }
-
-    let created_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
-    let mut conn = state
-        .conn
-        .lock()
-        .map_err(|e| format!("Failed to lock mutex: {}", e))?;
-
-    let transaction = conn
-        .transaction()
-        .map_err(|e| format!("Failed to start transaction: {}", e))?;
-
-    // 插入词汇集
-    transaction
-        .execute(
-            "INSERT INTO word_sets (name, is_official, created_at) VALUES (?1, 0, ?2)",
-            params![name, created_at],
+    let next_order: i32 = conn
+        .query_row(
+            "SELECT COALESCE(MAX(order_index), -1) + 1 FROM passages WHERE is_official = 0",
+            [],
+            |row| row.get(0),
         )
-        .map_err(|e| format!("Failed to insert word set: {}", e))?;
+        .unwrap_or(0);
 
-    let set_id = transaction.last_insert_rowid() as i32;
+    conn.execute(
+        "INSERT INTO passages (title, content, is_official, order_index, created_at)
+         VALUES (?1, ?2, 0, ?3, ?4)",
+        params![title.trim(), content, next_order, created_at],
+    )
+    .map_err(|e| format!("Failed to insert passage: {}", e))?;
 
-    // 插入单词 - 修复：包含 example_sentence 字段
-    for (index, item) in items.iter().enumerate() {
-        let word = item
-            .get("word")
-            .and_then(|v| v.as_str())
-            .ok_or("单词字段缺失或无效")?
-            .to_string();
-        let meaning = item
-            .get("meaning")
-            .and_then(|v| v.as_str())
-            .unwrap_or("暂无释义")
-            .to_string();
-        let example_sentence = item
-            .get("example_sentence")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string());
+    let id = conn.last_insert_rowid() as i32;
 
-        transaction.execute(
-            "INSERT INTO word_set_items (word_set_id, word, meaning, example_sentence, order_index) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![set_id, word, meaning, example_sentence, index as i32],
-        ).map_err(|e| format!("Failed to insert word: {}", e))?;
-    }
-
-    transaction
-        .commit()
-        .map_err(|e| format!("Failed to commit: {}", e))?;
-
-    Ok(WordSet {
-        id: set_id,
-        name,
+    Ok(Passage {
+        id,
+        title: title.trim().to_string(),
+        content,
         is_official: false,
+        order_index: next_order,
         created_at,
     })
 }
 
-// 更新自定义词汇集 - 修复：包含 example_sentence 字段
+/// 一次新增多条段落
 #[command]
-pub async fn update_custom_word_set(
+pub async fn add_passages_batch(
     state: tauri::State<'_, DbState>,
-    id: i32,
-    name: String,
-    words_with_meanings: String,
-) -> Result<(), String> {
-    if name.trim().is_empty() {
-        return Err("词汇集名称不能为空".to_string());
+    passages_json: String,
+) -> Result<Vec<Passage>, String> {
+    // 形如：[{"title": "标题", "content": "正文"}, ...]
+    let items: Vec<serde_json::Value> =
+        serde_json::from_str(&passages_json).map_err(|e| format!("无效的数据格式: {}", e))?;
+
+    if items.is_empty() {
+        return Err("至少需要一条段落".to_string());
     }
 
-    // 先检查是否是官方词库
     let mut conn = state
         .conn
         .lock()
         .map_err(|e| format!("Failed to lock mutex: {}", e))?;
 
-    let is_official: i32 = conn
-        .query_row(
-            "SELECT is_official FROM word_sets WHERE id = ?1",
-            params![id],
-            |row| row.get(0),
-        )
-        .map_err(|e| format!("Failed to check word set: {}", e))?;
-
-    if is_official == 1 {
-        return Err("不能修改官方词汇集".to_string());
-    }
-
-    // 解析 JSON
-    let items: Vec<serde_json::Value> =
-        serde_json::from_str(&words_with_meanings).map_err(|e| format!("无效的数据格式: {}", e))?;
-
-    if items.is_empty() {
-        return Err("至少需要一个单词".to_string());
-    }
-
     let transaction = conn
         .transaction()
         .map_err(|e| format!("Failed to start transaction: {}", e))?;
 
-    // 更新词汇集名称
-    transaction
-        .execute(
-            "UPDATE word_sets SET name = ?1 WHERE id = ?2",
-            params![name, id],
+    let mut next_order: i32 = transaction
+        .query_row(
+            "SELECT COALESCE(MAX(order_index), -1) + 1 FROM passages WHERE is_official = 0",
+            [],
+            |row| row.get(0),
         )
-        .map_err(|e| format!("Failed to update word set: {}", e))?;
+        .unwrap_or(0);
 
-    // 删除原有的单词
-    transaction
-        .execute(
-            "DELETE FROM word_set_items WHERE word_set_id = ?1",
-            params![id],
-        )
-        .map_err(|e| format!("Failed to delete old words: {}", e))?;
+    let created_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    let mut created: Vec<Passage> = Vec::new();
 
-    // 插入新单词 - 修复：包含 example_sentence 字段
-    for (index, item) in items.iter().enumerate() {
-        let word = item
-            .get("word")
+    for item in items.iter() {
+        let content = item
+            .get("content")
             .and_then(|v| v.as_str())
-            .ok_or("单词字段缺失或无效")?
+            .unwrap_or("")
+            .trim()
             .to_string();
-        let meaning = item
-            .get("meaning")
+        if content.is_empty() {
+            continue;
+        }
+        let title = item
+            .get("title")
             .and_then(|v| v.as_str())
-            .unwrap_or("暂无释义")
+            .unwrap_or("")
+            .trim()
             .to_string();
-        let example_sentence = item
-            .get("example_sentence")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string());
 
-        transaction.execute(
-            "INSERT INTO word_set_items (word_set_id, word, meaning, example_sentence, order_index) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![id, word, meaning, example_sentence, index as i32],
-        ).map_err(|e| format!("Failed to insert word: {}", e))?;
+        transaction
+            .execute(
+                "INSERT INTO passages (title, content, is_official, order_index, created_at)
+                 VALUES (?1, ?2, 0, ?3, ?4)",
+                params![title, content, next_order, created_at],
+            )
+            .map_err(|e| format!("Failed to insert passage: {}", e))?;
+
+        let id = transaction.last_insert_rowid() as i32;
+        created.push(Passage {
+            id,
+            title,
+            content,
+            is_official: false,
+            order_index: next_order,
+            created_at: created_at.clone(),
+        });
+        next_order += 1;
+    }
+
+    if created.is_empty() {
+        return Err("所有段落内容均为空".to_string());
     }
 
     transaction
         .commit()
         .map_err(|e| format!("Failed to commit: {}", e))?;
 
-    Ok(())
+    Ok(created)
 }
 
-// 删除自定义词汇集
+/// 更新一条自定义段落
 #[command]
-pub async fn delete_custom_word_set(
+pub async fn update_passage(
     state: tauri::State<'_, DbState>,
     id: i32,
+    title: String,
+    content: String,
 ) -> Result<(), String> {
+    let content = content.trim().to_string();
+    if content.is_empty() {
+        return Err("段落内容不能为空".to_string());
+    }
+
     let conn = state
         .conn
         .lock()
         .map_err(|e| format!("Failed to lock mutex: {}", e))?;
 
-    // 先检查是否是官方词库
     let is_official: i32 = conn
         .query_row(
-            "SELECT is_official FROM word_sets WHERE id = ?1",
+            "SELECT is_official FROM passages WHERE id = ?1",
             params![id],
             |row| row.get(0),
         )
-        .map_err(|e| format!("Failed to check word set: {}", e))?;
+        .map_err(|e| format!("Failed to check passage: {}", e))?;
 
     if is_official == 1 {
-        return Err("不能删除官方词汇集".to_string());
+        return Err("不能修改内置段落".to_string());
     }
 
-    // 由于设置了 ON DELETE CASCADE，删除词汇集时会自动删除相关的单词
-    let affected = conn
-        .execute("DELETE FROM word_sets WHERE id = ?1", params![id])
-        .map_err(|e| format!("Failed to delete: {}", e))?;
-
-    if affected == 0 {
-        return Err("未找到指定的词汇集".to_string());
-    }
+    conn.execute(
+        "UPDATE passages SET title = ?1, content = ?2 WHERE id = ?3",
+        params![title.trim(), content, id],
+    )
+    .map_err(|e| format!("Failed to update passage: {}", e))?;
 
     Ok(())
 }
 
-// 获取单个单词的释义和示例句子
+/// 删除一条自定义段落
 #[command]
-pub async fn get_word_meaning(
-    state: tauri::State<'_, DbState>,
-    word: String,
-    word_set_id: Option<i32>,
-) -> Result<String, String> {
+pub async fn delete_passage(state: tauri::State<'_, DbState>, id: i32) -> Result<(), String> {
     let conn = state
         .conn
         .lock()
         .map_err(|e| format!("Failed to lock mutex: {}", e))?;
 
-    let meaning: Option<String> = if let Some(set_id) = word_set_id {
-        // 如果指定了词汇集，优先从该词汇集中获取释义
-        conn.query_row(
-            "SELECT meaning FROM word_set_items WHERE word_set_id = ?1 AND word = ?2",
-            params![set_id, word.to_lowercase()],
+    let is_official: i32 = conn
+        .query_row(
+            "SELECT is_official FROM passages WHERE id = ?1",
+            params![id],
             |row| row.get(0),
         )
-        .ok()
-    } else {
-        // 否则从任意词汇集获取（取第一个匹配的）
-        conn.query_row(
-            "SELECT meaning FROM word_set_items WHERE word = ?1 LIMIT 1",
-            params![word.to_lowercase()],
-            |row| row.get(0),
-        )
-        .ok()
-    };
+        .map_err(|e| format!("Failed to check passage: {}", e))?;
 
-    Ok(meaning.unwrap_or_else(|| "暂无释义".to_string()))
+    if is_official == 1 {
+        return Err("不能删除内置段落".to_string());
+    }
+
+    let affected = conn
+        .execute("DELETE FROM passages WHERE id = ?1", params![id])
+        .map_err(|e| format!("Failed to delete: {}", e))?;
+
+    if affected == 0 {
+        return Err("未找到指定的段落".to_string());
+    }
+
+    Ok(())
 }

@@ -33,21 +33,21 @@ fn main() {
             mods::hardinfo::get_hardware_info,
             mods::hardinfo::get_process,
             mods::hardinfo::kill_process,
-            // 文件转换
-            mods::conversion::convert_file,
             // 侧边栏相关
             mods::sidebar::get_sidebar_items,
             mods::sidebar::update_sidebar_item,
             mods::sidebar::add_sidebar_item,
             mods::sidebar::delete_sidebar_item,
             mods::sidebar::update_sidebar_items_order,
-            // 自定义词汇集相关 - 更新为新函数
-            mods::typing::get_all_word_sets,
-            mods::typing::get_word_set,
-            mods::typing::save_custom_word_set,
-            mods::typing::delete_custom_word_set,
-            mods::typing::update_custom_word_set,
-            mods::typing::get_word_meaning,
+            // 打字练习 - 段落相关
+            mods::typing::get_all_passages,
+            mods::typing::add_passage,
+            mods::typing::add_passages_batch,
+            mods::typing::update_passage,
+            mods::typing::delete_passage,
+            // 百度翻译（划词翻译）
+            mods::translate::translate_text,
+            mods::translate::translate_config_status,
             // Node子进程
             mods::node_server::get_server_status,
             mods::node_server::start_server,
@@ -71,9 +71,6 @@ fn main() {
             mods::p2p_chat::send_p2p,
             mods::p2p_chat::stop_p2p,
             mods::p2p_chat::start_p2p,
-            // file_handler
-            mods::file_handler::export_json,
-            mods::file_handler::save_file_bytes,
             // channel 频道模块
             mods::channel::get_channels,
             mods::channel::add_channel,

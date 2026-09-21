@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import iconSrc from '../assets/icon.png';
-import { useModuleStore } from '../stores/module';
-import { startPage_latestFeatures } from '../config/sidebar.config';
+import sidebarItems, {
+  startPage_latestFeatures,
+} from '../config/sidebar.config';
 import useAppStore from '../stores/app';
 
 const StartPage: React.FC = () => {
-  const { sidebarItems } = useModuleStore();
   const setActiveItem = useAppStore((state) => state.setActiveItem);
   const [showIntro, setShowIntro] = useState(false);
 
-  // 快速开始：前3个已导入的模块
+  // 快速开始：固定侧栏的前3个模块
   const quickStartItems = sidebarItems.slice(0, 3);
 
   const handleNavigate = (id: string) => {

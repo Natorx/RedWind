@@ -3,7 +3,7 @@ authors = ["fofow"]
 description = "Red wind tool library"
 edition = "2021"
 name = "red-wind"
-version = "0.6.0"
+version = "0.6.1"
 [[bin]]
 name = "wind-project"
 path = "src/main.rs"
@@ -56,6 +56,11 @@ libp2p = {version = "0.56.0", features = [
 futures = "0.3.32"
 lazy_static = "1.4"
 rfd = "0.17.2"
+
+# 百度翻译（划词翻译）
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+md5 = "0.7"
+hex = "0.4"
 
 # 环境变量
 dotenv = "0.15.0"

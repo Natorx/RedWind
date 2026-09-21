@@ -204,7 +204,7 @@ export const DrawerPage: React.FC = () => {
         </div>
       </Modal>
 
-      {/* 扩展设置 Modal - 不变 */}
+      {/* 扩展设置 Modal - 入口暂未开放，保留结构待后续功能接入 */}
       <Modal
         isOpen={isPluginModalOpen}
         onClose={() => setPluginModalOpen(false)}

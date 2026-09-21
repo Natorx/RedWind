@@ -1,12 +1,11 @@
 pub mod channel;
-pub mod conversion;
-pub mod file_handler;
 pub mod hardinfo;
 pub mod node_server;
 pub mod open;
 pub mod p2p_chat;
 pub mod printer;
 pub mod sidebar;
+pub mod translate;
 pub mod typing;
 pub mod win_audio_control;
 pub mod path_set;

@@ -1,9 +1,10 @@
-// sidebar.tsx
-import { useEffect, useState } from 'react';
+// sidebar.tsx —— 固定侧栏：只渲染 sidebar.config.ts 中定义的模块，不再从数据库动态加载
+import { useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { sourceConfig } from '../config/module.config.ts';
-import { useModuleStore } from '../stores/module.ts';
+import sidebarItems, { REMOVED_MODULE_IDS } from '../config/sidebar.config.ts';
 import { useUiStore } from '../stores/ui.ts';
-import { useAccountStore } from '../stores/account.ts'; // 替换为 account store
+import { useAccountStore } from '../stores/account.ts';
 import iconSrc from '../assets/icon.png';
 import avatar from '../assets/avatar.jpg';
 import useAppStore from '../stores/app.ts';
@@ -12,19 +13,19 @@ const Sidebar: React.FC = () => {
   const activeItem = useAppStore((state) => state.activeItem);
   const setActiveItem = useAppStore((state) => state.setActiveItem);
   const setSettingOpen = useAppStore((state) => state.setSettingOpen);
-  const { sidebarItems, loadItems } = useModuleStore();
-  const [showSidebar, setShowSidebar] = useState(false);
   const activeUi = useUiStore((state) => state.activeUi);
 
-  // 从 account store 获取用户信息
   const { user, isLoggedIn } = useAccountStore();
 
-  useEffect(() => {
-    setShowSidebar(activeUi === 'sidebar');
-  }, [activeUi]);
+  const showSidebar = activeUi === 'sidebar';
 
+  // 一次性清理历史数据库中已下线模块的残留记录（失败静默，不影响界面）
   useEffect(() => {
-    loadItems();
+    REMOVED_MODULE_IDS.forEach((id) => {
+      invoke('delete_sidebar_item', { id }).catch(() => {
+        /* 记录本就不存在时忽略 */
+      });
+    });
   }, []);
 
   if (!showSidebar) return null;
@@ -41,25 +42,6 @@ const Sidebar: React.FC = () => {
       {/* 列表 */}
       <nav className="sidebar-nav overflow-y-scroll flex-1 py-4 px-3 scroll-none">
         <ul>
-          <li className="mb-2">
-            <button
-              className={` w-full px-4 py-3 border-none rounded-lg flex items-center cursor-pointer text-sm transition-all duration-200 ease-in-out ${
-                activeItem === 'module-config'
-                  ? 'bg-red-900 text-white'
-                  : 'bg-transparent text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200'
-              }`}
-              onClick={() => setActiveItem('module-config')}
-            >
-              <span className="nav-icon mr-3 font-size-18px">🖥️</span>
-
-              <div className="flex flex-col items-start">
-                <span className="nav-label font-500">模块配置</span>
-                <span className="text-xs mt-0.5 px-1.5 py-0.5 rounded bg-green-500/20 text-green-400">
-                  本地提供
-                </span>
-              </div>
-            </button>
-          </li>
           {sidebarItems.map((item) => (
             <li className="mb-2" key={item.id}>
               <button
@@ -77,9 +59,7 @@ const Sidebar: React.FC = () => {
                 )}
                 <div className="flex flex-col items-start">
                   <span className="nav-label font-500">{item.label}</span>
-                  <span
-                    className={`text-xs mt-0.5 px-1.5 py-0.5 rounded`}
-                  >
+                  <span className={`text-xs mt-0.5 px-1.5 py-0.5 rounded`}>
                     {sourceConfig[item.source].label}
                   </span>
                 </div>

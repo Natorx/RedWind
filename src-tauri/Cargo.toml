@@ -31,7 +31,9 @@ windows = { version = "0.62.2", features = [
     "Win32_Foundation",
     "Win32_System_Com_StructuredStorage",
     "Win32_System_Variant",
-    "Win32_Media_Audio_Endpoints"
+    "Win32_Media_Audio_Endpoints",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_ProcessStatus"
 ] }
 # windows 的 #[implement] 宏在展开代码里按 crate 名引用 windows_core，
 # 因此必须作为直接依赖声明（否则 E0433）。

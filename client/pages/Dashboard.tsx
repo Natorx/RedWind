@@ -56,12 +56,15 @@ interface HardwareInfo {
 interface ProcessInfo {
   pid: string;
   name: string;
+  displayName: string;
   cpuUsage: number;
   memoryKb: number;
   totalWrittenBytes: number;
   writtenBytes: number;
   totalReadBytes: number;
   readBytes: number;
+  hasWindow: boolean;
+  windowTitle: string;
 }
 
 type SortKey = 'pid' | 'name' | 'memoryKb' | 'totalWrittenBytes' | 'totalReadBytes';
@@ -251,17 +254,12 @@ const ProcessTable = () => {
     return sorted;
   };
 
-  const isSystem = (name: string) =>
-    ['System', 'svchost.exe', 'services.exe', 'lsass.exe', 'explorer.exe', 'winlogon.exe'].some(
-      s => name.toLowerCase().includes(s.toLowerCase())
-    );
-
   return (
     <div className="bg-neutral-900/80 rounded-xl shadow-lg p-6 border border-red-500/20 backdrop-blur-sm">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-neutral-100">系统进程</h3>
+        <h3 className="text-lg font-semibold text-neutral-100">GUI 应用</h3>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-neutral-400">共 {processes.length} 个进程</span>
+          <span className="text-xs text-neutral-400">共 {processes.length} 个应用进程</span>
         </div>
       </div>
       <div className="overflow-auto max-h-96 custom-scrollbar scroll-none">
@@ -313,13 +311,11 @@ const ProcessTable = () => {
                 <tr key={idx} className="hover:bg-red-500/5 border-b border-red-500/10">
                   <td className="px-2 py-1 border border-red-500/20 text-center">
                     <button
-                      onClick={() => handleKillProcess(proc.pid, proc.name)}
-                      disabled={killingPid === proc.pid || isSystem(proc.name)}
+                      onClick={() => handleKillProcess(proc.pid, proc.displayName || proc.name)}
+                      disabled={killingPid === proc.pid}
                       className={`
                         px-1.5 py-0.5 rounded text-xs font-medium transition-colors w-full
-                        ${isSystem(proc.name)
-                          ? 'bg-neutral-700 text-neutral-500 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800'}
+                        bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800
                         ${killingPid === proc.pid ? 'opacity-50 cursor-wait' : ''}
                       `}
                     >
@@ -327,14 +323,14 @@ const ProcessTable = () => {
                     </button>
                   </td>
                   <td className="px-2 py-1 border border-red-500/20 font-mono text-neutral-300">{proc.pid}</td>
-                  {/* 名称单元格：固定宽度截断，超出省略 */}
+                  {/* 名称单元格：优先显示应用名/窗口标题，悬停显示进程名 */}
                   <td
                     className="px-2 py-1 border border-red-500/20 truncate max-w-[180px] text-neutral-300"
-                    title={proc.name}
+                    title={`${proc.displayName || proc.name}${proc.windowTitle ? ` — ${proc.windowTitle}` : ''} (${proc.name})`}
                   >
-                    {proc.name}
-                    {isSystem(proc.name) && (
-                      <span className="ml-1 text-xs bg-yellow-500/20 text-yellow-400 px-1 rounded">系统</span>
+                    {proc.displayName || proc.name}
+                    {proc.displayName && proc.displayName !== proc.name && (
+                      <span className="ml-1 text-xs text-neutral-500">({proc.name})</span>
                     )}
                   </td>
                   <td className="px-2 py-1 border border-red-500/20">

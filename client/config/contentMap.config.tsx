@@ -5,6 +5,7 @@ import Printer from '../pages/Printer';
 import TypingPractice from '../pages/Passage';
 import StartPage from '../pages/Start';
 import ChannelPage from '../pages/Channel';
+import Serial from '../pages/Serial';
 
 // 仅注册当前保留的模块页面
 const contentMap: Record<string, JSX.Element> = {
@@ -13,5 +14,6 @@ const contentMap: Record<string, JSX.Element> = {
   'typing-practice': <TypingPractice />,
   printer: <Printer />,
   channel: <ChannelPage />,
+  serial: <Serial />,
 };
 export default contentMap;

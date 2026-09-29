@@ -12,6 +12,7 @@ fn main() {
     let typing_db_state = mods::typing::init_typing_db_state();
     let channel_db_state = mods::channel::init_channel_db_state();
     let p2p_state = mods::p2p_chat::P2PState::new();
+    let serial_state = mods::serial::SerialState::new();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -25,6 +26,7 @@ fn main() {
         .manage(p2p_state)
         .manage(typing_db_state)
         .manage(channel_db_state)
+        .manage(serial_state)
         .invoke_handler(tauri::generate_handler![
             // Open模块
             mods::open::open_path,
@@ -79,6 +81,16 @@ fn main() {
             mods::channel::add_channel_video,
             mods::channel::update_channel_video,
             mods::channel::delete_channel_video,
+            // 单片机调试 - ESP32 串口
+            mods::serial::serial_list_ports,
+            mods::serial::serial_connect,
+            mods::serial::serial_disconnect,
+            mods::serial::serial_status,
+            mods::serial::serial_write,
+            mods::serial::serial_read_logs,
+            mods::serial::serial_clear_logs,
+            mods::serial::serial_reset,
+            mods::serial::serial_set_signals,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

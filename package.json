@@ -1,7 +1,7 @@
 {
   "name": "red-wind-project",
   "private": true,
-  "version": "0.6.1",
+  "version": "0.6.2",
   "author": "Fofow",
   "workspaces": [
     "client",
@@ -17,8 +17,8 @@
     "dlinux": "cd src-tauri&&export WEBKIT_DISABLE_COMPOSITING_MODE=1&&cargo run",
     "fmt": "cd src-tauri && cargo fmt",
     "agent": "cd agent && python server.py",
-    "updater": "bash commands/version_up.sh",
-    "get_build": "bash commands/extract_release.sh"
+    "updater": "node scripts/run-bash.mjs commands/version_up.sh",
+    "get_build": "node scripts/run-bash.mjs commands/extract_release.sh"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

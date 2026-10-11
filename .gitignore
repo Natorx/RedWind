@@ -2,6 +2,7 @@
 .vscode
 dist
 node_modules
+artifacts
 
 # server
 /server/.env

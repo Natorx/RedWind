@@ -32,6 +32,13 @@ export const sidebarItems: SidebarItem[] = [
   },
   { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },
   { id: 'serial', label: '单片机调试', icon: '🔌', order: 5, source: 'local' },
+  {
+    id: 'redstation',
+    label: '项目管理',
+    icon: '📋',
+    order: 6,
+    source: 'server',
+  },
 ];
 
 /** 已下线模块的 id，启动时用于清理历史数据库残留记录 */

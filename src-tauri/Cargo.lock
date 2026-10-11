@@ -4744,7 +4744,7 @@ dependencies = [
 
 [[package]]
 name = "red-wind"
-version = "0.6.1"
+version = "0.6.3"
 dependencies = [
  "chrono",
  "dotenv",

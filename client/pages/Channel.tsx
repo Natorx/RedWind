@@ -107,10 +107,7 @@ const UNCATEGORIZED = '未分类';
  * 必须交给后端 `open_url` 命令走系统 ShellExecute。
  * 失败时通过 onError 回调提示（通常是协议不被支持）。
  */
-const openUrl = async (
-  url: string,
-  onError?: (message: string) => void,
-) => {
+const openUrl = async (url: string, onError?: (message: string) => void) => {
   try {
     await invoke('open_url', { url });
   } catch (err) {
@@ -142,6 +139,10 @@ const ChannelPage: React.FC = () => {
 
   // 类型筛选；null 表示「全部」
   const [activeKind, setActiveKind] = useState<ChannelKind | null>(null);
+
+  // 用户是否手动选过类别。未手动选择前，类别列表就绪后自动选中第一项，
+  // 避免右侧长期空着；一旦用户点过（含点「全部类别」），就不再自动接管。
+  const [categoryTouched, setCategoryTouched] = useState<boolean>(false);
 
   /* ---------- 数据加载 ---------- */
 
@@ -258,6 +259,34 @@ const ChannelPage: React.FC = () => {
     return (channel.category.trim() || UNCATEGORIZED) === activeCategory;
   });
 
+  // 首次进入（或切换类型后原类别消失）时，自动选中第一个类别。
+  // 依赖类别名的拼接串而非数组本身：categoryCounts 每次渲染都是新数组，
+  // 直接依赖会导致无限循环；而名字串只在类别组成变化时才变。
+  const categoryNames = categoryCounts.map(([name]) => name).join('\u0000');
+  useEffect(() => {
+    if (categoryTouched) return;
+    const names = categoryNames ? categoryNames.split('\u0000') : [];
+    if (names.length === 0) {
+      if (activeCategory !== null) setActiveCategory(null);
+      return;
+    }
+    if (activeCategory === null || !names.includes(activeCategory)) {
+      setActiveCategory(names[0]);
+    }
+  }, [categoryNames, categoryTouched, activeCategory]);
+
+  /** 手动切换类别；点过之后不再自动选中 */
+  const selectCategory = (category: string | null) => {
+    setCategoryTouched(true);
+    setActiveCategory(category);
+  };
+
+  /** 切换类型筛选：重置类别选择，交给自动选中重新落到有效项 */
+  const selectKind = (kind: ChannelKind | null) => {
+    setActiveKind(kind);
+    setCategoryTouched(false);
+  };
+
   // 类型维度的数量统计（用于顶部「全部 / 博主 / 视频」标签）
   const kindCounts = {
     blogger: channels.filter(([c]) => c.kind === 'blogger').length,
@@ -269,27 +298,6 @@ const ChannelPage: React.FC = () => {
   return (
     <PageBox>
       <div className="p-6 max-w-[1100px] mx-auto">
-        {/* 页头 */}
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-          <div>
-            <h1 className="text-xl font-semibold text-white flex items-center gap-2">
-              <span className="text-red-500">📺</span>
-              频道
-            </h1>
-            <p className="text-xs text-gray-500 mt-1">
-              记录你在各个平台关注的账号，以及喜欢的视频
-            </p>
-          </div>
-          <button
-            onClick={openCreate}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium cursor-pointer
-                bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-          >
-            <Plus size={16} />
-            添加频道
-          </button>
-        </div>
-
         {/* 错误提示 */}
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-5 text-xs text-red-500">
@@ -297,54 +305,46 @@ const ChannelPage: React.FC = () => {
           </div>
         )}
 
-        {/* 类型筛选：全部 / 博主 / 视频 */}
-        {!loading && !error && channels.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            <CategoryTab
-              label="全部"
-              count={channels.length}
-              active={activeKind === null}
-              onClick={() => setActiveKind(null)}
-            />
-            <CategoryTab
-              label="博主"
-              count={kindCounts.blogger}
-              active={activeKind === 'blogger'}
-              onClick={() => setActiveKind('blogger')}
-            />
-            <CategoryTab
-              label="视频"
-              count={kindCounts.video}
-              active={activeKind === 'video'}
-              onClick={() => setActiveKind('video')}
-            />
+        {/* 类型筛选 + 添加频道：同一行左右布局。
+            空列表时筛选无意义，但「添加频道」必须始终可达，故拆开判断。 */}
+        {!loading && !error && (
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex flex-wrap gap-2">
+              {channels.length > 0 && (
+                <>
+                  <CategoryTab
+                    label="全部"
+                    count={channels.length}
+                    active={activeKind === null}
+                    onClick={() => selectKind(null)}
+                  />
+                  <CategoryTab
+                    label="博主"
+                    count={kindCounts.blogger}
+                    active={activeKind === 'blogger'}
+                    onClick={() => selectKind('blogger')}
+                  />
+                  <CategoryTab
+                    label="视频"
+                    count={kindCounts.video}
+                    active={activeKind === 'video'}
+                    onClick={() => selectKind('video')}
+                  />
+                </>
+              )}
+            </div>
+            <button
+              onClick={openCreate}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium cursor-pointer
+                  bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shrink-0 ml-auto"
+            >
+              <Plus size={16} />
+              添加频道
+            </button>
           </div>
         )}
 
-        {/* 类别筛选标签 */}
-        {!loading && !error && channels.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-5">
-            <CategoryTab
-              label="全部类别"
-              count={
-                categoryCounts.reduce((sum, [, count]) => sum + count, 0)
-              }
-              active={activeCategory === null}
-              onClick={() => setActiveCategory(null)}
-            />
-            {categoryCounts.map(([category, count]) => (
-              <CategoryTab
-                key={category}
-                label={category}
-                count={count}
-                active={activeCategory === category}
-                onClick={() => setActiveCategory(category)}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* 列表 */}
+        {/* 主体：左侧竖向类别列表 + 右侧该类别内容 */}
         {loading ? (
           <div className="text-center py-16 text-sm text-gray-500">加载中…</div>
         ) : channels.length === 0 ? (
@@ -352,35 +352,85 @@ const ChannelPage: React.FC = () => {
             <span className="text-4xl block mb-3 opacity-50">📺</span>
             <p className="text-sm text-gray-400">还没有关注的频道</p>
             <p className="text-xs text-gray-500 mt-1">
-              点击右上角「添加频道」开始记录
+              点击上方「添加频道」开始记录
             </p>
-          </div>
-        ) : visibleChannels.length === 0 ? (
-          <div className="text-center py-16 px-5 bg-neutral-900/60 rounded-2xl border border-red-500/20">
-            <span className="text-4xl block mb-3 opacity-50">🔍</span>
-            <p className="text-sm text-gray-400">
-              该类别下暂无频道
-            </p>
-            <button
-              onClick={() => setActiveCategory(null)}
-              className="mt-3 px-3.5 py-1.5 text-xs rounded-md bg-gray-700/70 text-gray-300
-                  cursor-pointer border-none hover:bg-red-500 hover:text-white transition-colors"
-            >
-              显示全部
-            </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {visibleChannels.map(([channel, videos]) => (
-              <ChannelCard
-                key={channel.id}
-                channel={channel}
-                videos={videos}
-                onEdit={() => openEdit(channel)}
-                onDelete={() => handleDelete(channel)}
-                onManageVideos={() => setVideoTarget(channel)}
-              />
-            ))}
+          <div className="flex gap-5 items-start flex-col lg:flex-row">
+            {/* 左侧：类别竖向列表（配色与右侧卡片一致） */}
+            <aside
+              className="w-full lg:w-56 shrink-0 bg-neutral-900/80 rounded-xl
+                  border border-red-500/15 overflow-hidden lg:sticky lg:top-6"
+            >
+              <div className="px-4 pt-3.5 pb-3 border-b border-red-500/15">
+                <h2 className="text-[0.813rem] font-semibold text-white tracking-wide">
+                  类别
+                </h2>
+                <p className="text-[0.688rem] text-gray-300 mt-1">
+                  {categoryCounts.length} 个类别
+                  {activeKind !== null && ' · 已按类型筛选'}
+                </p>
+              </div>
+
+              <ul className="py-2 px-1 space-y-1 max-h-[60vh] overflow-y-auto scroll-none">
+                <CategoryRow
+                  label="全部类别"
+                  count={categoryCounts.reduce((sum, [, c]) => sum + c, 0)}
+                  active={activeCategory === null}
+                  onClick={() => selectCategory(null)}
+                />
+                <li aria-hidden="true" className="mx-3 my-1 h-px bg-red-500/15" />
+                {categoryCounts.map(([category, count]) => (
+                  <CategoryRow
+                    key={category}
+                    label={category}
+                    count={count}
+                    active={activeCategory === category}
+                    onClick={() => selectCategory(category)}
+                  />
+                ))}
+              </ul>
+            </aside>
+
+            {/* 右侧：该类别下的条目 */}
+            <section className="flex-1 min-w-0 w-full">
+              <div className="flex items-baseline gap-2 mb-3 flex-wrap">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-1.5">
+                  <span className="text-red-500">#</span>
+                  {activeCategory ?? '全部类别'}
+                </h2>
+                <span className="text-xs text-gray-500">
+                  {visibleChannels.length} 个条目
+                </span>
+              </div>
+
+              {visibleChannels.length === 0 ? (
+                <div className="text-center py-16 px-5 bg-neutral-900/60 rounded-2xl border border-red-500/20">
+                  <span className="text-4xl block mb-3 opacity-50">🔍</span>
+                  <p className="text-sm text-gray-400">该类别下暂无频道</p>
+                  <button
+                    onClick={() => selectCategory(null)}
+                    className="mt-3 px-3.5 py-1.5 text-xs rounded-md bg-gray-700/70 text-gray-300
+                        cursor-pointer border-none hover:bg-red-500 hover:text-white transition-colors"
+                  >
+                    显示全部
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {visibleChannels.map(([channel, videos]) => (
+                    <ChannelCard
+                      key={channel.id}
+                      channel={channel}
+                      videos={videos}
+                      onEdit={() => openEdit(channel)}
+                      onDelete={() => handleDelete(channel)}
+                      onManageVideos={() => setVideoTarget(channel)}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         )}
       </div>
@@ -437,6 +487,67 @@ const CategoryTab: React.FC<{
       {count}
     </span>
   </button>
+);
+
+/* ==================== 类别竖向列表项 ==================== */
+
+/**
+ * 左侧类别列表的一行。
+ *
+ * 与顶部的 CategoryTab 区别：这是竖向列表项（整行可点、左侧有选中指示条），
+ * 计数靠右对齐，长类别名截断而不是换行，保证列表高度稳定。
+ *
+ * 配色与右侧 ChannelCard 保持一致：
+ *   卡片容器 bg-neutral-900/80 + border-red-500/15，悬停 border-red-500/30；
+ *   标签 bg-red-500/20 text-red-400、bg-gray-700/70 text-gray-300。
+ * 未选中行 = 卡片容器的中性底 + 灰色标签；选中行 = 卡片的红色语义（红底红字 + 红边）。
+ */
+const CategoryRow: React.FC<{
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}> = ({ label, count, active, onClick }) => (
+  <li className="px-2">
+    <button
+      onClick={onClick}
+      title={label}
+      aria-current={active ? 'true' : undefined}
+      className={`group relative w-full flex items-center gap-2.5 pl-3 pr-2.5 py-2
+          rounded-xl text-left text-[0.813rem] cursor-pointer border
+          transition-colors duration-150 ${
+            active
+              ? 'bg-red-500/20 border-red-500/30 text-white'
+              : 'bg-neutral-900/80 border-red-500/15 text-gray-300 hover:border-red-500/30 hover:text-white'
+          }`}
+    >
+      {/* 选中指示条：仅激活时出现 */}
+      <span
+        className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-full
+            bg-gradient-to-b from-red-400 to-red-600 transition-all duration-150 ${
+              active ? 'h-4 opacity-100' : 'h-0 opacity-0'
+            }`}
+      />
+      <span
+        className={`truncate flex-1 transition-colors ${
+          active ? 'font-medium text-red-400' : 'text-gray-300 group-hover:text-white'
+        }`}
+      >
+        {label}
+      </span>
+      {/* 计数：沿用卡片标签配色 —— 选中为红底红字，未选中为灰底灰字 */}
+      <span
+        className={`shrink-0 min-w-[1.375rem] text-center text-[0.625rem] leading-[1.15rem]
+            px-1.5 rounded tabular-nums transition-colors ${
+              active
+                ? 'bg-red-500/20 text-red-400 font-medium'
+                : 'bg-gray-700/70 text-gray-300 group-hover:text-white'
+            }`}
+      >
+        {count}
+      </span>
+    </button>
+  </li>
 );
 
 /* ==================== 频道卡片 ==================== */

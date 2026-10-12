@@ -7,6 +7,7 @@ import StartPage from '../pages/Start';
 import ChannelPage from '../pages/Channel';
 import Serial from '../pages/Serial';
 import RedStation from '../pages/RedStation';
+import ImageStage from '../pages/ImageStage';
 
 // 仅注册当前保留的模块页面
 const contentMap: Record<string, JSX.Element> = {
@@ -17,5 +18,6 @@ const contentMap: Record<string, JSX.Element> = {
   channel: <ChannelPage />,
   serial: <Serial />,
   redstation: <RedStation />,
+  'image-stage': <ImageStage />,
 };
 export default contentMap;

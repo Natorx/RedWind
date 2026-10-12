@@ -1,4 +1,5 @@
 pub mod channel;
+pub mod clipboard_image;
 pub mod hardinfo;
 pub mod node_server;
 pub mod open;

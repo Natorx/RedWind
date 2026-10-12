@@ -32,11 +32,12 @@ export const sidebarItems: SidebarItem[] = [
   },
   { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },
   { id: 'serial', label: '单片机调试', icon: '🔌', order: 5, source: 'local' },
+  { id: 'image-stage', label: '图片暂存', icon: '🖼️', order: 6, source: 'local' },
   {
     id: 'redstation',
     label: '项目管理',
     icon: '📋',
-    order: 6,
+    order: 7,
     source: 'server',
   },
 ];

@@ -11,6 +11,7 @@ fn main() {
     let db_state = mods::sidebar::init_db_state();
     let typing_db_state = mods::typing::init_typing_db_state();
     let channel_db_state = mods::channel::init_channel_db_state();
+    let image_db_state = mods::clipboard_image::init_image_db_state();
     let p2p_state = mods::p2p_chat::P2PState::new();
     let serial_state = mods::serial::SerialState::new();
 
@@ -26,6 +27,7 @@ fn main() {
         .manage(p2p_state)
         .manage(typing_db_state)
         .manage(channel_db_state)
+        .manage(image_db_state)
         .manage(serial_state)
         .invoke_handler(tauri::generate_handler![
             // Open模块
@@ -91,6 +93,22 @@ fn main() {
             mods::serial::serial_clear_logs,
             mods::serial::serial_reset,
             mods::serial::serial_set_signals,
+            // 图片暂存
+            mods::clipboard_image::capture_clipboard_image,
+            mods::clipboard_image::list_images,
+            mods::clipboard_image::update_image_title,
+            mods::clipboard_image::delete_image,
+            mods::clipboard_image::delete_images,
+            mods::clipboard_image::clear_images,
+            mods::clipboard_image::image_stats,
+            mods::clipboard_image::images_directory,
+            // 图片暂存 - 传输目标
+            mods::clipboard_image::list_ssh_hosts,
+            mods::clipboard_image::save_ssh_host,
+            mods::clipboard_image::delete_ssh_host,
+            mods::clipboard_image::test_ssh_host,
+            mods::clipboard_image::ensure_remote_dir,
+            mods::clipboard_image::transfer_images,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

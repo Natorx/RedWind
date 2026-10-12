@@ -29,3 +29,11 @@ pub fn get_prod_data_dir_channel() -> PathBuf {
     std::fs::create_dir_all(&dir).expect("Failed to create app data dir");
     dir
 }
+
+/// 图片暂存模块的数据目录（图片文件与索引库都放这里）
+#[allow(dead_code)]
+pub fn get_prod_data_dir_image() -> PathBuf {
+    let dir = typing::get_app_data_dir();
+    std::fs::create_dir_all(&dir).expect("Failed to create app data dir");
+    dir
+}

@@ -30,14 +30,26 @@ export const sidebarItems: SidebarItem[] = [
     order: 3,
     source: 'local',
   },
-  { id: 'printer', label: '本地打印', icon: '🖨️', order: 4, source: 'local' },
-  { id: 'serial', label: '单片机调试', icon: '🔌', order: 5, source: 'local' },
-  { id: 'image-stage', label: '图片暂存', icon: '🖼️', order: 6, source: 'local' },
+  // 原「本地打印」与「单片机调试」已合并为「外设调试」
+  {
+    id: 'peripheral',
+    label: '外设调试',
+    icon: '🔧',
+    order: 4,
+    source: 'local',
+  },
+  {
+    id: 'image-stage',
+    label: '图片暂存',
+    icon: '🖼️',
+    order: 5,
+    source: 'local',
+  },
   {
     id: 'redstation',
     label: '项目管理',
     icon: '📋',
-    order: 7,
+    order: 6,
     source: 'server',
   },
 ];
@@ -48,6 +60,9 @@ export const REMOVED_MODULE_IDS = [
   'agent',
   'file-hander',
   'qrcode',
+  // 已并入「外设调试」，清理历史侧栏记录
+  'printer',
+  'serial',
 ];
 
 export default sidebarItems;

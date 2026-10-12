@@ -212,18 +212,14 @@ fn insert_passage(conn: &Connection, title: &str, content: &str, order: usize) -
 }
 
 // ------------------------------------------------------------
-// 内置段落：只保留两条英文样例（小作文长度），其余内容由用户自行添加
+// 内置段落：已全部移除，练习内容完全由用户自行添加。
+//
+// 注意这里是**空数组而不是删掉这段逻辑**：
+// sync_default_passages 以「代码里有、库里没有 -> 删除」的规则对齐，
+// 数组清空后，启动时便会自动清理掉历史版本留下的内置段落，
+// 同时不会碰用户自己添加的段落（is_official = 0）。
 // ------------------------------------------------------------
-const DEFAULT_PASSAGES: [(&str, &str); 2] = [
-    (
-        "The Quiet Morning",
-        "The morning arrives without ceremony. Light moves slowly across the floor, inch by inch, until the whole room is awake. Outside, the street is still quiet enough to hear a bicycle passing, and somewhere a kettle begins to sing. I have learned to treat these first minutes carefully, because they set the tone for everything that follows. If I sit still and let the day come to me instead of chasing it, the hours tend to arrange themselves more kindly. There is no trick to this, no technique worth writing down. It is simply a matter of paying attention to what is already here, and being willing to begin again.",
-    ),
-    (
-        "On Reading Slowly",
-        "We are told constantly that we should read more, as though the number of books were the point. But a book read quickly is often a book not read at all. The sentences pass through us without leaving a mark, and we close the cover with the vague feeling that we have been busy rather than changed. Reading slowly is a form of respect, both for the writer and for ourselves. It means stopping at a paragraph that surprises us, going back to a sentence that seems too good to be true, and letting an idea sit in the mind long enough to disagree with it. Speed is useful for many things. Understanding is not one of them.",
-    ),
-];
+const DEFAULT_PASSAGES: [(&str, &str); 0] = [];
 
 /// 让库中的内置段落与代码里的 DEFAULT_PASSAGES 保持一致。
 ///

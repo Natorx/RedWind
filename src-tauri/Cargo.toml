@@ -3,7 +3,7 @@ authors = ["fofow"]
 description = "Red wind tool library"
 edition = "2021"
 name = "red-wind"
-version = "0.6.3"
+version = "0.6.6"
 [[bin]]
 name = "wind-project"
 path = "src/main.rs"
@@ -20,7 +20,7 @@ tauri-plugin-dialog = "2"
 rusqlite = {version = "0.39.0", features = ["bundled"] }
 serde = {version = "1", features = ["derive"] }
 serde_json = "1"
-tauri = {version = "2", features = [] }
+tauri = {version = "2", features = ["protocol-asset"] }
 sysinfo = "0.38.4"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
 chrono = "0.4"
@@ -33,7 +33,9 @@ windows = { version = "0.62.2", features = [
     "Win32_System_Variant",
     "Win32_Media_Audio_Endpoints",
     "Win32_UI_WindowsAndMessaging",
-    "Win32_System_ProcessStatus"
+    "Win32_System_ProcessStatus",
+    "Win32_System_DataExchange",
+    "Win32_System_Memory"
 ] }
 # windows 的 #[implement] 宏在展开代码里按 crate 名引用 windows_core，
 # 因此必须作为直接依赖声明（否则 E0433）。

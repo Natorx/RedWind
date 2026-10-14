@@ -25,19 +25,26 @@ const TypingPractice: React.FC = () => {
 
   // ---------- 划词翻译 ----------
   const [selectedText, setSelectedText] = useState<string>('');
-  const [translation, setTranslation] = useState<TranslationResult | null>(null);
+  const [translation, setTranslation] = useState<TranslationResult | null>(
+    null,
+  );
   const [translating, setTranslating] = useState<boolean>(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
   const lastTranslatedRef = useRef<string>('');
+  /** 当前选中文本的即时副本：防抖计时期间用它判断选区是否真的变了 */
+  const selectedTextRef = useRef<string>('');
 
   // ---------- 新增段落 ----------
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [draftTitle, setDraftTitle] = useState<string>('');
   const [draftContent, setDraftContent] = useState<string>('');
 
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const startTimeRef = useRef<number | null>(null);
   const passageRef = useRef<HTMLDivElement>(null);
   // 用 ref 记录当前输入，避免闭包读到旧值
@@ -74,18 +81,40 @@ const TypingPractice: React.FC = () => {
     loadPassages();
   }, [loadPassages]);
 
+  /**
+   * 选区变化到发起翻译之间的等待时间（毫秒）。
+   *
+   * selectionchange 在拖选过程中每移动一次就触发一次（实测拖选 80 字符
+   * 触发 80 次），若直接在里面调接口，一次拖选就会打出几十个请求。
+   * 这里做防抖：停止选择 500ms 后才真正查询，期间的新选区会重置计时。
+   */
+  const TRANSLATE_DEBOUNCE_MS = 500;
+
+  /** 防抖计时器句柄 */
+  const translateTimerRef = useRef<number | null>(null);
+
+  /** 取消尚未触发的翻译 */
+  const cancelPendingTranslate = useCallback(() => {
+    if (translateTimerRef.current !== null) {
+      window.clearTimeout(translateTimerRef.current);
+      translateTimerRef.current = null;
+    }
+  }, []);
+
   // ---------- 重置当前段落 ----------
   const resetTyping = useCallback(() => {
+    cancelPendingTranslate();
     setUserInput('');
     userInputRef.current = '';
     setIsActive(false);
     startTimeRef.current = null;
+    selectedTextRef.current = '';
     setSelectedText('');
     setTranslation(null);
     setTranslateError(null);
     lastTranslatedRef.current = '';
     window.getSelection()?.removeAllRanges();
-  }, []);
+  }, [cancelPendingTranslate]);
 
   const goTo = useCallback(
     (index: number) => {
@@ -102,6 +131,7 @@ const TypingPractice: React.FC = () => {
     if (!isLoading) inputRef.current?.focus();
   }, [currentIndex, isLoading]);
 
+  // ---------- 划词翻译 ----------
   // ---------- 划词翻译 ----------
   const translateSelection = useCallback(async (text: string) => {
     const query = text.trim();
@@ -126,6 +156,29 @@ const TypingPractice: React.FC = () => {
     }
   }, []);
 
+  /**
+   * 记录选区并安排延迟翻译。
+   *
+   * 选中文本立即更新（用户能马上看到选了什么），
+   * 但接口调用推迟到停止选择 500ms 之后，期间的选择会不断重置计时。
+   */
+  const scheduleTranslate = useCallback(
+    (text: string) => {
+      // 选区没变就不必重新计时，避免鼠标微小抖动导致计时反复重置
+      if (text === selectedTextRef.current && text === lastTranslatedRef.current) return;
+
+      selectedTextRef.current = text;
+      setSelectedText(text);
+
+      cancelPendingTranslate();
+      translateTimerRef.current = window.setTimeout(() => {
+        translateTimerRef.current = null;
+        void translateSelection(text);
+      }, TRANSLATE_DEBOUNCE_MS);
+    },
+    [cancelPendingTranslate, translateSelection],
+  );
+
   // 选区必须落在当前段落容器内才触发翻译
   const readSelection = useCallback(
     (requireCollapsed = true) => {
@@ -137,15 +190,18 @@ const TypingPractice: React.FC = () => {
       if (!text) return;
 
       const container = passageRef.current;
-      if (container && sel.anchorNode && !container.contains(sel.anchorNode)) return;
+      if (container && sel.anchorNode && !container.contains(sel.anchorNode))
+        return;
 
-      setSelectedText(text);
-      translateSelection(text);
+      scheduleTranslate(text);
     },
-    [translateSelection],
+    [scheduleTranslate],
   );
 
-  const handlePassageMouseUp = useCallback(() => readSelection(true), [readSelection]);
+  const handlePassageMouseUp = useCallback(
+    () => readSelection(true),
+    [readSelection],
+  );
 
   // 双击选词、键盘 Shift+方向键选择也覆盖到
   useEffect(() => {
@@ -154,7 +210,12 @@ const TypingPractice: React.FC = () => {
     return () => document.removeEventListener('selectionchange', handler);
   }, [readSelection]);
 
+  // 组件卸载时清掉未触发的计时器，避免对已卸载组件调用 setState
+  useEffect(() => cancelPendingTranslate, [cancelPendingTranslate]);
+
   const clearTranslation = () => {
+    cancelPendingTranslate();
+    selectedTextRef.current = '';
     setSelectedText('');
     setTranslation(null);
     setTranslateError(null);
@@ -164,8 +225,9 @@ const TypingPractice: React.FC = () => {
 
   // ---------- 打字 ----------
   // 只做输入与逐字符高亮对比，不统计速度、正确率等指标。
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    // 段落是单段连续文本，把换行折叠成空格，避免与目标文本错位
+  // 输入框是单行 input，本身不会产生换行；这里仍折叠可能被粘贴进来的换行，
+  // 避免与目标文本错位。
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\r?\n/g, ' ');
     if (value.length > targetText.length) return;
 
@@ -214,7 +276,10 @@ const TypingPractice: React.FC = () => {
     if (!window.confirm('确定要删除这一段吗？')) return;
     try {
       await invoke('delete_passage', { id: p.id });
-      const nextIndex = Math.max(0, currentIndex >= passages.length - 1 ? currentIndex - 1 : currentIndex);
+      const nextIndex = Math.max(
+        0,
+        currentIndex >= passages.length - 1 ? currentIndex - 1 : currentIndex,
+      );
       resetTyping();
       await loadPassages();
       setCurrentIndex(nextIndex);
@@ -230,7 +295,10 @@ const TypingPractice: React.FC = () => {
     return Array.from(targetText).map((char, index) => {
       let cls = 'text-neutral-500';
       if (index < userInput.length) {
-        cls = userInput[index] === char ? 'text-green-400' : 'text-red-500 bg-red-500/20';
+        cls =
+          userInput[index] === char
+            ? 'text-green-400'
+            : 'text-red-500 bg-red-500/20';
       } else if (index === userInput.length && isActive) {
         cls = 'text-neutral-100 bg-red-500/40';
       }
@@ -269,12 +337,15 @@ const TypingPractice: React.FC = () => {
         </div>
       )}
 
-      <div className="h-screen flex flex-col p-8 overflow-y-auto">
+      <div className="h-screen flex flex-col p-6 overflow-y-auto">
         <div className="max-w-4xl mx-auto w-full">
-          {/* 顶部：段落信息 + 操作 */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="text-neutral-500 text-xs tracking-wider shrink-0">当前段落</span>
+          {/* 顶部工具栏：操作按钮与提示居中排列 */}
+          <div className="flex flex-col items-center gap-3 mb-5">
+            {/* 当前段落信息 */}
+            <div className="flex items-center gap-3 min-w-0 max-w-full">
+              <span className="text-neutral-500 text-xs tracking-wider shrink-0">
+                当前段落
+              </span>
               <span className="text-cyan-400 text-sm font-medium truncate">
                 {current?.title || '未命名'}
               </span>
@@ -284,14 +355,61 @@ const TypingPractice: React.FC = () => {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="text-xs text-neutral-500">划选文字即可查看翻译</span>
+
+            {/* 操作按钮 */}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                onClick={() => goTo(currentIndex - 1)}
+                disabled={currentIndex <= 0}
+                className="px-4 py-1.5 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm border border-red-500/20"
+              >
+                上一段
+              </button>
+              <button
+                onClick={() => goTo(currentIndex + 1)}
+                disabled={currentIndex >= passages.length - 1}
+                className="px-4 py-1.5 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm border border-red-500/30"
+              >
+                下一段
+              </button>
+              <button
+                onClick={() => {
+                  resetTyping();
+                  inputRef.current?.focus();
+                }}
+                className="px-4 py-1.5 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm border border-red-500/20"
+              >
+                重打本段
+              </button>
               <button
                 onClick={() => setListOpen(true)}
-                className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium"
+                className="px-4 py-1.5 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium"
               >
                 段落列表 ({passages.length})
               </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-4 py-1.5 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium"
+              >
+                + 添加段落
+              </button>
+              {current && !current.is_official && (
+                <button
+                  onClick={() => handleDelete(current)}
+                  className="px-4 py-1.5 bg-neutral-800 text-neutral-400 rounded-lg hover:bg-red-500/20 hover:text-red-300 transition-colors text-sm border border-neutral-700"
+                >
+                  删除本段
+                </button>
+              )}
+            </div>
+
+            {/* 提示 */}
+            <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <span>划选上方文字即可查看翻译</span>
+              <span className="font-mono">
+                第 {currentIndex + 1} / {passages.length} 段
+                {customCount > 0 ? `（自定义 ${customCount}）` : ''}
+              </span>
             </div>
           </div>
 
@@ -307,50 +425,19 @@ const TypingPractice: React.FC = () => {
                 {renderHighlighted()}
               </p>
             ) : (
-              <p className="text-neutral-500">还没有段落，点击右上角「添加段落」新建一条。</p>
+              <p className="text-neutral-500">
+                还没有段落，点击上方「+ 添加段落」新建一条。
+              </p>
             )}
           </div>
 
-          {/* 划词翻译结果 —— 展示在段落正下方 */}
-          {(selectedText || translating || translateError) && (
-            <div className="mt-3 bg-neutral-900/70 border border-cyan-500/30 rounded-lg p-5">
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <div className="flex-1 min-w-0">
-                  <div className="text-neutral-500 text-xs tracking-wider mb-1">选中的原文</div>
-                  <div className="text-neutral-300 text-sm break-words">{selectedText}</div>
-                </div>
-                <button
-                  onClick={clearTranslation}
-                  className="shrink-0 px-3 py-1 text-xs text-neutral-500 hover:text-neutral-200 border border-neutral-700 hover:border-neutral-500 rounded transition-colors"
-                >
-                  关闭
-                </button>
-              </div>
-
-              <div className="border-t border-neutral-800 pt-3">
-                <div className="text-neutral-500 text-xs tracking-wider mb-1">
-                  百度翻译{translation?.to_lang ? `（→ ${translation.to_lang}）` : ''}
-                </div>
-                {translating && <div className="text-cyan-400 text-sm">翻译中...</div>}
-                {!translating && translateError && (
-                  <div className="text-red-400 text-sm whitespace-pre-wrap">{translateError}</div>
-                )}
-                {!translating && !translateError && translation && (
-                  <div className="text-cyan-300 text-base leading-relaxed whitespace-pre-wrap break-words">
-                    {translation.target}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* 输入区 */}
-          <textarea
+          {/* 输入区：强制单行，文字超出时横向滚动 */}
+          <input
             ref={inputRef}
+            type="text"
             value={userInput}
             onChange={handleInputChange}
             disabled={!targetText}
-            rows={4}
             placeholder={
               targetText
                 ? done
@@ -358,82 +445,81 @@ const TypingPractice: React.FC = () => {
                   : '在此输入上方段落...'
                 : '暂无可练习段落'
             }
-            className="mt-4 w-full px-5 py-3.5 bg-neutral-900/40 border border-red-500/30 rounded-lg text-neutral-100 text-base font-mono leading-relaxed focus:outline-none focus:border-red-500 transition-all placeholder-neutral-600 resize-none"
+            className="mt-4 w-full px-4 py-2 bg-neutral-900/40 border border-red-500/30 rounded-lg text-neutral-100 text-xs font-mono leading-tight focus:outline-none focus:border-red-500 transition-all placeholder-neutral-600"
             autoComplete="off"
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck="false"
           />
 
-          {/* 统计与导航 */}
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              onClick={() => goTo(currentIndex - 1)}
-              disabled={currentIndex <= 0}
-              className="px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm border border-red-500/20"
-            >
-              上一段
-            </button>
-            <button
-              onClick={() => goTo(currentIndex + 1)}
-              disabled={currentIndex >= passages.length - 1}
-              className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm border border-red-500/30"
-            >
-              下一段
-            </button>
-            <button
-              onClick={() => {
-                resetTyping();
-                inputRef.current?.focus();
-              }}
-              className="px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm border border-red-500/20"
-            >
-              重打本段
-            </button>
+          {/* 划词翻译结果 —— 固定在输入框下方 */}
+          <div className="mt-3 min-h-[92px] bg-neutral-900/70 border border-cyan-500/30 rounded-lg p-4">
+            {selectedText || translating || translateError ? (
+              <>
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-neutral-500 text-[11px] tracking-wider mb-1">
+                      选中的原文
+                    </div>
+                    <div className="text-neutral-300 text-sm break-words">
+                      {selectedText}
+                    </div>
+                  </div>
+                  <button
+                    onClick={clearTranslation}
+                    className="shrink-0 px-2.5 py-1 text-[11px] text-neutral-500 hover:text-neutral-200 border border-neutral-700 hover:border-neutral-500 rounded transition-colors"
+                  >
+                    关闭
+                  </button>
+                </div>
 
-            <div className="flex-1" />
-
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium"
-            >
-              + 添加段落
-            </button>
-            {current && !current.is_official && (
-              <button
-                onClick={() => handleDelete(current)}
-                className="px-4 py-2 bg-neutral-800 text-neutral-400 rounded-lg hover:bg-red-500/20 hover:text-red-300 transition-colors text-sm border border-neutral-700"
-              >
-                删除本段
-              </button>
+                <div className="border-t border-neutral-800 pt-2">
+                  <div className="text-neutral-500 text-[11px] tracking-wider mb-1">
+                    百度翻译
+                    {translation?.to_lang ? `（→ ${translation.to_lang}）` : ''}
+                  </div>
+                  {translating && (
+                    <div className="text-cyan-400 text-sm">翻译中...</div>
+                  )}
+                  {!translating && translateError && (
+                    <div className="text-red-400 text-sm whitespace-pre-wrap">
+                      {translateError}
+                    </div>
+                  )}
+                  {!translating && !translateError && translation && (
+                    <div className="text-cyan-300 text-base leading-relaxed whitespace-pre-wrap break-words">
+                      {translation.target}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="h-full flex items-center justify-center text-neutral-600 text-xs">
+                划选上方段落中的文字，译文会显示在这里
+              </div>
             )}
           </div>
 
           {/* 本段完成提示 */}
           {done && (
-            <div className="mt-5 text-center">
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full">
+            <div className="mt-4 text-center">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full">
                 <span className="text-green-400">✓</span>
-                <span className="text-green-400 font-medium">本段完成</span>
+                <span className="text-green-400 font-medium text-sm">
+                  本段完成
+                </span>
               </span>
             </div>
           )}
 
-          {/* 段落定位 */}
-          <div className="mt-4 flex items-center justify-between text-xs text-neutral-600">
-            <span className="font-mono">
-              第 {currentIndex + 1} / {passages.length} 段
-              {customCount > 0 ? `（自定义 ${customCount}）` : ''}
-            </span>
-            <span>内置段落不可删除</span>
-          </div>
-
           {/* 翻译配置提示（未配置时不打扰，仅在无译文时展示） */}
           {translateError && translateError.includes('未配置') && (
             <div className="mt-4 p-3 bg-neutral-900/60 border border-neutral-800 rounded-lg">
-              <div className="text-neutral-500 text-xs mb-1">未配置百度翻译密钥</div>
+              <div className="text-neutral-500 text-xs mb-1">
+                未配置百度翻译密钥
+              </div>
               <pre className="text-[11px] text-neutral-400 font-mono whitespace-pre-wrap">
-{`在 src-tauri/.env 中添加：
+                {`在 src-tauri/.env 中添加：
 BAIDU_TRANS_APPID=你的appid
 BAIDU_TRANS_KEY=你的密钥`}
               </pre>
@@ -452,7 +538,9 @@ BAIDU_TRANS_KEY=你的密钥`}
       >
         <div className="space-y-2">
           {passages.length === 0 && (
-            <p className="text-neutral-500 text-sm p-2">还没有段落，先添加一条吧。</p>
+            <p className="text-neutral-500 text-sm p-2">
+              还没有段落，先添加一条吧。
+            </p>
           )}
           {passages.map((p, i) => (
             <div
@@ -528,7 +616,11 @@ BAIDU_TRANS_KEY=你的密钥`}
       </Drawer>
 
       {/* 添加段落模态框 */}
-      <Modal title="添加段落" isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
+      <Modal
+        title="添加段落"
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      >
         <div className="p-6">
           <div className="mb-4">
             <label className="block text-sm font-semibold text-neutral-300 mb-2">

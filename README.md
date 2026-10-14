@@ -14,12 +14,14 @@ All features below are local; no server or external service is required.
 | ⌨️ Typing Practice | Type along with a passage, character-by-character highlighting, select text to translate |
 | 🔧 Peripheral Debug | Printer (ESC/POS over TCP) and serial monitor (ESP32) on one page |
 | 🖼️ Image Stage | Stash clipboard images with one click, then transfer them to a remote host over scp |
+| 🚀 Release | Point at a project folder, then run version bump / build / artifact export / commit / push — each step optional |
 
 ![System Control](assets/doc/sys.png)
 ![Channel](assets/doc/cannel.png)
 ![Typing Practice](assets/doc/eng_type.png)
 ![Peripheral Debug](assets/doc/device.png)
 ![Image Stage](assets/doc/pic_save.png)
+![Release](assets/doc/bundle.png)
 
 Screenshots of retired modules are kept under `assets/history/`.
 

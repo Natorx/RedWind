@@ -15,12 +15,14 @@
 | ⌨️ 打字练习 | 对着段落打字，逐字符高亮对比，划词即可查看翻译 |
 | 🔧 外设调试 | 打印机（TCP 上的 ESC/POS）与串口监视（ESP32）合并在同一页 |
 | 🖼️ 图片暂存 | 一键把剪贴板图片存入临时图库，再经 scp 传到远程主机 |
+| 🚀 版本发布 | 选择项目文件夹，依次完成改版本号 / 构建 / 提取产物 / 提交 / 推送，每步均可选做 |
 
 ![系统控制](assets/doc/sys.png)
 ![频道](assets/doc/cannel.png)
 ![打字练习](assets/doc/eng_type.png)
 ![外设调试](assets/doc/device.png)
 ![图片暂存](assets/doc/pic_save.png)
+![版本发布](assets/doc/bundle.png)
 
 已下线模块的截图保留在 `assets/history/`。
 

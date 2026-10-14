@@ -45,13 +45,6 @@ export const sidebarItems: SidebarItem[] = [
     order: 5,
     source: 'local',
   },
-  {
-    id: 'redstation',
-    label: '项目管理',
-    icon: '📋',
-    order: 6,
-    source: 'server',
-  },
 ];
 
 /** 已下线模块的 id，启动时用于清理历史数据库残留记录 */
@@ -63,6 +56,8 @@ export const REMOVED_MODULE_IDS = [
   // 已并入「外设调试」，清理历史侧栏记录
   'printer',
   'serial',
+  // 已移除的项目管理模块（原照搬 RedStation）
+  'redstation',
 ];
 
 export default sidebarItems;

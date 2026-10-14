@@ -45,6 +45,13 @@ export const sidebarItems: SidebarItem[] = [
     order: 5,
     source: 'local',
   },
+  {
+    id: 'release',
+    label: '版本发布',
+    icon: '🚀',
+    order: 6,
+    source: 'local',
+  },
 ];
 
 /** 已下线模块的 id，启动时用于清理历史数据库残留记录 */

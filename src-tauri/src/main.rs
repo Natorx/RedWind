@@ -14,6 +14,8 @@ fn main() {
     let image_db_state = mods::clipboard_image::init_image_db_state();
     let p2p_state = mods::p2p_chat::P2PState::new();
     let serial_state = mods::serial::SerialState::new();
+    let release_state = mods::release::ReleaseState::default();
+    let release_db_state = mods::release::init_release_db_state();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -29,6 +31,8 @@ fn main() {
         .manage(channel_db_state)
         .manage(image_db_state)
         .manage(serial_state)
+        .manage(release_state)
+        .manage(release_db_state)
         .invoke_handler(tauri::generate_handler![
             // Open模块
             mods::open::open_path,
@@ -109,6 +113,20 @@ fn main() {
             mods::clipboard_image::test_ssh_host,
             mods::clipboard_image::ensure_remote_dir,
             mods::clipboard_image::transfer_images,
+            // 版本发布
+            mods::release::scan_project,
+            mods::release::apply_version,
+            mods::release::run_build,
+            mods::release::cancel_build,
+            mods::release::extract_artifacts,
+            mods::release::git_commit,
+            mods::release::git_push,
+            mods::release::git_status,
+            mods::release::list_subdirs,
+            // 版本发布 - 配置保存与导入
+            mods::release::save_release_config,
+            mods::release::list_release_configs,
+            mods::release::delete_release_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

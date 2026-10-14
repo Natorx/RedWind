@@ -6,6 +6,7 @@ import StartPage from '../pages/Start';
 import ChannelPage from '../pages/Channel';
 import Peripheral from '../pages/Peripheral';
 import ImageStage from '../pages/ImageStage';
+import Release from '../pages/Release';
 
 // 仅注册当前保留的模块页面
 const contentMap: Record<string, JSX.Element> = {
@@ -15,5 +16,6 @@ const contentMap: Record<string, JSX.Element> = {
   channel: <ChannelPage />,
   peripheral: <Peripheral />,
   'image-stage': <ImageStage />,
+  release: <Release />,
 };
 export default contentMap;

@@ -5,6 +5,7 @@ pub mod node_server;
 pub mod open;
 pub mod p2p_chat;
 pub mod printer;
+pub mod release;
 pub mod serial;
 pub mod sidebar;
 pub mod translate;

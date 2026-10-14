@@ -2,50 +2,58 @@
 
 [简体中文](./README.zh-CN.md)
 
-Red Wind Tool Library —— a multi-functional tool library integrating commonly used features including Deepseek Agent.
-
-After launching the program, you need to configure the required modules yourself. Select "Module Configuration" to try and choose the modules you need from the available module library.
+Red Wind Tool Library —— a lightweight multi-functional tool library for the desktop.
 
 ### Features
-![alt text](assets/pics-doc/a_modules.png)
-![alt text](assets/pics-doc/a_start.png)
-![alt text](assets/pics-doc/audio_control.png)
-![alt text](assets/pics-doc/chat_ai.png)
-!![alt text](assets/pics-doc/conversion.png)
-![alt text](assets/pics-doc/english.png)
-![alt text](assets/pics-doc/printer.png)
-![alt text](assets/pics-doc/qrcode.png)
-![alt text](assets/pics-doc/sys.png)
+All features below are local; no server or external service is required.
+
+| Module | Description |
+| --- | --- |
+| 📊 System Control | Hardware info and process management |
+| 📺 Channel | Track the creators and videos you follow across platforms |
+| ⌨️ Typing Practice | Type along with a passage, character-by-character highlighting, select text to translate |
+| 🔧 Peripheral Debug | Printer (ESC/POS over TCP) and serial monitor (ESP32) on one page |
+| 🖼️ Image Stage | Stash clipboard images with one click, then transfer them to a remote host over scp |
+
+![System Control](assets/doc/sys.png)
+![Channel](assets/doc/cannel.png)
+![Typing Practice](assets/doc/eng_type.png)
+![Peripheral Debug](assets/doc/device.png)
+![Image Stage](assets/doc/pic_save.png)
+
+Screenshots of retired modules are kept under `assets/history/`.
 
 ### System Architecture
-- Frontend: Developed using React + Unocss + Typescript
-- Agent: Integrated with the Deepseekv4 model, with an independent interface service (also includes a separate CLI/GUI) written in Python for the application to call.
-- Services: All implemented with Fastify (Node.js).
+- Frontend: React + Unocss + TypeScript.
 - System: System API calls and program processes are handled by Rust (Tauri).
-- Data: Local data is stored using SQLite, managed by the Rust backend; server-side data is stored using PGSQL.
-- Performance: High performance is provided by the Rust backend and Rust's WASM.
+- Data: Local data is stored in SQLite, managed by the Rust backend.
+
+> Earlier versions shipped an AI Agent (Python) and a Fastify server. Those modules
+> are no longer part of the app, so Python and a running Node service are **not**
+> required. Their source is kept in `agent/` and `server/` for reference only.
 
 ## For dev
 
 ### How to Start
-First, ensure you have Node.js (24.0.0+) and Rust installed on your computer. If your Node.js version is lower than 24.0.0, some features will not be available.
+You need Node.js (24.0.0+) and Rust. Features relying on newer Node APIs will not
+work on older versions.
 
 `pnpm install` to install the required dependencies.
 
-`pnpm dc`: This is the command to run the main client process. After a successful start, the program will run normally.
+`pnpm dc`: Run the client. Once it starts, the app is usable.
 
-`pnpm ds`: Features tagged with `server` all depend on the Node.js service. You need to use `pnpm ds` to start it.
+`pnpm updater`: Bump the version across `package.json`, `tauri.conf.json` and `Cargo.toml`.
 
-`pnpm agent`: The Agent functionality requires Python. If you want to debug locally, ensure you have Python installed on your computer. Use `pnpm agent` to start the Agent interface service.
+`pnpm get_build`: Copy the built installer from `src-tauri/target/release/bundle/nsis` into `release/`.
 
 ### File Directory
 
 redwind/
-├── agent          This module is written in Python and contains several startup programs, command-line startup, interface services (interface layer used by applications), test files, etc.
-├── assets         Stores images and other miscellaneous items, nothing significant.
+├── agent          Retired AI Agent service (Python), kept for reference; not part of the app.
+├── assets         Images. `assets/doc` holds screenshots of the current modules, `assets/history` keeps those of retired ones.
 ├── client         Client side; all pages and components related to client-side rendering are in this folder.
 ├── commands       Some commands used to upgrade versions, quickly start the project, etc.
 ├── release        Installation packages for various versions of the software.
-├── server         Node.js service built with Fastify.
+├── server         Retired Fastify (Node.js) service, kept for reference; not part of the app.
 ├── src-tauri      Backend built with Rust, used to launch processes and provide system integration functionalities as a backend for the client page.
-└── wasm           Rust package for optimizing client performance, with limited content inside.
+└── wasm           Rust package kept from an earlier performance experiment; currently unused.
